@@ -1,0 +1,13 @@
+variables:
+  TEST_FILE: "./.githooks/pre-commit"
+
+stages:
+  - test
+
+unit_test:
+  stage: test
+  tags:
+    - bash
+  script:
+    - mkdir localtest
+    - ${TEST_FILE}
