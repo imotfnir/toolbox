@@ -44,6 +44,82 @@ init_and_check_current_environment() {
     return 0
 }
 
+_fio_test() {
+    local size="${1}"
+    local thread="${2}"
+    local type="${3}"
+    local cmd
+
+    trap 'command rm -rf ${TEST_DIR}/*' RETURN
+    cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
+    popup_message "fio ${type} test"
+    debug_print 3 "fio ${type} test"
+    debug_print 4 "${cmd}"
+
+    if ! eval "${cmd}"; then
+        debug_print 1 "Fail to run fio test"
+        return 1
+    fi
+
+    return 0
+}
+
+_sysbench_test() {
+    local size="${1}"
+    local thread="${2}"
+    local type="${3}"
+    local cmd
+
+    trap 'command rm -rf ${TEST_DIR}/*' RETURN
+    cmd="sysbench --test=fileio --num-threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
+    popup_message "sysbench ${type} test"
+    debug_print 3 "sysbench ${type} test"
+    debug_print 4 "${cmd}"
+
+    cd "${TEST_DIR}" || return 1
+    if ! eval "${cmd} prepare"; then
+        debug_print 1 "Fail to run sysbench test"
+        return 1
+    fi
+    if ! eval "${cmd} run"; then
+        debug_print 1 "Fail to run sysbench test"
+        return 1
+    fi
+    if ! eval "${cmd} cleanup"; then
+        debug_print 1 "Fail to run sysbench test"
+        return 1
+    fi
+
+    return 0
+}
+
+_dd_test() {
+    local ddcount="${1}"
+    local type="${2}"
+    local cmd
+
+    trap 'command rm -rf ${TEST_DIR}/*' RETURN
+    case "${type}" in
+    read)
+        cmd="dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
+        ;;
+    write)
+        cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
+        ;;
+    esac
+
+    popup_message "dd ${type} test"
+    debug_print 3 "dd ${type} test"
+    debug_print 4 "${cmd}"
+
+    if ! eval "${cmd} cleanup"; then
+        debug_print 1 "Fail to run dd test"
+        return 1
+    fi
+
+    return 0
+}
+
 _test_list() {
     #TODO:
     return 0
