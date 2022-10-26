@@ -18,6 +18,8 @@ TEST_MEMORY_WRITE="false"
 TEST_STORAGE_READ="false"
 TEST_STORAGE_WRITE="false"
 TEST_CPU_READ="false"
+CYCLE="10"
+IS_CYCLE_FOREVER="false"
 
 # shellcheck source-path=src
 source "${SOURCE_DIR}/error_handling_lib.sh"
@@ -64,6 +66,9 @@ while [ ${#} -gt 0 ]; do
         if [ ${#} -lt 2 ]; then
             show_error 1
             exit 1
+        fi
+        if [ "${2}" -eq "0" ]; then
+            IS_CYCLE_FOREVER="true"
         fi
         CYCLE="${2}"
         shift 2
@@ -119,3 +124,6 @@ done
 
 #!Main function
 is_argument_valid || exit 1
+stress_test || exit 1
+
+#TODO; trap INT and EXIT to generate test report

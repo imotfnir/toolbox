@@ -43,3 +43,25 @@ init_and_check_current_environment() {
     LOG_FILE="${log_file}"
     return 0
 }
+
+_test_list() {
+    #TODO:
+    return 0
+}
+
+stress_test() {
+    debug_print 3 "Test begin"
+    if "${IS_CYCLE_FOREVER}"; then
+        while true; do
+            _test_list
+        done
+        return 0
+    fi
+
+    local _
+    for _ in $(seq 1 "${CYCLE}"); do
+        _test_list
+    done
+
+    return 0
+}
