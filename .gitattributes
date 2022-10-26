@@ -1,5 +1,7 @@
 * -text
 
+*.* text eol=lf
+
 *.bin binary
 *.BIN binary
 
