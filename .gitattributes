@@ -1,0 +1,9 @@
+* -text
+
+*.bin binary
+*.BIN binary
+
+*.bin binary diff=hex
+*.BIN binary diff=hex
+
+*.log encoding=utf-8
