@@ -4,7 +4,7 @@ echo "Runing $(basename "${0}")"
 # This is .git/COMMIT_EDITMSG
 INPUT_FILE="${1}"
 # Commit type define in this repo
-type_list="build chore ci docs feat fix perf refactor revert style test"
+type_list="build chore ci docs feat fix perf refactor revert style test merge"
 
 is_commit_validated(){
     local input_file=$*
