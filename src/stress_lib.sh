@@ -12,8 +12,8 @@ source "${SOURCE_DIR}/std_lib.sh"
 source "${SOURCE_DIR}/error_handling_lib.sh"
 
 is_argument_valid() {
-    if [ "${CYCLE}" -le "0" ]; then
-        debug_print 2 "Test cycle can not less than of equal to 0"
+    if [ "${CYCLE}" -lt "0" ]; then
+        debug_print 2 "Test cycle can not less than 0"
         return 1
     fi
 
@@ -21,6 +21,7 @@ is_argument_valid() {
     ${TEST_MEMORY_WRITE} && return 0
     ${TEST_STORAGE_READ} && return 0
     ${TEST_STORAGE_WRITE} && return 0
+    ${TEST_CPU_READ} && return 0
     debug_print 2 "Please specify at least one type of test"
     return 1
 }

@@ -17,6 +17,7 @@ TEST_MEMORY_READ="false"
 TEST_MEMORY_WRITE="false"
 TEST_STORAGE_READ="false"
 TEST_STORAGE_WRITE="false"
+TEST_CPU_READ="false"
 
 # shellcheck source-path=src
 source "${SOURCE_DIR}/error_handling_lib.sh"
@@ -96,6 +97,18 @@ while [ ${#} -gt 0 ]; do
             ;;
         esac
         shift 2
+        ;;
+    --cpu)
+        TEST_CPU_READ="true"
+        shift 1
+        ;;
+    --all)
+        TEST_MEMORY_READ="true"
+        TEST_MEMORY_WRITE="true"
+        TEST_STORAGE_READ="true"
+        TEST_STORAGE_WRITE="true"
+        TEST_CPU_READ="true"
+        shift 1
         ;;
     *)
         show_error 1

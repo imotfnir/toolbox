@@ -33,6 +33,10 @@ Handle Option:
         Memory test type, [r|w|rw]
     -s, --storage <type>
         Storage test type, [r|w|rw]
+    --cpu
+        Enable CPU stress test
+    --all
+        Memory and storage read/write test
 
 Example:
     $(basename "${0}") -d -c 3 -m r -s rw
