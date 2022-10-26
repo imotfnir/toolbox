@@ -7,6 +7,8 @@ else
 fi
 
 # shellcheck source-path=src
+source "${SOURCE_DIR}/std_lib.sh"
+# shellcheck source-path=src
 source "${SOURCE_DIR}/error_handling_lib.sh"
 
 is_argument_valid() {
@@ -21,4 +23,22 @@ is_argument_valid() {
     ${TEST_STORAGE_WRITE} && return 0
     debug_print 2 "Please specify at least one type of test"
     return 1
+}
+
+init_and_check_current_environment() {
+    local cpu_model
+    local product_name
+    local log_file
+
+    #TODO: product name
+    #TODO: ssd fw, sn etc
+    cpu_model=$(get_cpu_model)
+    product_name=$(dmidecode -t 1 | grep "Product Name" | awk -F " " '{printf $3}')
+    log_file="ssd_stress_test_${product_name}_${cpu_model}_$(date "+%Y%m%d_+%H%M%S").log"
+
+    #  shellcheck disable=SC2034
+    CPU_MODEL="${cpu_model}"
+    #  shellcheck disable=SC2034
+    LOG_FILE="${log_file}"
+    return 0
 }
