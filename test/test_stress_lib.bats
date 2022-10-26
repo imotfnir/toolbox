@@ -23,3 +23,16 @@ DEBUG=6
     [ "${output}" = "" ]
     [ "${stderr}" = "WARNING: Test cycle can not less than 0" ]
 }
+
+@test "_fio_test" {
+    TEST_DIR="/tmp/stress_test"
+    OVERRIDE="true"
+    run --separate-stderr -0 _fio_test 10M 2 read
+    [[ "${output}" == *"fio read test"* ]]
+    [[ "${stderr}" == *"INFO: fio read test"* ]]
+    OVERRIDE="false"
+    run --separate-stderr -1 _fio_test 10M 2 write
+    [[ "${output}" == *"fio write test"* ]]
+    [[ "${stderr}" == *"INFO: fio write test"* ]]
+    [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
+}

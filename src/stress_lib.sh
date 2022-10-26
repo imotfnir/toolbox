@@ -44,23 +44,37 @@ init_and_check_current_environment() {
     return 0
 }
 
+_test_exception() {
+    local original_dir="${1}"
+
+    command rm -rf "${TEST_DIR:?}/*"
+    cd "${original_dir}" || return 1
+    debug_print 1 "Fail to run stress test"
+
+    return 1
+}
+
 _fio_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
     local cmd
+    local current_dir
 
-    trap 'command rm -rf ${TEST_DIR}/*' RETURN
+    current_dir="${PWD}"
+    trap '_test_exception ${current_dir}' RETURN
+
     cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
     popup_message "fio ${type} test"
     debug_print 3 "fio ${type} test"
     debug_print 4 "${cmd}"
-
-    if ! eval "${cmd}"; then
-        debug_print 1 "Fail to run fio test"
-        return 1
+    if [ -n "${OVERRIDE+_}" ]; then
+        cmd="${OVERRIDE}"
     fi
 
+    eval "${cmd}" || return 1
+
+    trap - RETURN
     return 0
 }
 
@@ -69,27 +83,25 @@ _sysbench_test() {
     local thread="${2}"
     local type="${3}"
     local cmd
+    local current_dir
 
-    trap 'command rm -rf ${TEST_DIR}/*' RETURN
-    cmd="sysbench --test=fileio --num-threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
+    current_dir="${PWD}"
+    trap '_test_exception ${current_dir}' RETURN
+
+    cmd="sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
     popup_message "sysbench ${type} test"
     debug_print 3 "sysbench ${type} test"
     debug_print 4 "${cmd}"
+    if [ -n "${OVERRIDE+_}" ]; then
+        cmd="${OVERRIDE}"
+    fi
 
     cd "${TEST_DIR}" || return 1
-    if ! eval "${cmd} prepare"; then
-        debug_print 1 "Fail to run sysbench test"
-        return 1
-    fi
-    if ! eval "${cmd} run"; then
-        debug_print 1 "Fail to run sysbench test"
-        return 1
-    fi
-    if ! eval "${cmd} cleanup"; then
-        debug_print 1 "Fail to run sysbench test"
-        return 1
-    fi
+    eval "${cmd} prepare" || return 1
+    eval "${cmd} run" || return 1
+    eval "${cmd} cleanup" || return 1
 
+    trap - RETURN
     return 0
 }
 
@@ -97,8 +109,11 @@ _dd_test() {
     local ddcount="${1}"
     local type="${2}"
     local cmd
+    local current_dir
 
-    trap 'command rm -rf ${TEST_DIR}/*' RETURN
+    if [ -n "${OVERRIDE+_}" ]; then
+        cmd="${OVERRIDE}"
+    fi
     case "${type}" in
     read)
         cmd="dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
@@ -107,16 +122,17 @@ _dd_test() {
         cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
         ;;
     esac
+    if [ -n "${OVERRIDE+_}" ]; then
+        cmd="${OVERRIDE}"
+    fi
 
     popup_message "dd ${type} test"
     debug_print 3 "dd ${type} test"
     debug_print 4 "${cmd}"
 
-    if ! eval "${cmd} cleanup"; then
-        debug_print 1 "Fail to run dd test"
-        return 1
-    fi
+    eval "${cmd}" || return 1
 
+    trap - RETURN
     return 0
 }
 
