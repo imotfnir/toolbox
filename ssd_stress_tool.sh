@@ -20,6 +20,7 @@ TEST_STORAGE_WRITE="false"
 TEST_CPU_READ="false"
 CYCLE="10"
 IS_CYCLE_FOREVER="false"
+TEST_MODE="stress"
 
 # shellcheck source-path=src
 source "${SOURCE_DIR}/error_handling_lib.sh"
@@ -162,4 +163,4 @@ is_argument_valid || exit 1
 run_test "$@" || exit 1
 
 #TODO; trap INT and EXIT to gene rate test report
-return 0
+exit 0
