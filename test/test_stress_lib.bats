@@ -30,9 +30,24 @@ DEBUG=6
     run --separate-stderr -0 _fio_test 10M 2 read
     [[ "${output}" == *"fio read test"* ]]
     [[ "${stderr}" == *"INFO: fio read test"* ]]
+    [[ "${stderr}" != *"ERROR:"* ]]
     OVERRIDE="false"
     run --separate-stderr -1 _fio_test 10M 2 write
     [[ "${output}" == *"fio write test"* ]]
     [[ "${stderr}" == *"INFO: fio write test"* ]]
+    [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
+}
+
+@test "_sysbench_test" {
+    TEST_DIR="/tmp/stress_test"
+    OVERRIDE="true"
+    run --separate-stderr -0 _sysbench_test 10M 2 seqrewr
+    [[ "${output}" == *"sysbench seqrewr test"* ]]
+    [[ "${stderr}" == *"INFO: sysbench seqrewr test"* ]]
+    [[ "${stderr}" != *"ERROR:"* ]]
+    OVERRIDE="false"
+    run --separate-stderr -1 _sysbench_test 10M 2 rndrw
+    [[ "${output}" == *"sysbench rndrw test"* ]]
+    [[ "${stderr}" == *"INFO: sysbench rndrw test"* ]]
     [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
 }
