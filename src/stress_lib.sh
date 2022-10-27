@@ -17,6 +17,10 @@ is_argument_valid() {
         return 1
     fi
 
+    if [ "${TEST_MODE}" = "stress" ]; then
+        return 0
+    fi
+
     ${TEST_MEMORY_READ} && return 0
     ${TEST_MEMORY_WRITE} && return 0
     ${TEST_STORAGE_READ} && return 0
@@ -146,23 +150,30 @@ _test_list() {
 }
 
 stress_test() {
-    debug_print 3 "Test begin"
+    #TODO:
+    echo "stress test"
+    return 0
+}
+
+performance_test() {
+    #TODO:
+    echo "performance test"
+    return 0
+}
+
+run_test() {
+    debug_print 3 "${FUNCNAME[0]} ${*}"
     if "${IS_CYCLE_FOREVER}"; then
         while true; do
-            _test_list
+            eval "${TEST_MODE}_test"
         done
         return 0
     fi
 
     local _
     for _ in $(seq 1 "${CYCLE}"); do
-        _test_list
+        eval "${TEST_MODE}_test"
     done
 
-    return 0
-}
-
-performance_test() {
-    # TODO:
     return 0
 }

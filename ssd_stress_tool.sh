@@ -148,6 +148,7 @@ while [ ${#} -gt 0 ]; do
             exit 1
             ;;
         esac
+        shift 2
         ;;
     *)
         show_error 1
@@ -158,17 +159,7 @@ done
 
 #!Main function
 is_argument_valid || exit 1
+run_test "$@" || exit 1
 
-case "${TEST_MODE}" in
-"stress")
-    stress_test || exit 1
-    ;;
-"performance")
-    performance_test || exit 1
-    ;;
-*)
-    show_error 1
-    ;;
-esac
-
-#TODO; trap INT and EXIT to generate test report
+#TODO; trap INT and EXIT to gene rate test report
+return 0
