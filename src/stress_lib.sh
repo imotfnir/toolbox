@@ -45,13 +45,15 @@ init_and_check_current_environment() {
 }
 
 _test_exception() {
-    local original_dir="${1}"
+    local exit_code="${1}"
+    local original_dir="${2}"
 
-    command rm -rf "${TEST_DIR:?}/*"
+    if [ "${exit_code}" = 1 ]; then
+        command rm -rf "${TEST_DIR:?}/*"
+        debug_print 1 "Fail to run stress test"
+    fi
+
     cd "${original_dir}" || return 1
-    debug_print 1 "Fail to run stress test"
-
-    return 1
 }
 
 _fio_test() {
@@ -62,7 +64,7 @@ _fio_test() {
     local current_dir
 
     current_dir="${PWD}"
-    trap '_test_exception ${current_dir}' RETURN
+    trap '_test_exception $? ${current_dir}' RETURN
 
     cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
     popup_message "fio ${type} test"
@@ -86,7 +88,7 @@ _sysbench_test() {
     local current_dir
 
     current_dir="${PWD}"
-    trap '_test_exception ${current_dir}' RETURN
+    trap '_test_exception $? ${current_dir}' RETURN
 
     cmd="sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
     popup_message "sysbench ${type} test"
