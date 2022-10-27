@@ -26,6 +26,8 @@ source "${SOURCE_DIR}/error_handling_lib.sh"
 # shellcheck source-path=src
 source "${SOURCE_DIR}/stress_lib.sh"
 
+#TODO: trap EXIT, run show_error before exit
+
 if [ "${#}" = 0 ]; then
     show_help
     exit 0
@@ -74,6 +76,10 @@ while [ ${#} -gt 0 ]; do
         shift 2
         ;;
     -m | --memory)
+        if [ ${#} -lt 2 ]; then
+            show_error 1
+            exit 1
+        fi
         case "${2}" in
         r)
             TEST_MEMORY_READ="true"
@@ -84,11 +90,18 @@ while [ ${#} -gt 0 ]; do
         rw)
             TEST_MEMORY_READ="true"
             TEST_MEMORY_WRITE="true"
+            ;;
+        *)
+            show_error 1
             ;;
         esac
         shift 2
         ;;
     -s | --storage)
+        if [ ${#} -lt 2 ]; then
+            show_error 1
+            exit 1
+        fi
         case "${2}" in
         r)
             TEST_STORAGE_READ="true"
@@ -99,6 +112,9 @@ while [ ${#} -gt 0 ]; do
         rw)
             TEST_STORAGE_READ="true"
             TEST_STORAGE_WRITE="true"
+            ;;
+        *)
+            show_error 1
             ;;
         esac
         shift 2
@@ -115,6 +131,24 @@ while [ ${#} -gt 0 ]; do
         TEST_CPU_READ="true"
         shift 1
         ;;
+    --mode)
+        if [ ${#} -lt 2 ]; then
+            show_error 1
+            exit 1
+        fi
+        case "${2}" in
+        s | stress)
+            TEST_MODE="stress"
+            ;;
+        p | performance)
+            TEST_MODE="performance"
+            ;;
+        *)
+            show_error 1
+            exit 1
+            ;;
+        esac
+        ;;
     *)
         show_error 1
         exit 1
@@ -124,6 +158,17 @@ done
 
 #!Main function
 is_argument_valid || exit 1
-stress_test || exit 1
+
+case "${TEST_MODE}" in
+"stress")
+    stress_test || exit 1
+    ;;
+"performance")
+    performance_test || exit 1
+    ;;
+*)
+    show_error 1
+    ;;
+esac
 
 #TODO; trap INT and EXIT to generate test report

@@ -20,15 +20,20 @@ show_help() {
     cat <<EOF
 Usage : $(basename "${0}") [-hv]  [-c <Integer>] [-m <Memory test type>] [-s <Storage test type>]
 
-Handle Option:
+General Option:
     -v, --version
         Display version information and exit
     -h, --help
         Display this help text and exit
     -d, --debug
         Enable debug mode
+    --mode [s|stress|p|performance]
+        stress:      No report
+        performance: Generate test report
     -c, --cycle <integer>
         Repeat the test
+
+Performance mode option:
     -m, --memory <type>
         Memory test type, [r|w|rw]
     -s, --storage <type>
@@ -57,6 +62,7 @@ EOF
 ##############################
 show_version() {
     echo "$(basename "${0}") version v${VERSION}"
+    return 0
 }
 
 ##############################
