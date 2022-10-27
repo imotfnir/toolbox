@@ -27,12 +27,41 @@ DEBUG=6
 @test "_fio_test" {
     TEST_DIR="/tmp/stress_test"
     OVERRIDE="true"
-    run --separate-stderr -0 _fio_test 10M 2 read
-    [[ "${output}" == *"fio read test"* ]]
-    [[ "${stderr}" == *"INFO: fio read test"* ]]
+    run --separate-stderr -0 _fio_test size=10M thread=2 type=read
+    [[ "${output}" == *"_fio_test size=10M thread=2 type=read"* ]]
+    [[ "${stderr}" == *"INFO: _fio_test size=10M thread=2 type=read"* ]]
+    [[ "${stderr}" != *"ERROR:"* ]]
     OVERRIDE="false"
-    run --separate-stderr -1 _fio_test 10M 2 write
-    [[ "${output}" == *"fio write test"* ]]
-    [[ "${stderr}" == *"INFO: fio write test"* ]]
+    run --separate-stderr -1 _fio_test size=10M thread=2 type=write
+    [[ "${output}" == *"_fio_test size=10M thread=2 type=write"* ]]
+    [[ "${stderr}" == *"INFO: _fio_test size=10M thread=2 type=write"* ]]
+    [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
+}
+
+@test "_sysbench_test" {
+    TEST_DIR="/tmp/stress_test"
+    OVERRIDE="true"
+    run --separate-stderr -0 _sysbench_test size=10M thread=2 type=seqrewr
+    [[ "${output}" == *"_sysbench_test size=10M thread=2 type=seqrewr"* ]]
+    [[ "${stderr}" == *"INFO: _sysbench_test size=10M thread=2 type=seqrewr"* ]]
+    [[ "${stderr}" != *"ERROR:"* ]]
+    OVERRIDE="false"
+    run --separate-stderr -1 _sysbench_test size=10M thread=2 type=rndrw
+    [[ "${output}" == *"_sysbench_test size=10M thread=2 type=rndrw"* ]]
+    [[ "${stderr}" == *"INFO: _sysbench_test size=10M thread=2 type=rndrw"* ]]
+    [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
+}
+
+@test "_dd_test" {
+    TEST_DIR="/tmp/stress_test"
+    OVERRIDE="true"
+    run --separate-stderr -0 _dd_test ddcount=262144 type=read
+    [[ "${output}" == *"_dd_test ddcount=262144 type=read"* ]]
+    [[ "${stderr}" == *"INFO: _dd_test ddcount=262144 type=read"* ]]
+    [[ "${stderr}" != *"ERROR:"* ]]
+    OVERRIDE="false"
+    run --separate-stderr -1 _dd_test ddcount=262144 type=write
+    [[ "${output}" == *"_dd_test ddcount=262144 type=write"* ]]
+    [[ "${stderr}" == *"INFO: _dd_test ddcount=262144 type=write"* ]]
     [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
 }

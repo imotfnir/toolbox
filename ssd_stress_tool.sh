@@ -20,11 +20,15 @@ TEST_STORAGE_WRITE="false"
 TEST_CPU_READ="false"
 CYCLE="10"
 IS_CYCLE_FOREVER="false"
+TEST_MODE="stress"
 
 # shellcheck source-path=src
 source "${SOURCE_DIR}/error_handling_lib.sh"
 # shellcheck source-path=src
 source "${SOURCE_DIR}/stress_lib.sh"
+
+#TODO: trap EXIT, run show_error before exit
+trap 'show_error $?' EXIT
 
 if [ "${#}" = 0 ]; then
     show_help
@@ -35,7 +39,6 @@ for i in $(seq 1 "${#}"); do
     if [ "${!i}" = "-d" ] || [ "${!i}" = "--debug" ]; then
         i=$((i + 1))
         if [ $(("${!i}")) != "${!i}" ]; then
-            show_error 1
             exit 1
         fi
         DEBUG="${!i}"
@@ -64,7 +67,6 @@ while [ ${#} -gt 0 ]; do
         ;;
     -c | --cycle)
         if [ ${#} -lt 2 ]; then
-            show_error 1
             exit 1
         fi
         if [ "${2}" -eq "0" ]; then
@@ -74,6 +76,9 @@ while [ ${#} -gt 0 ]; do
         shift 2
         ;;
     -m | --memory)
+        if [ ${#} -lt 2 ]; then
+            exit 1
+        fi
         case "${2}" in
         r)
             TEST_MEMORY_READ="true"
@@ -84,11 +89,17 @@ while [ ${#} -gt 0 ]; do
         rw)
             TEST_MEMORY_READ="true"
             TEST_MEMORY_WRITE="true"
+            ;;
+        *)
+            exit 1
             ;;
         esac
         shift 2
         ;;
     -s | --storage)
+        if [ ${#} -lt 2 ]; then
+            exit 1
+        fi
         case "${2}" in
         r)
             TEST_STORAGE_READ="true"
@@ -99,6 +110,9 @@ while [ ${#} -gt 0 ]; do
         rw)
             TEST_STORAGE_READ="true"
             TEST_STORAGE_WRITE="true"
+            ;;
+        *)
+            exit 1
             ;;
         esac
         shift 2
@@ -115,15 +129,32 @@ while [ ${#} -gt 0 ]; do
         TEST_CPU_READ="true"
         shift 1
         ;;
+    --mode)
+        if [ ${#} -lt 2 ]; then
+            exit 1
+        fi
+        case "${2}" in
+        s | stress)
+            TEST_MODE="stress"
+            ;;
+        p | performance)
+            TEST_MODE="performance"
+            ;;
+        *)
+            exit 1
+            ;;
+        esac
+        shift 2
+        ;;
     *)
-        show_error 1
         exit 1
         ;;
     esac
 done
 
 #!Main function
-is_argument_valid || exit 1
-stress_test || exit 1
+is_argument_valid || exit 127
+run_test "$@" || exit 2
 
-#TODO; trap INT and EXIT to generate test report
+#TODO; trap INT and EXIT to gene rate test report
+exit 0

@@ -17,6 +17,10 @@ is_argument_valid() {
         return 1
     fi
 
+    if [ "${TEST_MODE}" = "stress" ]; then
+        return 0
+    fi
+
     ${TEST_MEMORY_READ} && return 0
     ${TEST_MEMORY_WRITE} && return 0
     ${TEST_STORAGE_READ} && return 0
@@ -45,28 +49,31 @@ init_and_check_current_environment() {
 }
 
 _test_exception() {
-    local original_dir="${1}"
+    local exit_code="${1}"
+    local original_dir="${2}"
 
-    command rm -rf "${TEST_DIR:?}/*"
+    if [ "${exit_code}" = 1 ]; then
+        command rm -rf "${TEST_DIR:?}/*"
+        debug_print 1 "Fail to run stress test"
+    fi
+
     cd "${original_dir}" || return 1
-    debug_print 1 "Fail to run stress test"
-
-    return 1
 }
 
 _fio_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
+    local "${@}"
     local cmd
     local current_dir
 
     current_dir="${PWD}"
-    trap '_test_exception ${current_dir}' RETURN
+    trap '_test_exception $? ${current_dir}' RETURN
 
     cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
-    popup_message "fio ${type} test"
-    debug_print 3 "fio ${type} test"
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[0]} ${*}"
     debug_print 4 "${cmd}"
     if [ -n "${OVERRIDE+_}" ]; then
         cmd="${OVERRIDE}"
@@ -82,15 +89,16 @@ _sysbench_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
+    local "${@}"
     local cmd
     local current_dir
 
     current_dir="${PWD}"
-    trap '_test_exception ${current_dir}' RETURN
+    trap '_test_exception $? ${current_dir}' RETURN
 
     cmd="sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
-    popup_message "sysbench ${type} test"
-    debug_print 3 "sysbench ${type} test"
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[0]} ${*}"
     debug_print 4 "${cmd}"
     if [ -n "${OVERRIDE+_}" ]; then
         cmd="${OVERRIDE}"
@@ -108,12 +116,13 @@ _sysbench_test() {
 _dd_test() {
     local ddcount="${1}"
     local type="${2}"
+    local "${@}"
     local cmd
     local current_dir
 
-    if [ -n "${OVERRIDE+_}" ]; then
-        cmd="${OVERRIDE}"
-    fi
+    current_dir="${PWD}"
+    trap '_test_exception $? ${current_dir}' RETURN
+
     case "${type}" in
     read)
         cmd="dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
@@ -122,13 +131,12 @@ _dd_test() {
         cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
         ;;
     esac
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[0]} ${*}"
+    debug_print 4 "${cmd}"
     if [ -n "${OVERRIDE+_}" ]; then
         cmd="${OVERRIDE}"
     fi
-
-    popup_message "dd ${type} test"
-    debug_print 3 "dd ${type} test"
-    debug_print 4 "${cmd}"
 
     eval "${cmd}" || return 1
 
@@ -142,17 +150,29 @@ _test_list() {
 }
 
 stress_test() {
-    debug_print 3 "Test begin"
+    #TODO:
+    echo "stress test"
+    return 0
+}
+
+performance_test() {
+    #TODO:
+    echo "performance test"
+    return 0
+}
+
+run_test() {
+    debug_print 3 "${FUNCNAME[0]} ${*}"
     if "${IS_CYCLE_FOREVER}"; then
         while true; do
-            _test_list
+            eval "${TEST_MODE}_test"
         done
         return 0
     fi
 
     local _
     for _ in $(seq 1 "${CYCLE}"); do
-        _test_list
+        eval "${TEST_MODE}_test"
     done
 
     return 0
