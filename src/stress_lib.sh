@@ -60,6 +60,7 @@ _fio_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
+    local "${@}"
     local cmd
     local current_dir
 
@@ -84,6 +85,7 @@ _sysbench_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
+    local "${@}"
     local cmd
     local current_dir
 
@@ -110,6 +112,7 @@ _sysbench_test() {
 _dd_test() {
     local ddcount="${1}"
     local type="${2}"
+    local "${@}"
     local cmd
     local current_dir
 
@@ -156,5 +159,10 @@ stress_test() {
         _test_list
     done
 
+    return 0
+}
+
+performance_test() {
+    # TODO:
     return 0
 }
