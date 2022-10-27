@@ -86,6 +86,13 @@ show_error() {
     1)
         error_print "Invalid arguments. See ./$(basename "${0}") --help"
         ;;
+    2)
+        error_print "Test fail"
+        ;;
+    127)
+        # error exit, but no message
+        :
+        ;;
     *)
         error_print "undefine error"
         ;;

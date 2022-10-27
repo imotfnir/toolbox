@@ -12,7 +12,7 @@ RUN_COMMAND="./ssd_stress_tool.sh"
     run --separate-stderr -1 ${RUN_COMMAND} --mode a
     [ "${output}" = "" ]
     [ "${stderr}" = "Invalid arguments. See ./ssd_stress_tool.sh --help" ]
-    run --separate-stderr -1 ${RUN_COMMAND} --mode p
+    run --separate-stderr -127 ${RUN_COMMAND} --mode p
     [ "${output}" = "" ]
     [ "${stderr}" = "WARNING: Please specify at least one type of test" ]
 }
