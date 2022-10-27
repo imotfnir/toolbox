@@ -51,3 +51,17 @@ DEBUG=6
     [[ "${stderr}" == *"INFO: sysbench rndrw test"* ]]
     [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
 }
+
+@test "_dd_test" {
+    TEST_DIR="/tmp/stress_test"
+    OVERRIDE="true"
+    run --separate-stderr -0 _dd_test 262144 read
+    [[ "${output}" == *"dd read test"* ]]
+    [[ "${stderr}" == *"INFO: dd read test"* ]]
+    [[ "${stderr}" != *"ERROR:"* ]]
+    OVERRIDE="false"
+    run --separate-stderr -1 _dd_test 262144 write
+    [[ "${output}" == *"dd write test"* ]]
+    [[ "${stderr}" == *"INFO: dd write test"* ]]
+    [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
+}

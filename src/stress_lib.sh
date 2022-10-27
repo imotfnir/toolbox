@@ -113,9 +113,9 @@ _dd_test() {
     local cmd
     local current_dir
 
-    if [ -n "${OVERRIDE+_}" ]; then
-        cmd="${OVERRIDE}"
-    fi
+    current_dir="${PWD}"
+    trap '_test_exception $? ${current_dir}' RETURN
+
     case "${type}" in
     read)
         cmd="dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
@@ -124,13 +124,12 @@ _dd_test() {
         cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
         ;;
     esac
-    if [ -n "${OVERRIDE+_}" ]; then
-        cmd="${OVERRIDE}"
-    fi
-
     popup_message "dd ${type} test"
     debug_print 3 "dd ${type} test"
     debug_print 4 "${cmd}"
+    if [ -n "${OVERRIDE+_}" ]; then
+        cmd="${OVERRIDE}"
+    fi
 
     eval "${cmd}" || return 1
 
