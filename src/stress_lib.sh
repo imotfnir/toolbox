@@ -68,8 +68,8 @@ _fio_test() {
     trap '_test_exception $? ${current_dir}' RETURN
 
     cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
-    popup_message "fio ${type} test"
-    debug_print 3 "fio ${type} test"
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[0]} ${*}"
     debug_print 4 "${cmd}"
     if [ -n "${OVERRIDE+_}" ]; then
         cmd="${OVERRIDE}"
@@ -93,8 +93,8 @@ _sysbench_test() {
     trap '_test_exception $? ${current_dir}' RETURN
 
     cmd="sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
-    popup_message "sysbench ${type} test"
-    debug_print 3 "sysbench ${type} test"
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[0]} ${*}"
     debug_print 4 "${cmd}"
     if [ -n "${OVERRIDE+_}" ]; then
         cmd="${OVERRIDE}"
@@ -127,8 +127,8 @@ _dd_test() {
         cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
         ;;
     esac
-    popup_message "dd ${type} test"
-    debug_print 3 "dd ${type} test"
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[0]} ${*}"
     debug_print 4 "${cmd}"
     if [ -n "${OVERRIDE+_}" ]; then
         cmd="${OVERRIDE}"
