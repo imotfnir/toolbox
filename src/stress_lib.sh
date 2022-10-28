@@ -64,20 +64,19 @@ _fio_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
+    local cmd="${4}"
     local "${@}"
-    local cmd
     local current_dir
 
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
 
-    cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
+    if [ -z "${cmd+_}" ]; then
+        cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
+    fi
     popup_message "${FUNCNAME[0]} ${*}"
     debug_print 3 "${FUNCNAME[0]} ${*}"
     debug_print 4 "${cmd}"
-    if [ -n "${OVERRIDE+_}" ]; then
-        cmd="${OVERRIDE}"
-    fi
 
     eval "${cmd}" || return 1
 
@@ -89,20 +88,19 @@ _sysbench_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
+    local cmd="${4}"
     local "${@}"
-    local cmd
     local current_dir
 
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
 
-    cmd="sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
+    if [ -z "${cmd+_}" ]; then
+        cmd="sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
+    fi
     popup_message "${FUNCNAME[0]} ${*}"
     debug_print 3 "${FUNCNAME[0]} ${*}"
     debug_print 4 "${cmd}"
-    if [ -n "${OVERRIDE+_}" ]; then
-        cmd="${OVERRIDE}"
-    fi
 
     cd "${TEST_DIR}" || return 1
     eval "${cmd} prepare" || return 1
@@ -116,27 +114,26 @@ _sysbench_test() {
 _dd_test() {
     local ddcount="${1}"
     local type="${2}"
+    local cmd="${3}"
     local "${@}"
-    local cmd
     local current_dir
 
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
 
-    case "${type}" in
-    read)
-        cmd="dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
-        ;;
-    write)
-        cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
-        ;;
-    esac
+    if [ -z "${cmd+_}" ]; then
+        case "${type}" in
+        read)
+            cmd="dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
+            ;;
+        write)
+            cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
+            ;;
+        esac
+    fi
     popup_message "${FUNCNAME[0]} ${*}"
     debug_print 3 "${FUNCNAME[0]} ${*}"
     debug_print 4 "${cmd}"
-    if [ -n "${OVERRIDE+_}" ]; then
-        cmd="${OVERRIDE}"
-    fi
 
     eval "${cmd}" || return 1
 
