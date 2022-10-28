@@ -64,9 +64,9 @@ _fio_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
-    local cmd="${4}"
-    local "${@}"
+    local cmd
     local current_dir
+    local "${@}"
 
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
@@ -88,9 +88,9 @@ _sysbench_test() {
     local size="${1}"
     local thread="${2}"
     local type="${3}"
-    local cmd="${4}"
-    local "${@}"
+    local cmd
     local current_dir
+    local "${@}"
 
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
@@ -114,9 +114,9 @@ _sysbench_test() {
 _dd_test() {
     local ddcount="${1}"
     local type="${2}"
-    local cmd="${3}"
-    local "${@}"
+    local cmd
     local current_dir
+    local "${@}"
 
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
@@ -141,13 +141,61 @@ _dd_test() {
     return 0
 }
 
-_test_list() {
+_get_test_cmd() {
     #TODO:
+    return 0
+}
+##############################
+# Do a single stress test
+# GLOBALS:
+#    none
+# ARGUMENTS:
+#    tool: which tool you what to use, fio, sysbench or dd
+#    size: test file size
+#    thread: test thread
+#    type: read or write
+#    Message
+# OUTPUTS:
+#    none
+# RETURN:
+#    none
+##############################
+_single_test() {
+    local tool="${1}"
+    local size="${2}"
+    local thread="${3}"
+    local type="${4}"
+    local cmd
+    local current_dir
+
+    current_dir="${PWD}"
+
+    trap '_test_exception $? ${current_dir}' RETURN
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[0]} ${*}"
+    if [ -z "${cmd+_}" ]; then
+        cmd=$(_get_test_cmd)
+    fi
+    debug_print 4 "${cmd}"
+    eval "${cmd}" || return 1
+
+    trap - RETURN
     return 0
 }
 
 stress_test() {
-    #TODO:
+    local size_list="1G 10G 100G"
+    local tool_list="fio sysbench dd"
+
+    IFS=" " read -r -a size_list <<<"1G 10G 100G"
+    IFS=" " read -r -a tool_list <<<"fio sysbench dd"
+
+    for tool in "${tool_list[@]}"; do
+        for size in "${size_list[@]}"; do
+            _single_test "${tool}" "${size}" $(($(nproc) - 1)) "read"
+            _single_test "${tool}" "${size}" $(($(nproc) - 1)) "write"
+        done
+    done
     echo "stress test"
     return 0
 }
