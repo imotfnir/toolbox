@@ -61,73 +61,15 @@ _test_exception() {
 }
 
 _fio_test() {
-    local size="${1}"
-    local thread="${2}"
-    local type="${3}"
-    local cmd
-    local current_dir
-    local "${@}"
-
-    _single_test tool=fio "${@}" || return 1
-
-    return 0
+    _single_test tool=fio "${@}"
 }
 
 _sysbench_test() {
-    local size="${1}"
-    local thread="${2}"
-    local type="${3}"
-    local cmd
-    local current_dir
-    local "${@}"
-
-    current_dir="${PWD}"
-    trap '_test_exception $? ${current_dir}' RETURN
-
-    popup_message "${FUNCNAME[0]} ${*}"
-    debug_print 3 "${FUNCNAME[*]} ${*}"
-    if [ -z "${cmd+_}" ]; then
-        cmd="sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
-        debug_print 4 "${cmd}"
-        cd "${TEST_DIR}" || return 1
-    fi
-
-    eval "${cmd} prepare" || return 1
-    eval "${cmd} run" || return 1
-    eval "${cmd} cleanup" || return 1
-
-    trap - RETURN
-    return 0
+    _single_test tool=sysbench "${@}"
 }
 
 _dd_test() {
-    local ddcount="${1}"
-    local type="${2}"
-    local cmd
-    local current_dir
-    local "${@}"
-
-    current_dir="${PWD}"
-    trap '_test_exception $? ${current_dir}' RETURN
-
-    popup_message "${FUNCNAME[0]} ${*}"
-    debug_print 3 "${FUNCNAME[*]} ${*}"
-    if [ -z "${cmd+_}" ]; then
-        case "${type}" in
-        read)
-            cmd="dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
-            ;;
-        write)
-            cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
-            ;;
-        esac
-        debug_print 4 "${cmd}"
-    fi
-
-    eval "${cmd}" || return 1
-
-    trap - RETURN
-    return 0
+    _single_test tool=dd "${@}"
 }
 
 _get_test_cmd() {
@@ -148,10 +90,10 @@ _get_test_cmd() {
     dd)
         case "${type}" in
         read)
-            echo "dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
+            echo "dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${size} conv=fdatasync,notrunc"
             ;;
         write)
-            echo "dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
+            echo "dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${size}"
             ;;
         esac
         ;;
