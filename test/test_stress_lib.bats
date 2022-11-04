@@ -27,10 +27,10 @@ DEBUG=6
 @test "_fio_test" {
     TEST_DIR="/tmp/stress_test"
     run --separate-stderr -0 _fio_test size=10M thread=2 type=read cmd="true"
-    [[ "${output}" == *"_fio_test size=10M thread=2 type=read"* ]]
+    [[ "${output}" == *"fio size=10M thread=2 type=read"* ]]
     [[ "${stderr}" != *"ERROR:"* ]]
     run --separate-stderr -1 _fio_test size=10M thread=2 type=write cmd="false"
-    [[ "${output}" == *"_fio_test size=10M thread=2 type=write"* ]]
+    [[ "${output}" == *"fio size=10M thread=2 type=write"* ]]
     [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
 }
 

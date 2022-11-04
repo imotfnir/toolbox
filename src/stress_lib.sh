@@ -68,19 +68,8 @@ _fio_test() {
     local current_dir
     local "${@}"
 
-    current_dir="${PWD}"
-    trap '_test_exception $? ${current_dir}' RETURN
+    _single_test tool=fio "${@}" || return 1
 
-    popup_message "${FUNCNAME[0]} ${*}"
-    debug_print 3 "${FUNCNAME[*]} ${*}"
-    if [ -z "${cmd+_}" ]; then
-        cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
-        debug_print 4 "${cmd}"
-    fi
-
-    eval "${cmd}" || return 1
-
-    trap - RETURN
     return 0
 }
 
