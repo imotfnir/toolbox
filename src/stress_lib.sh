@@ -71,12 +71,12 @@ _fio_test() {
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
 
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[*]} ${*}"
     if [ -z "${cmd+_}" ]; then
         cmd="fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
+        debug_print 4 "${cmd}"
     fi
-    popup_message "${FUNCNAME[0]} ${*}"
-    debug_print 3 "${FUNCNAME[0]} ${*}"
-    debug_print 4 "${cmd}"
 
     eval "${cmd}" || return 1
 
@@ -95,14 +95,14 @@ _sysbench_test() {
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
 
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[*]} ${*}"
     if [ -z "${cmd+_}" ]; then
         cmd="sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type}"
+        debug_print 4 "${cmd}"
+        cd "${TEST_DIR}" || return 1
     fi
-    popup_message "${FUNCNAME[0]} ${*}"
-    debug_print 3 "${FUNCNAME[0]} ${*}"
-    debug_print 4 "${cmd}"
 
-    cd "${TEST_DIR}" || return 1
     eval "${cmd} prepare" || return 1
     eval "${cmd} run" || return 1
     eval "${cmd} cleanup" || return 1
@@ -121,6 +121,8 @@ _dd_test() {
     current_dir="${PWD}"
     trap '_test_exception $? ${current_dir}' RETURN
 
+    popup_message "${FUNCNAME[0]} ${*}"
+    debug_print 3 "${FUNCNAME[*]} ${*}"
     if [ -z "${cmd+_}" ]; then
         case "${type}" in
         read)
@@ -130,10 +132,8 @@ _dd_test() {
             cmd="dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
             ;;
         esac
+        debug_print 4 "${cmd}"
     fi
-    popup_message "${FUNCNAME[0]} ${*}"
-    debug_print 3 "${FUNCNAME[0]} ${*}"
-    debug_print 4 "${cmd}"
 
     eval "${cmd}" || return 1
 
@@ -142,7 +142,32 @@ _dd_test() {
 }
 
 _get_test_cmd() {
-    #TODO:
+    local tool="${1}"
+    local size="${2}"
+    local thread="${3}"
+    local type="${4}"
+
+    # TODO: check input size unit, check thread<=nproc
+
+    case "${tool}" in
+    fio)
+        echo "fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
+        ;;
+    sysbench)
+        echo "sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type} prepare && sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type} run && sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type} cleanup"
+        ;;
+    dd)
+        case "${type}" in
+        read)
+            echo "dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${ddcount} conv=fdatasync,notrunc"
+            ;;
+        write)
+            echo "dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${ddcount}"
+            ;;
+        esac
+        ;;
+    esac
+
     return 0
 }
 ##############################
@@ -167,16 +192,17 @@ _single_test() {
     local type="${4}"
     local cmd
     local current_dir
+    local "${@}"
 
     current_dir="${PWD}"
 
     trap '_test_exception $? ${current_dir}' RETURN
-    popup_message "${FUNCNAME[0]} ${*}"
-    debug_print 3 "${FUNCNAME[0]} ${*}"
+    popup_message "${*}"
+    debug_print 3 "${FUNCNAME[*]} ${*}"
     if [ -z "${cmd+_}" ]; then
-        cmd=$(_get_test_cmd)
+        cmd=$(_get_test_cmd "${tool}" "${size}" "${thread}" "${type}")
+        debug_print 4 "${cmd}"
     fi
-    debug_print 4 "${cmd}"
     eval "${cmd}" || return 1
 
     trap - RETURN
@@ -184,8 +210,8 @@ _single_test() {
 }
 
 stress_test() {
-    local size_list="1G 10G 100G"
-    local tool_list="fio sysbench dd"
+    local size_list
+    local tool_list
 
     IFS=" " read -r -a size_list <<<"1G 10G 100G"
     IFS=" " read -r -a tool_list <<<"fio sysbench dd"

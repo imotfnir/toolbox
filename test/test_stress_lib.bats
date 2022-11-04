@@ -28,11 +28,9 @@ DEBUG=6
     TEST_DIR="/tmp/stress_test"
     run --separate-stderr -0 _fio_test size=10M thread=2 type=read cmd="true"
     [[ "${output}" == *"_fio_test size=10M thread=2 type=read"* ]]
-    [[ "${stderr}" == *"INFO: _fio_test size=10M thread=2 type=read"* ]]
     [[ "${stderr}" != *"ERROR:"* ]]
     run --separate-stderr -1 _fio_test size=10M thread=2 type=write cmd="false"
     [[ "${output}" == *"_fio_test size=10M thread=2 type=write"* ]]
-    [[ "${stderr}" == *"INFO: _fio_test size=10M thread=2 type=write"* ]]
     [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
 }
 
@@ -40,11 +38,9 @@ DEBUG=6
     TEST_DIR="/tmp/stress_test"
     run --separate-stderr -0 _sysbench_test size=10M thread=2 type=seqrewr cmd="true"
     [[ "${output}" == *"_sysbench_test size=10M thread=2 type=seqrewr"* ]]
-    [[ "${stderr}" == *"INFO: _sysbench_test size=10M thread=2 type=seqrewr"* ]]
     [[ "${stderr}" != *"ERROR:"* ]]
     run --separate-stderr -1 _sysbench_test size=10M thread=2 type=rndrw cmd="false"
     [[ "${output}" == *"_sysbench_test size=10M thread=2 type=rndrw"* ]]
-    [[ "${stderr}" == *"INFO: _sysbench_test size=10M thread=2 type=rndrw"* ]]
     [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
 }
 
@@ -52,10 +48,22 @@ DEBUG=6
     TEST_DIR="/tmp/stress_test"
     run --separate-stderr -0 _dd_test ddcount=262144 type=read cmd="true"
     [[ "${output}" == *"_dd_test ddcount=262144 type=read"* ]]
-    [[ "${stderr}" == *"INFO: _dd_test ddcount=262144 type=read"* ]]
     [[ "${stderr}" != *"ERROR:"* ]]
     run --separate-stderr -1 _dd_test ddcount=262144 type=write cmd="false"
     [[ "${output}" == *"_dd_test ddcount=262144 type=write"* ]]
-    [[ "${stderr}" == *"INFO: _dd_test ddcount=262144 type=write"* ]]
+    [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
+}
+
+@test "_single_test" {
+    TEST_DIR="/tmp/stress_test"
+    run --separate-stderr -0 _single_test tool=fio size=1024M thread=8 type=read cmd="true"
+    [[ "${output}" == *"tool=fio size=1024M thread=8 type=read"* ]]
+    [[ "${stderr}" == *"tool=fio size=1024M thread=8 type=read"* ]]
+    run --separate-stderr -0 _single_test tool=dd size=1024M thread=$(nproc) type=write cmd="true"
+    [[ "${output}" == *"tool=dd size=1024M thread=16 type=write"* ]]
+    [[ "${stderr}" == *"tool=dd size=1024M thread=16 type=write"* ]]
+    run --separate-stderr -1 _single_test tool=dd size=1024M thread=$(nproc) type=write cmd="false"
+    [[ "${output}" == *"tool=dd size=1024M thread=16 type=write"* ]]
+    [[ "${stderr}" == *"tool=dd size=1024M thread=16 type=write"* ]]
     [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
 }
