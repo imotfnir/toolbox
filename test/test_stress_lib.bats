@@ -56,13 +56,14 @@ DEBUG=6
 
 @test "_single_test" {
     TEST_DIR="/tmp/stress_test"
+
     run --separate-stderr -0 _single_test tool=fio size=1024M thread=8 type=read cmd="true"
     [[ "${output}" == *"tool=fio size=1024M thread=8 type=read"* ]]
     [[ "${stderr}" == *"tool=fio size=1024M thread=8 type=read"* ]]
-    run --separate-stderr -0 _single_test tool=dd size=1024M thread=$(nproc) type=write cmd="true"
+    run --separate-stderr -0 _single_test tool=dd size=1024M thread=16 type=write cmd="true"
     [[ "${output}" == *"tool=dd size=1024M thread=16 type=write"* ]]
     [[ "${stderr}" == *"tool=dd size=1024M thread=16 type=write"* ]]
-    run --separate-stderr -1 _single_test tool=dd size=1024M thread=$(nproc) type=write cmd="false"
+    run --separate-stderr -1 _single_test tool=dd size=1024M thread=16 type=write cmd="false"
     [[ "${output}" == *"tool=dd size=1024M thread=16 type=write"* ]]
     [[ "${stderr}" == *"tool=dd size=1024M thread=16 type=write"* ]]
     [[ "${stderr}" == *"ERROR: Fail to run stress test"* ]]
