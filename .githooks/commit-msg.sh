@@ -6,10 +6,11 @@ INPUT_FILE="${1}"
 # Commit type define in this repo
 type_list="build chore ci docs feat fix perf refactor revert style test merge"
 
-is_commit_validated(){
+is_commit_validated() {
     local input_file=$*
-    local first_line=$(head -n 1 "${input_file}")
+    local first_line
     local item=""
+    first_line=$(head -n 1 "${input_file}")
     for item in ${type_list}; do
         if echo "${first_line}" | grep -o "^${item}" >/dev/null; then
             echo "Commit type is ${item}"
@@ -19,7 +20,7 @@ is_commit_validated(){
     return 1
 }
 
-if ! is_commit_validated ${INPUT_FILE}; then
+if ! is_commit_validated "${INPUT_FILE}"; then
     cat <<EOF
 Commit message type not found
 The commit message should be structured as follows

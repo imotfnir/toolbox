@@ -15,18 +15,18 @@ export TEST_DIR
 export TOOLS_DIR
 
 echo "Checking code style"
-if ! shfmt -d -i 4 $(find ${ROOT_DIR} -name "*.bats" -o -name "*.sh"); then
+if ! shfmt -d -i 4 $(find ${ROOT_DIR} -name "*.bats" -o -name "*.sh" -not -path "./.githooks/*"); then
     echo "Check code style fail, please format your code by shfmt with 4 space indent"
     exit 1
 fi
 
 echo "Runing unit test"
-for item in $(find ${TEST_DIR} -name "*.bats"); do
+for item in $(find ${TEST_DIR} -name "*.bats" -not -path "./.githooks/*"); do
     eval "bats -x --print-output-on-failure ${item}" || exit 1
 done
 
 echo "Runing shellcheck"
-if shellcheck --shell=bash $(find ${ROOT_DIR} -name "*.sh"); then
+if shellcheck --shell=bash $(find ${ROOT_DIR} -name "*.sh" -not -path "./.githooks/*"); then
     echo "Shellcheck pass"
 else
     echo >&2 "Shellcheck failed, please review your code again"
