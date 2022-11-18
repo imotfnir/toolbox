@@ -1,30 +1,32 @@
 ####################################################################
 # Tools
 ####################################################################
-CC = $(CROSS_COMPILE)gcc
-LD = $(CROSS_COMPILE)ld
-AR = $(CROSS_COMPILE)ar
-RANLIB = $(CROSS_COMPILE)ranlib
-STRIP = $(CROSS_COMPILE)strip
+CC := $(CROSS_COMPILE)gcc
+LD := $(CROSS_COMPILE)ld
+AR := $(CROSS_COMPILE)ar
+RANLIB := $(CROSS_COMPILE)ranlib
+STRIP := $(CROSS_COMPILE)strip
 
-CFLAGS += -g -O2
+CFLAGS += -g -O2 --save-temps
 
 ####################################################################
 # ALL
 ####################################################################
-TOOL_NAME="hmrfpo_enable"
+TOOL_NAME = hmrfpo_enable
 TOOL_OBJS = PCIIORW.o HeciCore.o lpc_hal.o hmrfpo_enable.o
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-all: hmrfpo_enable
+all: $(TOOL_NAME)
 
-hmrfpo_enable: $(TOOL_OBJS)
+rebuild: clean all
+
+${TOOL_NAME}: $(TOOL_OBJS)
 	$(CC) $(CFLAGS) -o $(TOOL_NAME) $(TOOL_OBJS)
 
 clean:
-	rm -fr *.o
+	rm -fr *.o *.i *.s
 	rm -fr ${TOOL_NAME}
 
 install: all

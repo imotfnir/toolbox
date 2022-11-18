@@ -2,3 +2,9 @@ localtest
 cscope.*
 tag*
 .tag*
+.trunk
+.vscode
+
+*.o
+*.s
+*.i
