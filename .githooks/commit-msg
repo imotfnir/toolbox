@@ -1,16 +1,59 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
 
 # This is .git/COMMIT_EDITMSG
 my @INPUT_FILE = @ARGV;
 
-# Commit type define in this repo
-my @type_list =
-  qw(build ci docs feat fix perf refactor style test revert merge);
-my @scope_list = qw(ssd pcie);
+# define commit type and scope
+my $type_list  = "build|ci|docs|feat|fix|perf|refactor|style|test|revert|merge";
+my $scope_list = "ssd|pcie|hmrfpo|githooks";
 
-open( my $fh, "<", @INPUT_FILE )
-  or die "can not open";
+sub var_print {
+    my ( $name, $value ) = @_;
+    if ( not defined($value) ) {
+        $value = "<EMPTY>";
+    }
+    printf "% -10s = %s\n", "$name", "$value";
+    return 0;
+}
 
-exit 1;
+open( my $fh, '<', @INPUT_FILE )
+  or die "can not open the file";
+
+# define tags
+my ( $platform, $label, $version, $space, $type, $scope, $colon, $message );
+
+my $first_line = <$fh>;
+if (
+    $first_line =~ /(?<type>$type_list)
+                    (?<scope>\($scope_list\))?
+                    (?<colon>:\s)
+                    (?<message>(\S+\s)+\S+\b$)
+                    /gmx
+  )
+{
+    var_print "type",    $+{type};
+    var_print "scope",   $+{scope};
+    var_print "colon",   $+{colon};
+    var_print "message", $+{message};
+}
+else {
+    print "Please use the correct format of the commit message:\n";
+    print "
+        <CommitType>(OptionalScope, ... ): <Message>\n
+        <OptionalBody>\n
+        <OptionalFooter(s)>\n
+";
+
+    print "Example:\n";
+    print "
+        build(githooks): Release v0.1.0\n
+        See merge request tool/toolbox!183\n
+";
+    exit(1);
+}
+
+close $fh;
+exit(0);
