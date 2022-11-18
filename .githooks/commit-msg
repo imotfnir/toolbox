@@ -7,8 +7,9 @@ use warnings;
 my @INPUT_FILE = @ARGV;
 
 # define commit type and scope
-my $type_list  = "build|ci|docs|feat|fix|perf|refactor|style|test|revert|merge";
-my $scope_list = "ssd|pcie|hmrfpo|githooks";
+my $type_list =
+  "(build|ci|docs|feat|fix|perf|refactor|style|test|revert|merge)";
+my $scope_list = "(ssd|pcie|hmrfpo|githooks)";
 
 sub var_print {
     my ( $name, $value ) = @_;
@@ -28,7 +29,7 @@ my ( $platform, $label, $version, $space, $type, $scope, $colon, $message );
 my $first_line = <$fh>;
 if (
     $first_line =~ /(?<type>$type_list)
-                    (?<scope>\($scope_list\))?
+                    \((?<scope>($scope_list,\s)*$scope_list)\)
                     (?<colon>:\s)
                     (?<message>(\S+\s)+\S+\b$)
                     /gmx
