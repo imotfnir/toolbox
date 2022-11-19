@@ -15,6 +15,7 @@
 #include "PCIIORW.h"
 #include "Sps.h"
 #include "SpsSmm.h"
+#include "debug_lib.h"
 #include "efilib.h"
 #include "hmrfpo_enable.h"
 #include "lpc_hal.h"
