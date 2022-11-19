@@ -19,10 +19,6 @@
 #include "hmrfpo_enable.h"
 #include "lpc_hal.h"
 
-//===========================================================================
-//                         Skylake-D
-//===========================================================================
-
 EFI_STATUS
 HeciReq_HmrfpoEnable(
     IN UINT64 Nonce) {
@@ -82,7 +78,7 @@ int main(void) {
     UINTN i;
     UINTN fd;
 
-    printf("hmrfpo_enable version : 1.6.1\n");
+    printf("hmrfpo_enable version : %s\n", VERSION);
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     // printf("/dev/mem opened.\n");
