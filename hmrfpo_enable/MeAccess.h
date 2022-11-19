@@ -29,7 +29,7 @@ Intel Corporation.
 #include "MeChipset.h"
 #include "MkhiMsgs.h"
 
-//#include "PCIIORW.h"
+//#include "PciRwLibrary.h"
 //
 ////
 //// HECI PCI Access Macro

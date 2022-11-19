@@ -22,13 +22,13 @@
 //#define PCIE_CFG_ADDRESS(bus, dev, func, reg)   ((UINTN)(0xe0000000 + ((bus) << 20) + ((dev) << 15) + ((func) << 12) + reg))
 //#define MmPciBase(ME_BUS, ME_DEVICE_NUMBER, HECI_FUNCTION_NUMBER)   PCIE_CFG_ADDRESS(ME_BUS, ME_DEVICE_NUMBER, HECI_FUNCTION_NUMBER, 0)
 
-UINT8  READ_PCI8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr);
-UINT16 READ_PCI16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr);
-UINT32 READ_PCI32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr);
+UINT8  PciRead8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr);
+UINT16 PciRead16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr);
+UINT32 PciRead32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr);
 
-UINT8  WRITE_PCI8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT8 writeval);
-UINT16 WRITE_PCI16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT16 writeval);
-UINT32 WRITE_PCI32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT32 writeval);
+UINT8  PciWrite8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT8 writeval);
+UINT16 PciWrite16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT16 writeval);
+UINT32 PciWrite32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT32 writeval);
 
 UINT8  MmioRead8(off_t target);
 UINT16 MmioRead16(off_t target);
@@ -42,8 +42,6 @@ UINT16 MmioAndThenOr16 (UINTN Address, UINT16 AndData, UINT16 OrData);
 UINT32 MmioAndThenOr32 (UINTN Address, UINT32 AndData, UINT32 OrData);
 UINT8  MmioOr8 (UINTN Address, UINT8 OrData);
 UINT16 MmioOr16 (UINTN Address, UINT16 OrData);
-//UINT64 RShiftU64 (UINT64 Operand, UINTN Count);
-//UINT64 InternalMathRShiftU64 (UINT64 Operand, UINTN Count);
 
 UINTN PCIE_CFG_ADDRESS (UINT8 bus, UINT8 dev, UINT8 func, UINT32 reg);
 UINTN MmPciBase (UINT8 bus, UINT8 dev, UINT8 fun);

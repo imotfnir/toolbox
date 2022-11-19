@@ -4,11 +4,12 @@
 DEBUG_LEVEL := 2
 MAJOR := 1
 MINOR := 6
-PATCH := 2
+PATCH := 3
 SEM_VER := v$(MAJOR).$(MINOR).$(PATCH)
 VERSION := \"$(SEM_VER)\"
-TOOL_NAME = hmrfpo_enable_$(SEM_VER)
-TOOL_OBJS = PCIIORW.o HeciCore.o lpc_hal.o debug_lib.o hmrfpo_enable.o
+TOOL_NAME = hmrfpo_enable
+OUTPUT_BIN = $(TOOL_NAME)_$(SEM_VER).bin
+TOOL_OBJS = PciRwLibrary.o HeciCore.o lpc_hal.o debug_lib.o $(TOOL_NAME).o
 ####################################################################
 # Tools and Flags
 ####################################################################
@@ -28,18 +29,15 @@ CFLAGS += -DVERSION=$(VERSION)
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-all: $(TOOL_NAME)
+all: $(OUTPUT_BIN)
 
 rebuild: clean all
 
-$(TOOL_NAME): $(TOOL_OBJS)
-	$(CC) $(CFLAGS) -o $(TOOL_NAME) $(TOOL_OBJS)
+$(OUTPUT_BIN): $(TOOL_OBJS)
+	$(CC) $(CFLAGS) -o $(OUTPUT_BIN) $(TOOL_OBJS)
 
 clean:
 	rm -fr *.o *.i *.s
-	rm -fr $(TOOL_NAME)
-
-install: all
-	install $(TOOL_NAME) ${OUTPUT_SBIN_DIR}
+	rm -fr $(TOOL_NAME)_v*
 
 .PHONY: clean

@@ -37,7 +37,7 @@ Intel Corporation.
 #include "MeAccess.h"
 #include "HeciCore.h"
 #include "MeState.h"
-#include "PCIIORW.h"
+#include "PciRwLibrary.h"
 
 #include "efilib.h"
 #include "Pci22.h"
@@ -82,7 +82,7 @@ IsSimicsPlatform(VOID)
 {
   UINT8        EmulationType;
 
-  EmulationType = READ_PCI8 ( 0, 0, 0, 0xFC);
+  EmulationType = PciRead8 ( 0, 0, 0, 0xFC);
 
   if (EmulationType == BIT2) {
     return TRUE;

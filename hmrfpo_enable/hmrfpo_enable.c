@@ -12,7 +12,7 @@
 
 #include "HeciCoreLib.h"
 #include "MeAccess.h"
-#include "PCIIORW.h"
+#include "PciRwLibrary.h"
 #include "Sps.h"
 #include "SpsSmm.h"
 #include "debug_lib.h"
@@ -81,6 +81,10 @@ int main(void) {
 
     printf("hmrfpo_enable version : %s\n", VERSION);
 
+    debug(2, "this is the debug message %d %s", 123, "haha");
+
+    return 0;
+
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     // printf("/dev/mem opened.\n");
     fflush(stdout);
@@ -88,28 +92,28 @@ int main(void) {
     InitVar();
 
     // Broadwell-DE
-    if(READ_PCI32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
+    if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
         printf("Chipset: Broadwell-DE\n");
-        RCBA = READ_PCI32(0x0, 0x1F, 0x0, 0xF0) & 0xFFFFC000;
+        RCBA = PciRead32(0x0, 0x1F, 0x0, 0xF0) & 0xFFFFC000;
         Data32 = MmioRead32(RCBA + 0x3428);
         MmioWrite32(RCBA + 0x3428, Data32 & 0xFFFFFFFD);
 
-        StratchBus = READ_PCI8(0x0, 0x5, 0x0, 0x109);
-        Nonce = ((UINT64)READ_PCI32(StratchBus, 0x10, 0x7, 0x54) << 32) | READ_PCI32(StratchBus, 0x10, 0x7, 0x50);
+        StratchBus = PciRead8(0x0, 0x5, 0x0, 0x109);
+        Nonce = ((UINT64)PciRead32(StratchBus, 0x10, 0x7, 0x54) << 32) | PciRead32(StratchBus, 0x10, 0x7, 0x50);
         HeciReq_HmrfpoEnable(Nonce);
     }
     // Skylake-D
-    else if(READ_PCI32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
+    else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
         printf("Chipset: Skylake-D\n");
         // Disable HECI MSI
-        WRITE_PCI8(0x0, 0x16, 0x0, 0x8E, READ_PCI8(0x0, 0x16, 0x0, 0x8E) & 0xFE);
+        PciWrite8(0x0, 0x16, 0x0, 0x8E, PciRead8(0x0, 0x16, 0x0, 0x8E) & 0xFE);
         // Get Nonce and send hmfpo_enable command
-        Nonce = ((UINT64)READ_PCI32(0x0, 0x8, 0x2, 0xB0) << 32) | READ_PCI32(0x0, 0x8, 0x2, 0xAC);
+        Nonce = ((UINT64)PciRead32(0x0, 0x8, 0x2, 0xB0) << 32) | PciRead32(0x0, 0x8, 0x2, 0xAC);
         // printf ("Nonce = 0x%08llx\n", Nonce);
         HeciReq_HmrfpoEnable(Nonce);
     }
     // Denverton
-    else if(READ_PCI32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
+    else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
         printf("Chipset: Denverton\n");
         Nonce = 0;
         lpc_halRegGet(0xE3FC, &Data32);
@@ -120,7 +124,7 @@ int main(void) {
         HeciReq_HmrfpoEnable(Nonce);
     }
     // Icelake-D
-    else if(READ_PCI32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
+    else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
         printf("Chipset: Icelake-D\n");
         Nonce = 0;
         lpc_halRegGet(0x6FC, &Data32);

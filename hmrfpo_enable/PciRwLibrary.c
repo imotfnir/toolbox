@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "PCIIORW.h"
+#include "PciRwLibrary.h"
 #include "efilib.h"
 
 #define MAP_SIZE 4096UL
@@ -11,7 +11,7 @@ UINT8 ME_Dev;
 UINT8 ME_Fun;
 UINT32 PCIBase;
 
-UINT8 READ_PCI8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
+UINT8 PciRead8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     UINT8 read_result; //, read_result_msb, read_result_lsb;
     void *map_base, *virt_addr;
     off_t target;
@@ -33,7 +33,7 @@ UINT8 READ_PCI8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     return read_result;
 }
 
-UINT16 READ_PCI16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
+UINT16 PciRead16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     UINT16 read_result; //, read_result_msb, read_result_lsb;
     void *map_base, *virt_addr;
     off_t target;
@@ -56,7 +56,7 @@ UINT16 READ_PCI16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     return read_result;
 }
 
-UINT32 READ_PCI32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
+UINT32 PciRead32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     UINT32 read_result; //, read_result_msb, read_result_lsb;
     void *map_base, *virt_addr;
     off_t target;
@@ -79,7 +79,7 @@ UINT32 READ_PCI32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     return read_result;
 }
 
-UINT8 WRITE_PCI8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT8 writeval) {
+UINT8 PciWrite8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT8 writeval) {
     void *map_base, *virt_addr;
     off_t target;
     UINTN fd;
@@ -101,7 +101,7 @@ UINT8 WRITE_PCI8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT8 writeval) {
     return 0;
 }
 
-UINT16 WRITE_PCI16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT16 writeval) {
+UINT16 PciWrite16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT16 writeval) {
     void *map_base, *virt_addr;
     off_t target;
     UINTN fd;
@@ -123,7 +123,7 @@ UINT16 WRITE_PCI16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT16 writeval
     return 0;
 }
 
-UINT32 WRITE_PCI32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT32 writeval) {
+UINT32 PciWrite32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT32 writeval) {
     void *map_base, *virt_addr;
     off_t target;
     UINTN fd;
@@ -325,21 +325,21 @@ VOID InitVar() {
     PCIBase = 0x80000000;
 
     // Broadwell-DE
-    if(READ_PCI32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
+    if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
         ME_Dev = 22;
     }
     // Skylake-D
-    else if(READ_PCI32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
+    else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
         ME_Dev = 22;
     }
     // Icelake-D
-    else if(READ_PCI32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
+    else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
         ME_Dev = 24;
     } else {
         // Try PCIe Base = 0xe0000000;
         PCIBase = 0xe0000000;
         // Denverton
-        if(READ_PCI32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
+        if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
             ME_Dev = 24;
         }
     }
