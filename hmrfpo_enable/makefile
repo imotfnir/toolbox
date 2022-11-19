@@ -4,9 +4,12 @@
 MAJOR := 1
 MINOR := 6
 PATCH := 1
-VERSION := \"v$(MAJOR).$(MINOR).$(PATCH)\"
+SEM_VER := v$(MAJOR).$(MINOR).$(PATCH)
+VERSION := \"$(SEM_VER)\"
+TOOL_NAME = hmrfpo_enable_$(SEM_VER)
+TOOL_OBJS = PCIIORW.o HeciCore.o lpc_hal.o hmrfpo_enable.o
 ####################################################################
-# Tools
+# Tools and Flags
 ####################################################################
 CC := $(CROSS_COMPILE)gcc
 LD := $(CROSS_COMPILE)ld
@@ -18,11 +21,8 @@ CFLAGS += -g -O2 --save-temps
 CFLAGS += -DVERSION=$(VERSION)
 
 ####################################################################
-# ALL
+# Build
 ####################################################################
-TOOL_NAME = hmrfpo_enable
-TOOL_OBJS = PCIIORW.o HeciCore.o lpc_hal.o hmrfpo_enable.o
-
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
