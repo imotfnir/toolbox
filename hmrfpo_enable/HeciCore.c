@@ -23,48 +23,38 @@ Intel Corporation.
 
 **/
 
-//#include <Library/BaseLib.h>
-//#include <Library/PrintLib.h>
-//#include <Library/DebugLib.h>
-//#include <Library/BaseMemoryLib.h>
-//#include <IndustryStandard/Pci.h>
-//#include <Library/IoLib.h>
-//#include <Library/TimerLib.h>
-//#include <Library/PlatformHooksLib.h>
-#include "MeChipset.h"
 #include "HeciCoreLib.h"
+#include "MeChipset.h"
 
-#include "MeAccess.h"
 #include "HeciCore.h"
+#include "MeAccess.h"
 #include "MeState.h"
 #include "PciRwLibrary.h"
 
-#include "efilib.h"
-#include "Pci22.h"
 #include "CoreBiosMsg.h"
+#include "Pci22.h"
+#include "efilib.h"
 
 #ifndef NON_BLOCKING
-#define NON_BLOCKING                  0
-#define BLOCKING                      1
+#define NON_BLOCKING 0
+#define BLOCKING 1
 #endif
 
-typedef enum _CLIENT_ID
-{
-  HECI_CLIENT = 0,
-  DCMI_CLIENT = 0x1,
+typedef enum _CLIENT_ID {
+    HECI_CLIENT = 0,
+    DCMI_CLIENT = 0x1,
 } CLIENT_ID;
 
-#define NUM_ME_CLIENTS  2
+#define NUM_ME_CLIENTS 2
 
 typedef struct {
-  UINT8   ClientId;
-  UINT8   HostAddress;
-  UINT32  MaxMessageLength;
-  BOOLEAN Connected;
+    UINT8 ClientId;
+    UINT8 HostAddress;
+    UINT32 MaxMessageLength;
+    BOOLEAN Connected;
 } ME_CLIENT_PROPERTIES;
 
-ME_CLIENT_PROPERTIES  MeClients[NUM_ME_CLIENTS];
-
+ME_CLIENT_PROPERTIES MeClients[NUM_ME_CLIENTS];
 
 /*
  * Read HECI MBAR, assign default if not assigned.
@@ -72,23 +62,21 @@ ME_CLIENT_PROPERTIES  MeClients[NUM_ME_CLIENTS];
  * return 64-bit MBAR is returned, or NULL if HECI is not enabled.
  */
 UINTN
-HeciMbarRead (VOID)
-{
-  return HeciMbarReadFull (TRUE);
+HeciMbarRead(VOID) {
+    return HeciMbarReadFull(TRUE);
 }
 
 BOOLEAN
-IsSimicsPlatform(VOID)
-{
-  UINT8        EmulationType;
+IsSimicsPlatform(VOID) {
+    UINT8 EmulationType;
 
-  EmulationType = PciRead8 ( 0, 0, 0, 0xFC);
+    EmulationType = PciRead8(0, 0, 0, 0xFC);
 
-  if (EmulationType == BIT2) {
-    return TRUE;
-  } else {
-    return FALSE;
-  }
+    if(EmulationType == BIT2) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }
 
 /*
@@ -97,57 +85,50 @@ IsSimicsPlatform(VOID)
  * return 64-bit MBAR is returned, or NULL if HECI is not enabled.
  */
 UINTN
-HeciMbarReadFull (
-  BOOLEAN CleanBarTypeBits
-  )
-  {
-  union
-  {
-    UINT64   QWord;
-    struct
-    {
-      UINT32 DWordL;
-      UINT32 DWordH;
-    } Bits;
-  } Mbar;
+HeciMbarReadFull(
+    BOOLEAN CleanBarTypeBits) {
+    union {
+        UINT64 QWord;
+        struct
+        {
+            UINT32 DWordL;
+            UINT32 DWordH;
+        } Bits;
+    } Mbar;
 
-  Mbar.QWord = 0;
-  Mbar.Bits.DWordL = HeciPciRead32(R_HECIMBAR);
-  if (Mbar.Bits.DWordL == 0xFFFFFFFF)
-  {
-    printf ("HECI is not enable\n");
-    //DEBUG((DEBUG_ERROR, "[HECI] ERROR: HECI-1 device disabled\n"));
-    Mbar.Bits.DWordL = 0;
-    goto GetOut;
-  }
-  if (CleanBarTypeBits == TRUE) {
-    Mbar.Bits.DWordL &= 0xFFFFFFF0; // clear address type bits
-  }
-  Mbar.Bits.DWordH = HeciPciRead32(R_HECIMBAR + 4);
-
-  if (IsSimicsPlatform() && Mbar.Bits.DWordH != 0)
-  {
-    printf ("[HECI] Detected 64-bit MBAR in HECI-1 under SIMICS, force 32-bit\n");
-    //DEBUG((DEBUG_WARN, "[HECI] Detected 64-bit MBAR in HECI-1 under SIMICS, force 32-bit\n"));
     Mbar.QWord = 0;
-  }
-  if ((Mbar.QWord & 0xFFFFFFFFFFFFFFF0) == 0)
-  {
-    Mbar.QWord = HECI1_PEI_DEFAULT_MBAR;
-    printf ("[HECI] WARNING: MBAR not programmed, using default 0x%08X%08X\n", Mbar.Bits.DWordH, Mbar.Bits.DWordL);
-    //DEBUG((DEBUG_WARN, "[HECI] WARNING: MBAR not programmed, using default 0x%08X%08X\n",
-    //       Mbar.Bits.DWordH, Mbar.Bits.DWordL));
-    HeciPciWrite32(R_HECIMBAR + 4, Mbar.Bits.DWordH);
-    HeciPciWrite32(R_HECIMBAR, Mbar.Bits.DWordL);
-  }
- GetOut:
-  return (UINTN)Mbar.QWord;
-//  printf ("(%d)Mbar.Bits.DWordL = %lx\n", __LINE__, Mbar.Bits.DWordL);
-//  printf ("(%d)Mbar.Bits.DWordH = %lx\n", __LINE__, Mbar.Bits.DWordH);
-//  printf ("(%d)Mbar.QWord = %llx\n", __LINE__, Mbar.QWord);
-//  return (((UINT64)Mbar.Bits.DWordH << 32) | Mbar.Bits.DWordL);
-}
+    Mbar.Bits.DWordL = HeciPciRead32(R_HECIMBAR);
+    if(Mbar.Bits.DWordL == 0xFFFFFFFF) {
+        printf("HECI is not enable\n");
+        // DEBUG((DEBUG_ERROR, "[HECI] ERROR: HECI-1 device disabled\n"));
+        Mbar.Bits.DWordL = 0;
+        goto GetOut;
+    }
+    if(CleanBarTypeBits == TRUE) {
+        Mbar.Bits.DWordL &= 0xFFFFFFF0; // clear address type bits
+    }
+    Mbar.Bits.DWordH = HeciPciRead32(R_HECIMBAR + 4);
 
+    if(IsSimicsPlatform() && Mbar.Bits.DWordH != 0) {
+        printf("[HECI] Detected 64-bit MBAR in HECI-1 under SIMICS, force 32-bit\n");
+        // DEBUG((DEBUG_WARN, "[HECI] Detected 64-bit MBAR in HECI-1 under SIMICS, force 32-bit\n"));
+        Mbar.QWord = 0;
+    }
+    if((Mbar.QWord & 0xFFFFFFFFFFFFFFF0) == 0) {
+        Mbar.QWord = HECI1_PEI_DEFAULT_MBAR;
+        printf("[HECI] WARNING: MBAR not programmed, using default 0x%08X%08X\n", Mbar.Bits.DWordH, Mbar.Bits.DWordL);
+        // DEBUG((DEBUG_WARN, "[HECI] WARNING: MBAR not programmed, using default 0x%08X%08X\n",
+        //        Mbar.Bits.DWordH, Mbar.Bits.DWordL));
+        HeciPciWrite32(R_HECIMBAR + 4, Mbar.Bits.DWordH);
+        HeciPciWrite32(R_HECIMBAR, Mbar.Bits.DWordL);
+    }
+GetOut:
+    return (UINTN)Mbar.QWord;
+    //  printf ("(%d)Mbar.Bits.DWordL = %lx\n", __LINE__, Mbar.Bits.DWordL);
+    //  printf ("(%d)Mbar.Bits.DWordH = %lx\n", __LINE__, Mbar.Bits.DWordH);
+    //  printf ("(%d)Mbar.QWord = %llx\n", __LINE__, Mbar.QWord);
+    //  return (((UINT64)Mbar.Bits.DWordH << 32) | Mbar.Bits.DWordL);
+}
 
 /**
   @brief
@@ -160,36 +141,31 @@ HeciMbarReadFull (
 
 **/
 UINTN
-CheckAndFixHeciForAccess (
-  IN HECI_DEVICE HeciDev
-  )
-{
-  UINTN HeciMBAR;
+CheckAndFixHeciForAccess(
+    IN HECI_DEVICE HeciDev) {
+    UINTN HeciMBAR;
 
-  //ASSERT(HeciDev == HECI1_DEVICE);
+    // ASSERT(HeciDev == HECI1_DEVICE);
 
-  //
-  // Read HECI_MBAR in case it has changed
-  // Check if Base register is 64 bits wide.
-  //
-  HeciMBAR = HeciMbarRead();
-
-  //
-  // Check if HECI_MBAR is disabled
-  //
-  if ((HeciPciRead8 (PCI_COMMAND_OFFSET) & (EFI_PCI_COMMAND_MEMORY_SPACE | EFI_PCI_COMMAND_BUS_MASTER)) !=
-        (EFI_PCI_COMMAND_MEMORY_SPACE | EFI_PCI_COMMAND_BUS_MASTER)
-        ) {
     //
-    // If cmd reg in pci cfg space is not turned on turn it on.
+    // Read HECI_MBAR in case it has changed
+    // Check if Base register is 64 bits wide.
     //
-    HeciPciOr8 (
-      PCI_COMMAND_OFFSET,
-      EFI_PCI_COMMAND_MEMORY_SPACE | EFI_PCI_COMMAND_BUS_MASTER
-      );
-  }
-//  printf ("(%d) return HeciMBAR = 0x%llx\n", __LINE__, HeciMBAR);
-  return HeciMBAR;
+    HeciMBAR = HeciMbarRead();
+
+    //
+    // Check if HECI_MBAR is disabled
+    //
+    if((HeciPciRead8(PCI_COMMAND_OFFSET) & (EFI_PCI_COMMAND_MEMORY_SPACE | EFI_PCI_COMMAND_BUS_MASTER)) != (EFI_PCI_COMMAND_MEMORY_SPACE | EFI_PCI_COMMAND_BUS_MASTER)) {
+        //
+        // If cmd reg in pci cfg space is not turned on turn it on.
+        //
+        HeciPciOr8(
+            PCI_COMMAND_OFFSET,
+            EFI_PCI_COMMAND_MEMORY_SPACE | EFI_PCI_COMMAND_BUS_MASTER);
+    }
+    //  printf ("(%d) return HeciMBAR = 0x%llx\n", __LINE__, HeciMBAR);
+    return HeciMBAR;
 }
 
 //
@@ -207,15 +183,13 @@ CheckAndFixHeciForAccess (
 
 **/
 UINT32
-MmIoReadDword (
-  UINTN a
-  )
-{
-  VOLATILE HECI_HOST_CONTROL_REGISTER *HeciRegHCsrPtr;
+MmIoReadDword(
+    UINTN a) {
+    VOLATILE HECI_HOST_CONTROL_REGISTER *HeciRegHCsrPtr;
 
-//  HeciRegHCsrPtr = (HECI_HOST_CONTROL_REGISTER *) a;
-//  return HeciRegHCsrPtr->ul;
-  return MmioRead32(a);
+    //  HeciRegHCsrPtr = (HECI_HOST_CONTROL_REGISTER *) a;
+    //  return HeciRegHCsrPtr->ul;
+    return MmioRead32(a);
 }
 
 /**
@@ -228,22 +202,19 @@ MmIoReadDword (
   @retval None
 
 **/
-VOID
-MmIoWriteDword (
-  UINTN  a,
-  UINT32 b
-  )
-{
-//  VOLATILE HECI_HOST_CONTROL_REGISTER *HeciRegHCsrPtr;
-//
-//  HeciRegHCsrPtr      = (HECI_HOST_CONTROL_REGISTER *) a;
-//
-//  HeciRegHCsrPtr->ul  = b;
-  MmioWrite32(a, b);
+VOID MmIoWriteDword(
+    UINTN a,
+    UINT32 b) {
+    //  VOLATILE HECI_HOST_CONTROL_REGISTER *HeciRegHCsrPtr;
+    //
+    //  HeciRegHCsrPtr      = (HECI_HOST_CONTROL_REGISTER *) a;
+    //
+    //  HeciRegHCsrPtr->ul  = b;
+    MmioWrite32(a, b);
 }
 
-#define MMIOREADDWORD(a)      MmIoReadDword (a)
-#define MMIOWRITEDWORD(a, b)  MmIoWriteDword (a, b)
+#define MMIOREADDWORD(a) MmIoReadDword(a)
+#define MMIOWRITEDWORD(a, b) MmIoWriteDword(a, b)
 
 //
 // //////////////////////////////////////////////////////////////////////////////////
@@ -251,17 +222,15 @@ MmIoWriteDword (
 ////////////////////////////////////////////////////////////////////////////////////
 //
 UINT8
-FilledSlots (
-  IN      UINT32                    ReadPointer,
-  IN      UINT32                    WritePointer
-  );
+FilledSlots(
+    IN UINT32 ReadPointer,
+    IN UINT32 WritePointer);
 
 EFI_STATUS
-OverflowCB (
-  IN      UINT32                    ReadPointer,
-  IN      UINT32                    WritePointer,
-  IN      UINT32                    BufferDepth
-  );
+OverflowCB(
+    IN UINT32 ReadPointer,
+    IN UINT32 WritePointer,
+    IN UINT32 BufferDepth);
 
 #define HECI_DUMP_ENABLE 0
 #if HECI_DUMP_ENABLE
@@ -276,26 +245,26 @@ OverflowCB (
                       based on the format string specified by Format.
 
 **/
-//VOID
-//EFIAPI
-//HeciCreateTrace (
-//  IN OUT CHAR8     *Buffer,
-//  IN  UINTN        Size,
-//  IN  CONST CHAR8  *Format,
-//  ...
-//  )
+// VOID
+// EFIAPI
+// HeciCreateTrace (
+//   IN OUT CHAR8     *Buffer,
+//   IN  UINTN        Size,
+//   IN  CONST CHAR8  *Format,
+//   ...
+//   )
 //{
-//  if (Buffer != NULL) {
-//    VA_LIST  Marker;
+//   if (Buffer != NULL) {
+//     VA_LIST  Marker;
 //
-//    //
-//    // Convert the message to an ASCII String
-//    //
-//    VA_START (Marker, Format);
-//    AsciiVSPrint (Buffer, Size, Format, Marker);
-//    VA_END (Marker);
-//  }
-//}
+//     //
+//     // Convert the message to an ASCII String
+//     //
+//     VA_START (Marker, Format);
+//     AsciiVSPrint (Buffer, Size, Format, Marker);
+//     VA_END (Marker);
+//   }
+// }
 #endif // HECI_DUMP_ENABLE
 
 /*****************************************************************************
@@ -309,75 +278,69 @@ OverflowCB (
  @param[in] MsgBodyLen The length of message body
 **/
 VOID HeciTrace(
-  CONST CHAR8  *pPrefix,
-  CONST UINT32 MsgHdr,
-  CONST UINT8  *pMsgBody,
-        UINT32 MsgBodyLen)
-{
-//#if !HECI_DUMP_ENABLE
-  if (MsgBodyLen > sizeof(UINT32))
-  {
-    printf (" %s%08X %08X ...\n", pPrefix, MsgHdr, *(UINT32*)pMsgBody);
-    //DEBUG((DEBUG_INFO, "[HECI] %a%08X %08X ...\n", pPrefix, MsgHdr, *(UINT32*)pMsgBody));
-  }
-  else if (MsgBodyLen > 0)
-  {
-    printf (" %s%08X %08X\n", pPrefix, MsgHdr, *(UINT32*)pMsgBody);
-    //DEBUG((DEBUG_INFO, "[HECI] %a%08X %08X\n", pPrefix, MsgHdr, *(UINT32*)pMsgBody));
-  }
-  else
-  {
-    printf (" %s%08X\n", pPrefix, MsgHdr);
-    //DEBUG((DEBUG_INFO, "[HECI] %a%08X\n", pPrefix, MsgHdr));
-  }
-//#else
-//#define ME_LINE_BREAK    16
-//#define ME_DEBUG_LINE    ME_LINE_BREAK*4
-//#define ME_DEBUG_CHAR    10
-//
-//  UINT32  LineBreak = 0;
-//  UINT32  Index = 0;
-//  CHAR8   Line[ME_DEBUG_LINE];
-//  CHAR8   NextValue[ME_DEBUG_CHAR];
-//
-//  DEBUG((EFI_D_ERROR, "[HECI] %a%08X\n", pPrefix, MsgHdr));
-//  *Line = 0;
-//  while (MsgBodyLen-- > 0)
-//  {
-//    if (LineBreak == 0)
-//    {
-//      HeciCreateTrace(Line, ME_DEBUG_CHAR, "%02x: ", (Index & 0xF0));
-//    }
-//    HeciCreateTrace(NextValue, ME_DEBUG_CHAR, "%02x ", pMsgBody[Index++]);
-//    AsciiStrCat(Line, NextValue);
-//    LineBreak++;
-//    if (LineBreak == ME_LINE_BREAK)
-//    {
-//      HeciCreateTrace(NextValue, ME_DEBUG_CHAR, "\n");
-//      AsciiStrCat(Line, NextValue);
-//      DEBUG((EFI_D_ERROR, Line));
-//      LineBreak = 0;
-//      *Line = 0;
-//    }
-//    if (LineBreak == ME_LINE_BREAK/2)
-//    {
-//      HeciCreateTrace(NextValue, ME_DEBUG_CHAR, "- ");
-//      AsciiStrCat(Line, NextValue);
-//    }
-//  }
-//  if (LineBreak != 0)
-//  {
-//      HeciCreateTrace(NextValue, ME_DEBUG_CHAR, "\n");
-//      AsciiStrCat(Line, NextValue);
-//      DEBUG((EFI_D_ERROR, Line));
-//  }
-//  DEBUG((EFI_D_ERROR, "\n"));
-//
-//#undef ME_LINE_BREAK
-//#undef ME_DEBUG_LINE
-//#undef ME_DEBUG_CHAR
-//
-//#endif
+    CONST CHAR8 *pPrefix,
+    CONST UINT32 MsgHdr,
+    CONST UINT8 *pMsgBody,
+    UINT32 MsgBodyLen) {
+    //#if !HECI_DUMP_ENABLE
+    if(MsgBodyLen > sizeof(UINT32)) {
+        printf(" %s%08X %08X ...\n", pPrefix, MsgHdr, *(UINT32 *)pMsgBody);
+        // DEBUG((DEBUG_INFO, "[HECI] %a%08X %08X ...\n", pPrefix, MsgHdr, *(UINT32*)pMsgBody));
+    } else if(MsgBodyLen > 0) {
+        printf(" %s%08X %08X\n", pPrefix, MsgHdr, *(UINT32 *)pMsgBody);
+        // DEBUG((DEBUG_INFO, "[HECI] %a%08X %08X\n", pPrefix, MsgHdr, *(UINT32*)pMsgBody));
+    } else {
+        printf(" %s%08X\n", pPrefix, MsgHdr);
+        // DEBUG((DEBUG_INFO, "[HECI] %a%08X\n", pPrefix, MsgHdr));
+    }
+    //#else
+    //#define ME_LINE_BREAK    16
+    //#define ME_DEBUG_LINE    ME_LINE_BREAK*4
+    //#define ME_DEBUG_CHAR    10
+    //
+    //  UINT32  LineBreak = 0;
+    //  UINT32  Index = 0;
+    //  CHAR8   Line[ME_DEBUG_LINE];
+    //  CHAR8   NextValue[ME_DEBUG_CHAR];
+    //
+    //  DEBUG((EFI_D_ERROR, "[HECI] %a%08X\n", pPrefix, MsgHdr));
+    //  *Line = 0;
+    //  while (MsgBodyLen-- > 0)
+    //  {
+    //    if (LineBreak == 0)
+    //    {
+    //      HeciCreateTrace(Line, ME_DEBUG_CHAR, "%02x: ", (Index & 0xF0));
+    //    }
+    //    HeciCreateTrace(NextValue, ME_DEBUG_CHAR, "%02x ", pMsgBody[Index++]);
+    //    AsciiStrCat(Line, NextValue);
+    //    LineBreak++;
+    //    if (LineBreak == ME_LINE_BREAK)
+    //    {
+    //      HeciCreateTrace(NextValue, ME_DEBUG_CHAR, "\n");
+    //      AsciiStrCat(Line, NextValue);
+    //      DEBUG((EFI_D_ERROR, Line));
+    //      LineBreak = 0;
+    //      *Line = 0;
+    //    }
+    //    if (LineBreak == ME_LINE_BREAK/2)
+    //    {
+    //      HeciCreateTrace(NextValue, ME_DEBUG_CHAR, "- ");
+    //      AsciiStrCat(Line, NextValue);
+    //    }
+    //  }
+    //  if (LineBreak != 0)
+    //  {
+    //      HeciCreateTrace(NextValue, ME_DEBUG_CHAR, "\n");
+    //      AsciiStrCat(Line, NextValue);
+    //      DEBUG((EFI_D_ERROR, Line));
+    //  }
+    //  DEBUG((EFI_D_ERROR, "\n"));
+    //
+    //#undef ME_LINE_BREAK
+    //#undef ME_DEBUG_LINE
+    //#undef ME_DEBUG_CHAR
+    //
+    //#endif
 }
 
 //
@@ -388,8 +351,7 @@ VOID HeciTrace(
 
 EFI_STATUS
 WaitForMEReady(
-  IN HECI_DEVICE HeciDev
-  )
+    IN HECI_DEVICE HeciDev)
 /**
 
     Waits for the ME to report that it is ready for communication over the HECI
@@ -401,45 +363,40 @@ WaitForMEReady(
 
 **/
 {
-  UINT32                    Timeout = (HECI_INIT_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
-  HECI_ME_CONTROL_REGISTER  HeciRegMeCsrHa;
-  UINTN                     HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
+    UINT32 Timeout = (HECI_INIT_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
+    HECI_ME_CONTROL_REGISTER HeciRegMeCsrHa;
+    UINTN HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
 
-  //ASSERT(HeciDev == HECI1_DEVICE);
+    // ASSERT(HeciDev == HECI1_DEVICE);
 
-  //
-  //  Wait for ME ready
-  //
-  while (1)
-  {
-    HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-    if (HeciRegMeCsrHa.r.ME_RDY_HRA)
-    {
-      return EFI_SUCCESS;
-    }
     //
-    // If ME requests HECI reset do the reset
+    //  Wait for ME ready
     //
-    if (HeciRegMeCsrHa.r.ME_RST_HRA)
-    {
-      EFI_STATUS Status;
+    while(1) {
+        HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+        if(HeciRegMeCsrHa.r.ME_RDY_HRA) {
+            return EFI_SUCCESS;
+        }
+        //
+        // If ME requests HECI reset do the reset
+        //
+        if(HeciRegMeCsrHa.r.ME_RST_HRA) {
+            EFI_STATUS Status;
 
-      Status = HeciResetInterface(HECI1_DEVICE);
-      if (EFI_ERROR(Status))
-      {
-        return Status;
-      }
-      return EFI_SUCCESS;
+            Status = HeciResetInterface(HECI1_DEVICE);
+            if(EFI_ERROR(Status)) {
+                return Status;
+            }
+            return EFI_SUCCESS;
+        }
+        if(Timeout-- == 0) {
+            printf("[HECI] ME interface not ready (CSR: %08X/%08X, MEFS1:%08X)\n", MMIOREADDWORD(HeciMBAR + H_CSR), HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE));
+            // DEBUG((DEBUG_WARN, "[HECI] ME interface not ready (CSR: %08X/%08X, MEFS1:%08X)\n",
+            //        MMIOREADDWORD (HeciMBAR + H_CSR), HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE)));
+            return EFI_TIMEOUT;
+        }
+        MicroSecondDelay(HECI_WAIT_DELAY);
     }
-    if (Timeout-- == 0)
-    {
-      printf ("[HECI] ME interface not ready (CSR: %08X/%08X, MEFS1:%08X)\n", MMIOREADDWORD (HeciMBAR + H_CSR), HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE));
-      //DEBUG((DEBUG_WARN, "[HECI] ME interface not ready (CSR: %08X/%08X, MEFS1:%08X)\n",
-      //       MMIOREADDWORD (HeciMBAR + H_CSR), HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE)));
-      return EFI_TIMEOUT;
-    }
-    MicroSecondDelay(HECI_WAIT_DELAY);
-  }
 }
 
 /**
@@ -453,146 +410,24 @@ WaitForMEReady(
 
 **/
 BOOLEAN
-CheckForHeciReset (
-  VOID
-  )
-{
-  HECI_HOST_CONTROL_REGISTER  HeciRegHCsr;
-  HECI_ME_CONTROL_REGISTER    HeciRegMeCsrHa;
-  UINTN                       HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
-//  printf ("(%d) CheckForHeciReset()\n", __LINE__);
-  //
-  // Init Host & ME CSR
-  //
-  HeciRegHCsr.ul    = MMIOREADDWORD (HeciMBAR + H_CSR);
-  HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
+CheckForHeciReset(
+    VOID) {
+    HECI_HOST_CONTROL_REGISTER HeciRegHCsr;
+    HECI_ME_CONTROL_REGISTER HeciRegMeCsrHa;
+    UINTN HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
+    //  printf ("(%d) CheckForHeciReset()\n", __LINE__);
+    //
+    // Init Host & ME CSR
+    //
+    HeciRegHCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
+    HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
 
-  if ((HeciRegMeCsrHa.r.ME_RDY_HRA == 0) || (HeciRegHCsr.r.H_RDY == 0)) {
-    return TRUE;
-  }
+    if((HeciRegMeCsrHa.r.ME_RDY_HRA == 0) || (HeciRegHCsr.r.H_RDY == 0)) {
+        return TRUE;
+    }
 
-  return FALSE;
+    return FALSE;
 }
-
-
-///**
-//  Determines if the HECI device is present and, if present, initializes it for
-//  use by the BIOS.
-//
-//  @param[in] HeciDev              The HECI device to be accessed.
-//
-//  @retval EFI_SUCCESS             The function completed successfully.
-//  @retval EFI_DEVICE_ERROR        No HECI device
-//  @retval EFI_TIMEOUT             HECI does not return the buffer before timeout
-//  @retval EFI_UNSUPPORTED         HECI MSG is unsupported
-//**/
-//EFI_STATUS
-//EFIAPI
-//HeciInitialize (
-//  IN HECI_DEVICE              HeciDev)
-//{
-//  HECI_HOST_CONTROL_REGISTER  HeciRegHCsr;
-//  UINTN                       HeciMBAR;
-//
-//  //ASSERT(HeciDev == HECI1_DEVICE);
-//  //
-//  // Check for HECI-1 PCI device availability
-//  //
-//  if (HeciPciRead16(PCI_VENDOR_ID_OFFSET) != 0x8086)
-//  {
-//    DEBUG((EFI_D_ERROR, "[HECI] ERROR: Device not present\n"));
-//    return EFI_DEVICE_ERROR;
-//  }
-//
-//  //
-//  // Make sure that HECI device BAR is correct and device is enabled.
-//  //
-//  HeciMBAR = CheckAndFixHeciForAccess (HECI1_DEVICE);
-//
-//  //
-//  // Set HECI-1 interrupt delivery mode to MSI interrupt
-//  //
-//  HeciPciWrite8(R_HIDM, HECI_INTERRUPUT_GENERATE_LEGACY_MSI);
-//  //
-//  // Set HECI-1 interrupt delivery mode to MSI interrupt
-//  //
-//  HeciPciWrite8(R_HIDM, HECI_INTERRUPUT_GENERATE_LEGACY_MSI);
-//  //
-//  // Set HECI-1 interrupt delivery mode lock
-//  //
-//  HeciPciWrite8 (R_HIDM, HeciPciRead8 (R_HIDM) | HECI_INTERRUPUT_LOCK);
-//
-//  //
-//  // Enable HECI BME and MSE
-//  //
-//  HeciPciWrite8(PCI_COMMAND_OFFSET, EFI_PCI_COMMAND_MEMORY_SPACE | EFI_PCI_COMMAND_BUS_MASTER);
-//
-//  //
-//  // Need to do following on ME init:
-//  //
-//  //  1) wait for ME_CSR_HA reg ME_RDY bit set
-//  //
-//  if (WaitForMEReady (HECI1_DEVICE) != EFI_SUCCESS) {
-//    return EFI_TIMEOUT;
-//  }
-//  //
-//  //  2) setup H_CSR reg as follows:
-//  //     a) Make sure H_RST is clear
-//  //     b) Set H_RDY
-//  //     c) Set H_IG
-//  //
-//  HeciRegHCsr.ul = MMIOREADDWORD (HeciMBAR + H_CSR);
-//  if (HeciRegHCsr.r.H_RDY == 0) {
-//    HeciRegHCsr.r.H_RST = 0;
-//    HeciRegHCsr.r.H_RDY = 1;
-//    HeciRegHCsr.r.H_IE  = 0;
-//    HeciRegHCsr.r.H_IS  = 1;
-//    HeciRegHCsr.r.H_IG  = 1;
-//    MMIOWRITEDWORD (HeciMBAR + H_CSR, HeciRegHCsr.ul);
-//  }
-//
-//  return EFI_SUCCESS;
-//}
-//
-//
-///**
-//  Heci Re-initializes it for Host
-//
-//  @param[in] HeciDev          The HECI device to be accessed.
-//
-//  @retval EFI_TIMEOUT         ME is not ready
-//  @retval EFI_STATUS          Status code returned by ResetHeciInterface
-//**/
-//EFI_STATUS
-//EFIAPI
-//HeciReInitialize(
-//  IN HECI_DEVICE              HeciDev)
-//{
-//  HECI_HOST_CONTROL_REGISTER  HeciRegHCsr;
-//  EFI_STATUS                  Status;
-//  UINTN                       HeciMBAR;
-//
-//  Status = EFI_SUCCESS;
-//  //
-//  // Need to do following on ME init:
-//  //
-//  //  1) wait for HOST_CSR_HA reg H_RDY bit set
-//  //
-//  //    if (WaitForHostReady() != EFI_SUCCESS) {
-//  //
-//  if (HeciMeResetWait(HeciDev, HECI_INIT_TIMEOUT) != EFI_SUCCESS) {
-//    return EFI_TIMEOUT;
-//  }
-//
-//  HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
-//  HeciRegHCsr.ul = MMIOREADDWORD (HeciMBAR + H_CSR);
-//  if (HeciRegHCsr.r.H_RDY == 0) {
-//    Status = HeciResetInterface(HeciDev);
-//  }
-//
-//  return Status;
-//}
-
 
 /**
 
@@ -610,214 +445,211 @@ CheckForHeciReset (
 
 **/
 EFI_STATUS
-HECIPacketRead (
-  IN      UINT32                    Blocking,
-  OUT     HECI_MESSAGE_HEADER       *MessageHeader,
-  OUT     UINT32                    *MessageData,
-  IN OUT  UINT32                    *Length
-  )
-{
-  BOOLEAN                     GotMessage;
-  UINT32                      Timeout;
-  UINT32                      Timeout1;
-  UINT32                      i;
-  UINT32                      LengthInDwords;
-  HECI_ME_CONTROL_REGISTER    HeciRegMeCsrHa;
-  HECI_HOST_CONTROL_REGISTER  HeciRegHCsr;
-  UINTN                       HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
+HECIPacketRead(
+    IN UINT32 Blocking,
+    OUT HECI_MESSAGE_HEADER *MessageHeader,
+    OUT UINT32 *MessageData,
+    IN OUT UINT32 *Length) {
+    BOOLEAN GotMessage;
+    UINT32 Timeout;
+    UINT32 Timeout1;
+    UINT32 i;
+    UINT32 LengthInDwords;
+    HECI_ME_CONTROL_REGISTER HeciRegMeCsrHa;
+    HECI_HOST_CONTROL_REGISTER HeciRegHCsr;
+    UINTN HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
 
-  GotMessage = FALSE;
-  //
-  // Initialize memory mapped register pointers
-  //
-  //  VOLATILE HECI_HOST_CONTROL_REGISTER *HeciRegHCsrPtr     = (VOID*)(HeciMBAR + H_CSR);
-  //  VOLATILE HECI_ME_CONTROL_REGISTER   *HeciRegMeCsrHaPtr  = (VOID*)(HeciMBAR + ME_CSR_HA);
-  //  VOLATILE UINT32                     *HeciRegMeCbrwPtr   = (VOID*)(HeciMBAR + ME_CB_RW);
-  //
-  // clear Interrupt Status bit
-  //
-  HeciRegHCsr.ul      = MMIOREADDWORD (HeciMBAR + H_CSR);
-  HeciRegHCsr.r.H_IS  = 1;
-//  printf ("(%d) HeciRegHCsr.ul = %x\n", __LINE__, HeciRegHCsr.ul);
-//  printf ("(%d) HeciRegHCsr.r.H_IS = %x\n", __LINE__, HeciRegHCsr.r.H_IS);
-  //
-  // test for circular buffer overflow
-  //
-  HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-//  printf ("(%d) HeciRegMeCsrHa.ul = %x\n", __LINE__, HeciRegMeCsrHa.ul);
-  if (OverflowCB (
-        HeciRegMeCsrHa.r.ME_CBRP_HRA,
-        HeciRegMeCsrHa.r.ME_CBWP_HRA,
-        HeciRegMeCsrHa.r.ME_CBD_HRA
-        ) != EFI_SUCCESS) {
+    GotMessage = FALSE;
     //
-    // if we get here, the circular buffer is overflowed
+    // Initialize memory mapped register pointers
     //
-    *Length = 0;
-//    printf ("(%d) Overflowed, return EFI_DEVICE_ERROR\n", __LINE__);
-    return EFI_DEVICE_ERROR;
-  }
-  //
-  // If NON_BLOCKING, exit if the circular buffer is empty
-  //
-  HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);;
-//  printf ("(%d) HeciRegMeCsrHa.ul = %x\n", __LINE__, HeciRegMeCsrHa.ul);
-  if ((FilledSlots (HeciRegMeCsrHa.r.ME_CBRP_HRA, HeciRegMeCsrHa.r.ME_CBWP_HRA) == 0) && (Blocking == NON_BLOCKING)) {
-    *Length = 0;
-//    printf ("(%d) return EFI_NO_RESPONSE\n", __LINE__);
-    return EFI_NO_RESPONSE;
-  }
-  //
-  // Calculate timeout counter
-  //
-  Timeout = (HECI_SINGLE_READ_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
-
-  //
-  // loop until we get a message packet
-  //
-  while (!GotMessage) {
+    //  VOLATILE HECI_HOST_CONTROL_REGISTER *HeciRegHCsrPtr     = (VOID*)(HeciMBAR + H_CSR);
+    //  VOLATILE HECI_ME_CONTROL_REGISTER   *HeciRegMeCsrHaPtr  = (VOID*)(HeciMBAR + ME_CSR_HA);
+    //  VOLATILE UINT32                     *HeciRegMeCbrwPtr   = (VOID*)(HeciMBAR + ME_CB_RW);
     //
-    // If 1 second timeout has expired, return fail as we have not yet received a full message.
+    // clear Interrupt Status bit
     //
-    if (Timeout-- == 0) {
-      *Length = 0;
-//      printf ("(%d) return EFI_TIMEOUT\n", __LINE__);
-      return EFI_TIMEOUT;
-    }
+    HeciRegHCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
+    HeciRegHCsr.r.H_IS = 1;
+    //  printf ("(%d) HeciRegHCsr.ul = %x\n", __LINE__, HeciRegHCsr.ul);
+    //  printf ("(%d) HeciRegHCsr.r.H_IS = %x\n", __LINE__, HeciRegHCsr.r.H_IS);
     //
-    // Read one message from HECI buffer and advance read pointer.  Make sure
-    // that we do not pass the write pointer.
+    // test for circular buffer overflow
     //
-    HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);;
-//    printf ("(%d) ME_CBRP_HRA = %x, ME_CBWP_HRA = %x\n", __LINE__, HeciRegMeCsrHa.r.ME_CBRP_HRA, HeciRegMeCsrHa.r.ME_CBWP_HRA);
-    if (FilledSlots (HeciRegMeCsrHa.r.ME_CBRP_HRA, HeciRegMeCsrHa.r.ME_CBWP_HRA) > 0) {
-      //
-      // Eat the HECI Message header
-      //
-      MessageHeader->Data = MMIOREADDWORD (HeciMBAR + ME_CB_RW);
-//      printf ("(%d) MessageHeader->Data = %x\n", __LINE__, MessageHeader->Data);
-
-      //
-      // Compute required message length in DWORDS
-      //
-      LengthInDwords = ((MessageHeader->Fields.Length + 3) / 4);
-
-      //
-      // Just return success if Length is 0
-      //
-//      printf ("(%d) MessageHeader->Fields.Length = %x\n", __LINE__, MessageHeader->Fields.Length);
-      if (MessageHeader->Fields.Length == 0) {
+    HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+    //  printf ("(%d) HeciRegMeCsrHa.ul = %x\n", __LINE__, HeciRegMeCsrHa.ul);
+    if(OverflowCB(
+           HeciRegMeCsrHa.r.ME_CBRP_HRA,
+           HeciRegMeCsrHa.r.ME_CBWP_HRA,
+           HeciRegMeCsrHa.r.ME_CBD_HRA)
+       != EFI_SUCCESS) {
         //
-        // Set Interrupt Generate bit and return
+        // if we get here, the circular buffer is overflowed
         //
-        MMIOREADDWORD (HeciMBAR + H_CSR);
-        HeciRegHCsr.r.H_IG = 1;
-        MMIOWRITEDWORD (HeciMBAR + H_CSR, HeciRegHCsr.ul);
         *Length = 0;
-//        printf ("(%d) GotMessage\n", __LINE__);
-        goto GotMessage;
-      }
-      //
-      // Make sure that the message does not overflow the circular buffer.
-      //
-      HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-//      printf ("(%d) HeciRegMeCsrHa.ul = %x\n", __LINE__, HeciRegMeCsrHa.ul);
-      if ((MessageHeader->Fields.Length + sizeof (HECI_MESSAGE_HEADER)) > (HeciRegMeCsrHa.r.ME_CBD_HRA * 4)) {
-        *Length = 0;
-//        printf ("(%d) return EFI_DEVICE_ERROR\n", __LINE__);
+        //    printf ("(%d) Overflowed, return EFI_DEVICE_ERROR\n", __LINE__);
         return EFI_DEVICE_ERROR;
-      }
-      //
-      // Make sure that the callers buffer can hold the correct number of DWORDS
-      //
-      if ((MessageHeader->Fields.Length) <= *Length) {
-        //
-        // Calculate timeout counter for inner loop
-        //
-        Timeout1 = (HECI_SINGLE_READ_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
-
-        //
-        // Wait here until entire message is present in circular buffer
-        //
-        HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-        while (LengthInDwords > FilledSlots (HeciRegMeCsrHa.r.ME_CBRP_HRA, HeciRegMeCsrHa.r.ME_CBWP_HRA)) {
-          //
-          // If 1 second timeout has expired, return fail as we have not yet received a full message
-          //
-          if (Timeout1-- == 0) {
-            *Length = 0;
-//            printf ("(%d) return EFI_TIMEOUT\n", __LINE__);
-            return EFI_TIMEOUT;
-          }
-          //
-          // Wait before we read the register again
-          //
-          MicroSecondDelay(HECI_WAIT_DELAY);
-
-          //
-          // Read the register again
-          //
-          HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-        }
-        //
-        // copy rest of message
-        //
-        for (i = 0; i < LengthInDwords; i++) {
-          MessageData[i] = MMIOREADDWORD (HeciMBAR + ME_CB_RW);
-        }
-        //
-        // Update status and length
-        //
-        GotMessage  = TRUE;
-        *Length     = MessageHeader->Fields.Length;
-
-      } else {
-        //
-        // Message packet is larger than caller's buffer
-        //
+    }
+    //
+    // If NON_BLOCKING, exit if the circular buffer is empty
+    //
+    HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+    ;
+    //  printf ("(%d) HeciRegMeCsrHa.ul = %x\n", __LINE__, HeciRegMeCsrHa.ul);
+    if((FilledSlots(HeciRegMeCsrHa.r.ME_CBRP_HRA, HeciRegMeCsrHa.r.ME_CBWP_HRA) == 0) && (Blocking == NON_BLOCKING)) {
         *Length = 0;
-//        printf ("(%d) return EFI_BUFFER_TOO_SMALL\n", __LINE__);
-        return EFI_BUFFER_TOO_SMALL;
-      }
+        //    printf ("(%d) return EFI_NO_RESPONSE\n", __LINE__);
+        return EFI_NO_RESPONSE;
     }
     //
-    // Wait before we try to get a message again
+    // Calculate timeout counter
     //
-    MicroSecondDelay(HECI_WAIT_DELAY);
-  }
-  //
-  // Read ME_CSR_HA.  If the ME_RDY bit is 0, then an ME reset occurred during the
-  // transaction and the message should be discarded as bad data may have been retrieved
-  // from the host's circular buffer
-  //
-  HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-  if (!HeciRegMeCsrHa.r.ME_RDY_HRA)
-  {
-    *Length = 0;
+    Timeout = (HECI_SINGLE_READ_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
+
     //
-    // Check if ME requested reset during the transaction
+    // loop until we get a message packet
     //
-    if (HeciRegMeCsrHa.r.ME_RST_HRA)
-    {
-      HeciResetInterface(HECI1_DEVICE);
+    while(!GotMessage) {
+        //
+        // If 1 second timeout has expired, return fail as we have not yet received a full message.
+        //
+        if(Timeout-- == 0) {
+            *Length = 0;
+            //      printf ("(%d) return EFI_TIMEOUT\n", __LINE__);
+            return EFI_TIMEOUT;
+        }
+        //
+        // Read one message from HECI buffer and advance read pointer.  Make sure
+        // that we do not pass the write pointer.
+        //
+        HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+        ;
+        //    printf ("(%d) ME_CBRP_HRA = %x, ME_CBWP_HRA = %x\n", __LINE__, HeciRegMeCsrHa.r.ME_CBRP_HRA, HeciRegMeCsrHa.r.ME_CBWP_HRA);
+        if(FilledSlots(HeciRegMeCsrHa.r.ME_CBRP_HRA, HeciRegMeCsrHa.r.ME_CBWP_HRA) > 0) {
+            //
+            // Eat the HECI Message header
+            //
+            MessageHeader->Data = MMIOREADDWORD(HeciMBAR + ME_CB_RW);
+            //      printf ("(%d) MessageHeader->Data = %x\n", __LINE__, MessageHeader->Data);
+
+            //
+            // Compute required message length in DWORDS
+            //
+            LengthInDwords = ((MessageHeader->Fields.Length + 3) / 4);
+
+            //
+            // Just return success if Length is 0
+            //
+            //      printf ("(%d) MessageHeader->Fields.Length = %x\n", __LINE__, MessageHeader->Fields.Length);
+            if(MessageHeader->Fields.Length == 0) {
+                //
+                // Set Interrupt Generate bit and return
+                //
+                MMIOREADDWORD(HeciMBAR + H_CSR);
+                HeciRegHCsr.r.H_IG = 1;
+                MMIOWRITEDWORD(HeciMBAR + H_CSR, HeciRegHCsr.ul);
+                *Length = 0;
+                //        printf ("(%d) GotMessage\n", __LINE__);
+                goto GotMessage;
+            }
+            //
+            // Make sure that the message does not overflow the circular buffer.
+            //
+            HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+            //      printf ("(%d) HeciRegMeCsrHa.ul = %x\n", __LINE__, HeciRegMeCsrHa.ul);
+            if((MessageHeader->Fields.Length + sizeof(HECI_MESSAGE_HEADER)) > (HeciRegMeCsrHa.r.ME_CBD_HRA * 4)) {
+                *Length = 0;
+                //        printf ("(%d) return EFI_DEVICE_ERROR\n", __LINE__);
+                return EFI_DEVICE_ERROR;
+            }
+            //
+            // Make sure that the callers buffer can hold the correct number of DWORDS
+            //
+            if((MessageHeader->Fields.Length) <= *Length) {
+                //
+                // Calculate timeout counter for inner loop
+                //
+                Timeout1 = (HECI_SINGLE_READ_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
+
+                //
+                // Wait here until entire message is present in circular buffer
+                //
+                HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+                while(LengthInDwords > FilledSlots(HeciRegMeCsrHa.r.ME_CBRP_HRA, HeciRegMeCsrHa.r.ME_CBWP_HRA)) {
+                    //
+                    // If 1 second timeout has expired, return fail as we have not yet received a full message
+                    //
+                    if(Timeout1-- == 0) {
+                        *Length = 0;
+                        //            printf ("(%d) return EFI_TIMEOUT\n", __LINE__);
+                        return EFI_TIMEOUT;
+                    }
+                    //
+                    // Wait before we read the register again
+                    //
+                    MicroSecondDelay(HECI_WAIT_DELAY);
+
+                    //
+                    // Read the register again
+                    //
+                    HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+                }
+                //
+                // copy rest of message
+                //
+                for(i = 0; i < LengthInDwords; i++) {
+                    MessageData[i] = MMIOREADDWORD(HeciMBAR + ME_CB_RW);
+                }
+                //
+                // Update status and length
+                //
+                GotMessage = TRUE;
+                *Length = MessageHeader->Fields.Length;
+
+            } else {
+                //
+                // Message packet is larger than caller's buffer
+                //
+                *Length = 0;
+                //        printf ("(%d) return EFI_BUFFER_TOO_SMALL\n", __LINE__);
+                return EFI_BUFFER_TOO_SMALL;
+            }
+        }
+        //
+        // Wait before we try to get a message again
+        //
+        MicroSecondDelay(HECI_WAIT_DELAY);
     }
-//    printf ("(%d) return EFI_DEVICE_ERROR\n", __LINE__);
-    return EFI_DEVICE_ERROR;
-  }
-  //
-  // Set Interrupt Generate bit
-  //
-  HeciRegHCsr.ul      = MMIOREADDWORD (HeciMBAR + H_CSR);
-  HeciRegHCsr.r.H_IG  = 1;
-  MMIOWRITEDWORD (HeciMBAR + H_CSR, HeciRegHCsr.ul);
+    //
+    // Read ME_CSR_HA.  If the ME_RDY bit is 0, then an ME reset occurred during the
+    // transaction and the message should be discarded as bad data may have been retrieved
+    // from the host's circular buffer
+    //
+    HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+    if(!HeciRegMeCsrHa.r.ME_RDY_HRA) {
+        *Length = 0;
+        //
+        // Check if ME requested reset during the transaction
+        //
+        if(HeciRegMeCsrHa.r.ME_RST_HRA) {
+            HeciResetInterface(HECI1_DEVICE);
+        }
+        //    printf ("(%d) return EFI_DEVICE_ERROR\n", __LINE__);
+        return EFI_DEVICE_ERROR;
+    }
+    //
+    // Set Interrupt Generate bit
+    //
+    HeciRegHCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
+    HeciRegHCsr.r.H_IG = 1;
+    MMIOWRITEDWORD(HeciMBAR + H_CSR, HeciRegHCsr.ul);
 
- GotMessage:
-  HeciTrace("Receive = ", MessageHeader->Data, (UINT8*)MessageData, *Length);
+GotMessage:
+    HeciTrace("Receive = ", MessageHeader->Data, (UINT8 *)MessageData, *Length);
 
-//  printf ("(%d) return EFI_SUCCESS\n", __LINE__);
-  return EFI_SUCCESS;
+    //  printf ("(%d) return EFI_SUCCESS\n", __LINE__);
+    return EFI_SUCCESS;
 }
-
 
 /**
   Reads a message from the ME across HECI. This function can only be used after invoking HeciSend() first.
@@ -836,149 +668,142 @@ HECIPacketRead (
 **/
 EFI_STATUS
 EFIAPI
-HeciReceive (
-  IN      HECI_DEVICE  HeciDev,
-  IN      UINT32       Blocking,
-  IN OUT  UINT32      *MessageBody,
-  IN OUT  UINT32      *Length
-  )
-{
-  HECI_MESSAGE_HEADER       PacketHeader = {0};
-  UINT32                    CurrentLength;
-  UINT32                    OriginalLength;
-  UINT32                    MessageComplete;
-  EFI_STATUS                ReadError;
-  EFI_STATUS                Status;
-  UINT32                    PacketBuffer;
-  BOOLEAN                   QuitFlag;
-  HECI_ME_CONTROL_REGISTER  HeciRegMeCsrHa;
-  UINTN                     HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
+HeciReceive(
+    IN HECI_DEVICE HeciDev,
+    IN UINT32 Blocking,
+    IN OUT UINT32 *MessageBody,
+    IN OUT UINT32 *Length) {
+    HECI_MESSAGE_HEADER PacketHeader = { 0 };
+    UINT32 CurrentLength;
+    UINT32 OriginalLength;
+    UINT32 MessageComplete;
+    EFI_STATUS ReadError;
+    EFI_STATUS Status;
+    UINT32 PacketBuffer;
+    BOOLEAN QuitFlag;
+    HECI_ME_CONTROL_REGISTER HeciRegMeCsrHa;
+    UINTN HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
 #ifdef SPS_CMOS_WRITE
-  UINT8                     CMOS_HaveFC;
+    UINT8 CMOS_HaveFC;
 #endif
 
-  //ASSERT(HeciDev == HECI1_DEVICE);
-//  printf ("(%d) ====== HeciReceive ======\n", __LINE__);
-  CurrentLength     = 0;
-  MessageComplete   = 0;
-  Status            = EFI_SUCCESS;
-  QuitFlag          = FALSE;
-  OriginalLength    = *Length;
+    // ASSERT(HeciDev == HECI1_DEVICE);
+    //  printf ("(%d) ====== HeciReceive ======\n", __LINE__);
+    CurrentLength = 0;
+    MessageComplete = 0;
+    Status = EFI_SUCCESS;
+    QuitFlag = FALSE;
+    OriginalLength = *Length;
 
-  HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
+    HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
 
-  do {
-    //
-    // Make sure that HECI device BAR is correct and device is enabled.
-    //
-    HeciMBAR = CheckAndFixHeciForAccess (HECI1_DEVICE);
-
-    //
-    // Make sure we do not have a HECI reset
-    //
-    if (CheckForHeciReset ()) {
-      //
-      // if HECI reset than try to re-init HECI
-      //
-      Status = HeciResetInterface(HeciDev);
-//      printf ("(%d) HeciResetInterface Status = %llx\n", __LINE__, Status);
-      if (EFI_ERROR (Status)) {
-        Status = EFI_DEVICE_ERROR;
-//        printf ("(%d) Status = %llx\n", __LINE__, Status);
-        break;
-      }
-    }
-    //
-    // Make sure that HECI is ready for communication.
-    //
-    if (WaitForMEReady (HECI1_DEVICE) != EFI_SUCCESS) {
-      Status = EFI_TIMEOUT;
-//      printf ("(%d) Status = %llx\n", __LINE__, Status);
-      break;
-    }
-//    printf ("(%d) HECI is ready for communication\n", __LINE__);
-//    printf ("(%d) CurrentLength = %x, *Length = %x\n", __LINE__, CurrentLength, *Length);
-    while ((CurrentLength < *Length) && (MessageComplete == 0))
-    {
-      PacketBuffer = *Length - CurrentLength;
-      ReadError = HECIPacketRead (
-                    Blocking,
-                    &PacketHeader,
-                    (UINT32 *) &MessageBody[CurrentLength / 4],
-                    &PacketBuffer
-                    );
-//      printf ("(%d) ReadError = %llx\n", __LINE__, ReadError);
-      //
-      // Check for error condition on read
-      //
-      if (EFI_ERROR (ReadError)) {
-        *Length   = 0;
-        Status    = ReadError;
-//        printf ("(%d) Status = %llx\n", __LINE__, Status);
-        QuitFlag  = TRUE;
-        break;
-      }
-      //
-      // Get completion status from the packet header
-      //
-      MessageComplete = PacketHeader.Fields.MessageComplete;
-//      printf ("(%d) MessageComplete = %x\n", __LINE__, MessageComplete);
-      //
-      // Check for zero length messages
-      //
-      if (PacketBuffer == 0) {
+    do {
         //
-        // If we are not in the middle of a message, and we see Message Complete,
-        // this is a valid zero-length message.
+        // Make sure that HECI device BAR is correct and device is enabled.
         //
-        if ((CurrentLength == 0) && (MessageComplete == 1)) {
-          *Length   = 0;
-          Status    = EFI_SUCCESS;
-          QuitFlag  = TRUE;
-          break;
-        } else {
-          //
-          // We should not expect a zero-length message packet except as described above.
-          //
-          *Length   = 0;
-          Status    = EFI_DEVICE_ERROR;
-//          printf ("(%d) Status = %llx\n", __LINE__, Status);
-          QuitFlag  = TRUE;
-          break;
+        HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
+
+        //
+        // Make sure we do not have a HECI reset
+        //
+        if(CheckForHeciReset()) {
+            //
+            // if HECI reset than try to re-init HECI
+            //
+            Status = HeciResetInterface(HeciDev);
+            //      printf ("(%d) HeciResetInterface Status = %llx\n", __LINE__, Status);
+            if(EFI_ERROR(Status)) {
+                Status = EFI_DEVICE_ERROR;
+                //        printf ("(%d) Status = %llx\n", __LINE__, Status);
+                break;
+            }
         }
-      }
-      //
-      // Track the length of what we have read so far
-      //
-      CurrentLength += PacketBuffer;
+        //
+        // Make sure that HECI is ready for communication.
+        //
+        if(WaitForMEReady(HECI1_DEVICE) != EFI_SUCCESS) {
+            Status = EFI_TIMEOUT;
+            //      printf ("(%d) Status = %llx\n", __LINE__, Status);
+            break;
+        }
+        //    printf ("(%d) HECI is ready for communication\n", __LINE__);
+        //    printf ("(%d) CurrentLength = %x, *Length = %x\n", __LINE__, CurrentLength, *Length);
+        while((CurrentLength < *Length) && (MessageComplete == 0)) {
+            PacketBuffer = *Length - CurrentLength;
+            ReadError = HECIPacketRead(
+                Blocking,
+                &PacketHeader,
+                (UINT32 *)&MessageBody[CurrentLength / 4],
+                &PacketBuffer);
+            //      printf ("(%d) ReadError = %llx\n", __LINE__, ReadError);
+            //
+            // Check for error condition on read
+            //
+            if(EFI_ERROR(ReadError)) {
+                *Length = 0;
+                Status = ReadError;
+                //        printf ("(%d) Status = %llx\n", __LINE__, Status);
+                QuitFlag = TRUE;
+                break;
+            }
+            //
+            // Get completion status from the packet header
+            //
+            MessageComplete = PacketHeader.Fields.MessageComplete;
+            //      printf ("(%d) MessageComplete = %x\n", __LINE__, MessageComplete);
+            //
+            // Check for zero length messages
+            //
+            if(PacketBuffer == 0) {
+                //
+                // If we are not in the middle of a message, and we see Message Complete,
+                // this is a valid zero-length message.
+                //
+                if((CurrentLength == 0) && (MessageComplete == 1)) {
+                    *Length = 0;
+                    Status = EFI_SUCCESS;
+                    QuitFlag = TRUE;
+                    break;
+                } else {
+                    //
+                    // We should not expect a zero-length message packet except as described above.
+                    //
+                    *Length = 0;
+                    Status = EFI_DEVICE_ERROR;
+                    //          printf ("(%d) Status = %llx\n", __LINE__, Status);
+                    QuitFlag = TRUE;
+                    break;
+                }
+            }
+            //
+            // Track the length of what we have read so far
+            //
+            CurrentLength += PacketBuffer;
+        }
 
-    }
+        if(QuitFlag == TRUE) {
+            break;
+        }
+        //
+        // If we get here the message should be complete, if it is not
+        // the caller's buffer was not large enough.
+        //
+        if(MessageComplete == 0) {
+            *Length = 0;
+            Status = EFI_BUFFER_TOO_SMALL;
+            //      printf ("(%d) Status = %llx\n", __LINE__, Status);
+            break;
+        }
+        *Length = CurrentLength;
+    } while(EFI_ERROR(Status));
 
-    if (QuitFlag == TRUE) {
-      break;
+    if(EFI_ERROR(Status)) {
+        printf("HECI receive response failed, Status = %llx\n", Status);
+        // DEBUG((EFI_D_ERROR, "[HECI] Receive failed (%r)\n", Status));
     }
-    //
-    // If we get here the message should be complete, if it is not
-    // the caller's buffer was not large enough.
-    //
-    if (MessageComplete == 0) {
-      *Length = 0;
-      Status  = EFI_BUFFER_TOO_SMALL;
-//      printf ("(%d) Status = %llx\n", __LINE__, Status);
-      break;
-    }
-    *Length = CurrentLength;
-  } while (EFI_ERROR (Status));
-
-  if (EFI_ERROR(Status))
-  {
-    printf ("HECI receive response failed, Status = %llx\n", Status);
-    //DEBUG((EFI_D_ERROR, "[HECI] Receive failed (%r)\n", Status));
-  }
-//  printf ("(%d) Status = %llx\n", __LINE__, Status);
-  return Status;
+    //  printf ("(%d) Status = %llx\n", __LINE__, Status);
+    return Status;
 }
-
 
 /**
   Function sends one message (of any length) through the HECI circular buffer.
@@ -996,28 +821,24 @@ HeciReceive (
 **/
 EFI_STATUS
 EFIAPI
-HeciSend (
-  IN HECI_DEVICE  HeciDev,
-  IN UINT32      *Message,
-  IN UINT32       Length,
-  IN UINT8        HostAddress,
-  IN UINT8        MeAddress
-  )
-{
-  EFI_STATUS      Status;
+HeciSend(
+    IN HECI_DEVICE HeciDev,
+    IN UINT32 *Message,
+    IN UINT32 Length,
+    IN UINT8 HostAddress,
+    IN UINT8 MeAddress) {
+    EFI_STATUS Status;
 
-  //ASSERT(HeciDev == HECI1_DEVICE);
+    // ASSERT(HeciDev == HECI1_DEVICE);
 
-  Status = HeciSendMsg (Message, Length, HostAddress, MeAddress);
+    Status = HeciSendMsg(Message, Length, HostAddress, MeAddress);
 
-  if (EFI_ERROR(Status))
-  {
-    printf ("[HECI] Send msg %02X -> %02X failed (%llx)\n", HostAddress, MeAddress, Status);
-    //DEBUG((EFI_D_ERROR, "[HECI] Send msg %02X -> %02X failed (%r)\n", HostAddress, MeAddress, Status));
-  }
-  return Status;
+    if(EFI_ERROR(Status)) {
+        printf("[HECI] Send msg %02X -> %02X failed (%llx)\n", HostAddress, MeAddress, Status);
+        // DEBUG((EFI_D_ERROR, "[HECI] Send msg %02X -> %02X failed (%r)\n", HostAddress, MeAddress, Status));
+    }
+    return Status;
 }
-
 
 /**
 
@@ -1033,109 +854,107 @@ HeciSend (
 **/
 EFI_STATUS
 EFIAPI
-HeciSendMsg (
-  IN UINT32                     *Message,
-  IN UINT32                     Length,
-  IN UINT8                      HostAddress,
-  IN UINT8                      MeAddress
-  )
-{
-  UINT32                      CBLength;
-  UINT32                      SendLength;
-  UINT32                      CurrentLength;
-  HECI_MESSAGE_HEADER         MessageHeader;
-  EFI_STATUS                  WriteStatus;
-  EFI_STATUS                  Status;
-  HECI_HOST_CONTROL_REGISTER  HeciRegHCsr;
-  UINTN                       HeciMBAR;
+HeciSendMsg(
+    IN UINT32 *Message,
+    IN UINT32 Length,
+    IN UINT8 HostAddress,
+    IN UINT8 MeAddress) {
+    UINT32 CBLength;
+    UINT32 SendLength;
+    UINT32 CurrentLength;
+    HECI_MESSAGE_HEADER MessageHeader;
+    EFI_STATUS WriteStatus;
+    EFI_STATUS Status;
+    HECI_HOST_CONTROL_REGISTER HeciRegHCsr;
+    UINTN HeciMBAR;
 
-  CurrentLength = 0;
-  Status        = EFI_SUCCESS;
+    CurrentLength = 0;
+    Status = EFI_SUCCESS;
 
-  do {
-    //
-    // Make sure that HECI device BAR is correct and device is enabled.
-    //
-    HeciMBAR = CheckAndFixHeciForAccess (HECI1_DEVICE);
+    do {
+        //
+        // Make sure that HECI device BAR is correct and device is enabled.
+        //
+        HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
 
-    //
-    // Make sure we do not have a HECI reset
-    //
-    if (CheckForHeciReset ()) {
-      //
-      // if HECI reset than try to re-init HECI
-      //
-      Status = HeciResetInterface(HECI1_DEVICE);
-//      printf ("(%d)HeciResetInterface, Status = %llx\n", __LINE__, Status);
-      if (EFI_ERROR (Status)) {
-        Status = EFI_DEVICE_ERROR;
-        break;
-      }
-    }
-    //
-    // Make sure that HECI is ready for communication.
-    //
-    if (WaitForMEReady (HECI1_DEVICE) != EFI_SUCCESS) {
-      Status = EFI_TIMEOUT;
-//      printf ("(%d) Status = %llx\n", __LINE__, Status);
-      break;
-    }
-    //
-    // Set up memory mapped registers
-    //
-    HeciRegHCsr.ul = MMIOREADDWORD (HeciMBAR + H_CSR);
+        //
+        // Make sure we do not have a HECI reset
+        //
+        if(CheckForHeciReset()) {
+            //
+            // if HECI reset than try to re-init HECI
+            //
+            Status = HeciResetInterface(HECI1_DEVICE);
+            //      printf ("(%d)HeciResetInterface, Status = %llx\n", __LINE__, Status);
+            if(EFI_ERROR(Status)) {
+                Status = EFI_DEVICE_ERROR;
+                break;
+            }
+        }
+        //
+        // Make sure that HECI is ready for communication.
+        //
+        if(WaitForMEReady(HECI1_DEVICE) != EFI_SUCCESS) {
+            Status = EFI_TIMEOUT;
+            //      printf ("(%d) Status = %llx\n", __LINE__, Status);
+            break;
+        }
+        //
+        // Set up memory mapped registers
+        //
+        HeciRegHCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
 
-    //
-    // Grab Circular Buffer length
-    //
-    CBLength = HeciRegHCsr.r.H_CBD;
+        //
+        // Grab Circular Buffer length
+        //
+        CBLength = HeciRegHCsr.r.H_CBD;
 
-    //
-    // Prepare message header
-    //
-    MessageHeader.Data                = 0;
-    MessageHeader.Fields.MeAddress    = MeAddress;
-    MessageHeader.Fields.HostAddress  = HostAddress;
+        //
+        // Prepare message header
+        //
+        MessageHeader.Data = 0;
+        MessageHeader.Fields.MeAddress = MeAddress;
+        MessageHeader.Fields.HostAddress = HostAddress;
 
-    //
-    // Break message up into CB-sized packets and loop until completely sent
-    //
-    while (Length > CurrentLength) {
-      //
-      // Set the Message Complete bit if this is our last packet in the message.
-      // Needs to be 'less than' to account for the header.
-      //
-      if ((((Length - CurrentLength) + 3) / 4) < CBLength) {
-        MessageHeader.Fields.MessageComplete = 1;
-      }
-      //
-      // Calculate length for Message Header
-      //    header length == smaller of circular buffer or remaining message (both account for the size of the header)
-      //
-      SendLength = ((CBLength <= (((Length - CurrentLength) + 3) / 4)) ? ((CBLength - 1) * 4) : (Length - CurrentLength));
-      MessageHeader.Fields.Length = SendLength;
-      //
-      // send the current packet (CurrentLength can be treated as the index into the message buffer)
-      //
-//      printf ("(%d) Send the current packet\n", __LINE__);
-      WriteStatus = HeciPacketWrite (&MessageHeader, (UINT32 *) ((UINTN) Message + CurrentLength));
-//      printf ("(%d) HeciPacketWrite WriteStatus = %llx\n", __LINE__, WriteStatus);
-      if (EFI_ERROR (WriteStatus)) {
-        Status = WriteStatus;
-        break;
-      }
-      //
-      // Update the length information
-      //
-      CurrentLength += SendLength;
-    }
+        //
+        // Break message up into CB-sized packets and loop until completely sent
+        //
+        while(Length > CurrentLength) {
+            //
+            // Set the Message Complete bit if this is our last packet in the message.
+            // Needs to be 'less than' to account for the header.
+            //
+            if((((Length - CurrentLength) + 3) / 4) < CBLength) {
+                MessageHeader.Fields.MessageComplete = 1;
+            }
+            //
+            // Calculate length for Message Header
+            //    header length == smaller of circular buffer or remaining message (both account for the size of the header)
+            //
+            SendLength = ((CBLength <= (((Length - CurrentLength) + 3) / 4)) ? ((CBLength - 1) * 4) : (Length - CurrentLength));
+            MessageHeader.Fields.Length = SendLength;
+            //
+            // send the current packet (CurrentLength can be treated as the index into the message buffer)
+            //
+            //      printf ("(%d) Send the current packet\n", __LINE__);
+            WriteStatus = HeciPacketWrite(&MessageHeader, (UINT32 *)((UINTN)Message + CurrentLength));
+            //      printf ("(%d) HeciPacketWrite WriteStatus = %llx\n", __LINE__, WriteStatus);
+            if(EFI_ERROR(WriteStatus)) {
+                Status = WriteStatus;
+                break;
+            }
+            //
+            // Update the length information
+            //
+            CurrentLength += SendLength;
+        }
 
-    if (EFI_ERROR (Status)) {
-      break;
-    }
-  } while (EFI_ERROR (Status));
+        if(EFI_ERROR(Status)) {
+            break;
+        }
+    } while(EFI_ERROR(Status));
 
-  return Status;
+    return Status;
 }
 
 /**
@@ -1148,193 +967,91 @@ HeciSendMsg (
     @retval EFI_DEVICE_ERROR - too many resets occurred
 **/
 EFI_STATUS
-HeciPacketWrite (
-  IN  HECI_MESSAGE_HEADER       *MessageHeader,
-  IN  UINT32                    *MessageData
-  )
-{
-  UINT32                      Timeout;
-  UINT32                      EmptySlots;
-  UINT32                      Retries;
-  UINT32                      i;
-  UINT32                      LengthInDwords;
-  HECI_HOST_CONTROL_REGISTER  HCsr;
-  HECI_ME_CONTROL_REGISTER    MeCsr;
-  UINTN                       HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
+HeciPacketWrite(
+    IN HECI_MESSAGE_HEADER *MessageHeader,
+    IN UINT32 *MessageData) {
+    UINT32 Timeout;
+    UINT32 EmptySlots;
+    UINT32 Retries;
+    UINT32 i;
+    UINT32 LengthInDwords;
+    HECI_HOST_CONTROL_REGISTER HCsr;
+    HECI_ME_CONTROL_REGISTER MeCsr;
+    UINTN HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
 
-  HeciTrace("Data = ", MessageHeader->Data, (UINT8*)MessageData, MessageHeader->Fields.Length);
-  //
-  // Compute message length in DWORDS
-  //
-  LengthInDwords = ((MessageHeader->Fields.Length + 3) / 4);
-  //
-  // Set up timeout counter
-  //
-  Timeout = (HECI_SEND_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
-  Retries = HECI_MAX_RETRY + 1;
-  while (Retries > 0) {
-    MeCsr.ul    = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-    HCsr.ul     = MMIOREADDWORD (HeciMBAR + H_CSR);
-    EmptySlots  = (UINT8) HCsr.r.H_CBD - (UINT8) ((INT8) HCsr.r.H_CBWP - (INT8) HCsr.r.H_CBRP);
+    HeciTrace("Data = ", MessageHeader->Data, (UINT8 *)MessageData, MessageHeader->Fields.Length);
     //
-    // If HECI not ready or in buffer overrun reset it and try again.
+    // Compute message length in DWORDS
     //
-    if (!MeCsr.r.ME_RDY_HRA || !HCsr.r.H_RDY || EmptySlots > HCsr.r.H_CBD) {
-      if (HeciResetInterface(HECI1_DEVICE) != EFI_SUCCESS) {
-        return EFI_TIMEOUT;
-      }
+    LengthInDwords = ((MessageHeader->Fields.Length + 3) / 4);
+    //
+    // Set up timeout counter
+    //
+    Timeout = (HECI_SEND_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
+    Retries = HECI_MAX_RETRY + 1;
+    while(Retries > 0) {
+        MeCsr.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+        HCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
+        EmptySlots = (UINT8)HCsr.r.H_CBD - (UINT8)((INT8)HCsr.r.H_CBWP - (INT8)HCsr.r.H_CBRP);
+        //
+        // If HECI not ready or in buffer overrun reset it and try again.
+        //
+        if(!MeCsr.r.ME_RDY_HRA || !HCsr.r.H_RDY || EmptySlots > HCsr.r.H_CBD) {
+            if(HeciResetInterface(HECI1_DEVICE) != EFI_SUCCESS) {
+                return EFI_TIMEOUT;
+            }
 
-      Retries--;
-      continue;
+            Retries--;
+            continue;
+        }
+        //
+        // Wait until there is sufficient room in the circular buffer.
+        // Must have room for message data and header.
+        //
+        //    printf ("(%d) H_CBD = %x\n", __LINE__, HCsr.r.H_CBD);
+        //    printf ("(%d) H_CBWP = %x\n", __LINE__, HCsr.r.H_CBWP);
+        //    printf ("(%d) H_CBRP = %x\n", __LINE__, HCsr.r.H_CBRP);
+        //    printf ("(%d) LengthInDwords = %x\n", __LINE__, LengthInDwords);
+        //    printf ("(%d) EmptySlots = %x\n", __LINE__, EmptySlots);
+        if(LengthInDwords < EmptySlots) {
+            //
+            // Write message header first then data
+            //
+            //      printf ("(%d) MMIOWRITEDWORD(%llx, %x)\n", __LINE__, HeciMBAR + H_CB_WW, MessageHeader->Data);
+            MMIOWRITEDWORD(HeciMBAR + H_CB_WW, MessageHeader->Data);
+            for(i = 0; i < LengthInDwords; i++) {
+                //        printf ("(%d) MMIOWRITEDWORD(%llx, %x)\n", __LINE__, HeciMBAR + H_CB_WW, MessageData[i]);
+                MMIOWRITEDWORD(HeciMBAR + H_CB_WW, MessageData[i]);
+            }
+            //
+            // Check if ME is not ready after writing reset HECI
+            // and retry the message.
+            //
+            MeCsr.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+            //      printf ("(%d) MMIOREADDWORD(%llx) = %x\n", __LINE__, HeciMBAR + ME_CSR_HA, MeCsr.ul);
+            if(!MeCsr.r.ME_RDY_HRA) {
+                continue;
+            }
+            //
+            // If ME is still ready set interrupt generate bit and we are done.
+            //
+            HCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
+            HCsr.r.H_IG = 1;
+            //      printf ("(%d) MMIOWRITEDWORD(%llx, %x)\n", __LINE__, HeciMBAR + H_CSR, HCsr.ul);
+            MMIOWRITEDWORD(HeciMBAR + H_CSR, HCsr.ul);
+            return EFI_SUCCESS;
+        }
+
+        if(Timeout-- == 0) {
+            return EFI_TIMEOUT;
+        }
+        MicroSecondDelay(HECI_WAIT_DELAY);
     }
     //
-    // Wait until there is sufficient room in the circular buffer.
-    // Must have room for message data and header.
+    // If we got here to many retries happened.
     //
-//    printf ("(%d) H_CBD = %x\n", __LINE__, HCsr.r.H_CBD);
-//    printf ("(%d) H_CBWP = %x\n", __LINE__, HCsr.r.H_CBWP);
-//    printf ("(%d) H_CBRP = %x\n", __LINE__, HCsr.r.H_CBRP);
-//    printf ("(%d) LengthInDwords = %x\n", __LINE__, LengthInDwords);
-//    printf ("(%d) EmptySlots = %x\n", __LINE__, EmptySlots);
-    if (LengthInDwords < EmptySlots) {
-      //
-      // Write message header first then data
-      //
-//      printf ("(%d) MMIOWRITEDWORD(%llx, %x)\n", __LINE__, HeciMBAR + H_CB_WW, MessageHeader->Data);
-      MMIOWRITEDWORD (HeciMBAR + H_CB_WW, MessageHeader->Data);
-      for (i = 0; i < LengthInDwords; i++) {
-//        printf ("(%d) MMIOWRITEDWORD(%llx, %x)\n", __LINE__, HeciMBAR + H_CB_WW, MessageData[i]);
-        MMIOWRITEDWORD (HeciMBAR + H_CB_WW, MessageData[i]);
-      }
-      //
-      // Check if ME is not ready after writing reset HECI
-      // and retry the message.
-      //
-      MeCsr.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-//      printf ("(%d) MMIOREADDWORD(%llx) = %x\n", __LINE__, HeciMBAR + ME_CSR_HA, MeCsr.ul);
-      if (!MeCsr.r.ME_RDY_HRA) {
-        continue;
-      }
-      //
-      // If ME is still ready set interrupt generate bit and we are done.
-      //
-      HCsr.ul     = MMIOREADDWORD (HeciMBAR + H_CSR);
-      HCsr.r.H_IG = 1;
-//      printf ("(%d) MMIOWRITEDWORD(%llx, %x)\n", __LINE__, HeciMBAR + H_CSR, HCsr.ul);
-      MMIOWRITEDWORD (HeciMBAR + H_CSR, HCsr.ul);
-      return EFI_SUCCESS;
-    }
-
-    if (Timeout-- == 0) {
-      return EFI_TIMEOUT;
-    }
-    MicroSecondDelay(HECI_WAIT_DELAY);
-  }
-  //
-  // If we got here to many retries happened.
-  //
-  return EFI_DEVICE_ERROR;
+    return EFI_DEVICE_ERROR;
 } // HeciPacketWrite()
-
-
-///**
-//
-//   Function sends one message packet through the HECI circular buffer
-//   Corresponds to HECI HPS (part of) section 4.2.3
-//
-//    @param MessageHeader - Pointer to the message header.
-//    @param MessageData   - Pointer to the actual message data.
-//
-//    @retval EFI_STATUS
-//
-//**/
-//EFI_STATUS
-//UnPatchHeciPacketWrite (
-//  IN  HECI_MESSAGE_HEADER       *MessageHeader,
-//  IN  UINT32                    *MessageData
-//  )
-//{
-//  UINT32                      Timeout;
-//  UINT32                      i;
-//  UINT32                      LengthInDwords;
-//  HECI_HOST_CONTROL_REGISTER  HeciRegHCsr;
-//  HECI_ME_CONTROL_REGISTER    HeciRegMeCsrHa;
-//  UINTN                       HeciMBAR;
-//
-//  //
-//  //  VOLATILE HECI_HOST_CONTROL_REGISTER *HeciRegHCsrPtr     = (VOID*)(HeciMBAR + H_CSR);
-//  //  VOLATILE HECI_ME_CONTROL_REGISTER   *HeciRegMeCsrHaPtr  = (VOID*)(HeciMBAR + ME_CSR_HA);
-//  //  VOLATILE UINT32                     *HeciRegHCbwwPtr    = (VOID*)(HeciMBAR + H_CB_WW);
-//  //
-//  // Make sure that HECI is ready for communication.
-//  //
-//  if (WaitForMEReady (HECI1_DEVICE) != EFI_SUCCESS) {
-//    return EFI_TIMEOUT;
-//  }
-//  //
-//  // Set up timeout counter
-//  //
-//  Timeout = (HECI_SEND_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
-//
-//  //
-//  // Compute message length in DWORDS
-//  //
-//  LengthInDwords = ((MessageHeader->Fields.Length + 3) / 4);
-//
-//  //
-//  // Wait until there is sufficient room in the circular buffer
-//  // Must have room for message and message header
-//  //
-//  HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
-//  while (1)
-//  {
-//    HeciRegHCsr.ul = MMIOREADDWORD (HeciMBAR + H_CSR);
-//    //
-//    // Check if we got enough empty slots for message
-//    //
-//    if (LengthInDwords <= (HeciRegHCsr.r.H_CBD - FilledSlots(HeciRegHCsr.r.H_CBRP, HeciRegHCsr.r.H_CBWP)))
-//    {
-//      break; // got space for the message
-//    }
-//    if (Timeout-- == 0)
-//    {
-//      return EFI_TIMEOUT;
-//    }
-//    //
-//    // Wait before we read the register again
-//    //
-//    MicroSecondDelay(HECI_WAIT_DELAY);
-//  }
-//  //
-//  // Write Message Header
-//  //
-//  MMIOWRITEDWORD (HeciMBAR + H_CB_WW, MessageHeader->Data);
-//
-//  //
-//  // Write Message Body
-//  //
-//  for (i = 0; i < LengthInDwords; i++) {
-//    MMIOWRITEDWORD (HeciMBAR + H_CB_WW, MessageData[i]);
-//  }
-//  //
-//  // Set Interrupt Generate bit
-//  //
-//  HeciRegHCsr.ul      = MMIOREADDWORD (HeciMBAR + H_CSR);
-//  HeciRegHCsr.r.H_IG  = 1;
-//  MMIOWRITEDWORD (HeciMBAR + H_CSR, HeciRegHCsr.ul);
-//
-//  //
-//  // Test if ME Ready bit is set to 1, if set to 0 a fatal error occurred during
-//  // the transmission of this message.
-//  //
-//  HeciRegMeCsrHa.ul = MMIOREADDWORD (HeciMBAR + ME_CSR_HA);
-//  if (HeciRegMeCsrHa.r.ME_RDY_HRA == 0) {
-//    return EFI_DEVICE_ERROR;
-//  }
-//
-//  return EFI_SUCCESS;
-//}
-
 
 /**
   Function sends one message through the HECI circular buffer and waits
@@ -1355,130 +1072,76 @@ HeciPacketWrite (
 **/
 EFI_STATUS
 EFIAPI
-HeciSendwAck (
-  IN      HECI_DEVICE  HeciDev,
-  IN OUT  UINT32      *Message,
-  IN      UINT32       Length,
-  IN OUT  UINT32      *RecLength,
-  IN      UINT8        HostAddress,
-  IN      UINT8        MeAddress
-  )
-{
-  EFI_STATUS           Status;
-  UINT16               RetryCount;
-  UINT32               TempRecLength;
-  UINTN                HeciMbar;
-  HECI_ME_CONTROL_REGISTER MeCsr;
+HeciSendwAck(
+    IN HECI_DEVICE HeciDev,
+    IN OUT UINT32 *Message,
+    IN UINT32 Length,
+    IN OUT UINT32 *RecLength,
+    IN UINT8 HostAddress,
+    IN UINT8 MeAddress) {
+    EFI_STATUS Status;
+    UINT16 RetryCount;
+    UINT32 TempRecLength;
+    UINTN HeciMbar;
+    HECI_ME_CONTROL_REGISTER MeCsr;
 
-  Status = EFI_SUCCESS;
-  TempRecLength = 0;
-  if (RecLength == NULL) {
-    RecLength = &Length;
-  }
-  HeciMbar = CheckAndFixHeciForAccess(HeciDev);
-//  printf ("(%d) HeciMbar = %llX\n", __LINE__, HeciMbar);
-  //
-  // We start a new transaction. If the receive queue is not empty, delete it because
-  // the content was to be interpreted as a response.
-  //
-  MeCsr.ul = MMIOREADDWORD(HeciMbar + ME_CSR_HA);
-  if (FilledSlots(MeCsr.r.ME_CBRP_HRA, MeCsr.r.ME_CBWP_HRA) > 0)
-  {
-    Status = HeciResetInterface(HeciDev);
-    if (EFI_ERROR(Status))
-    {
-      return Status;
+    Status = EFI_SUCCESS;
+    TempRecLength = 0;
+    if(RecLength == NULL) {
+        RecLength = &Length;
     }
-  }
-
-  for (RetryCount = 0; RetryCount < HECI_MAX_RETRY; RetryCount++) {
-    ///
-    /// Send the message
-    ///
-//    printf ("(%d) =========== RetryCount = %x ===========\n", __LINE__, RetryCount);
-    Status = HeciSend (HeciDev, Message, Length, HostAddress, MeAddress);
-//    printf ("(%d) HeciSend: Status = %llx\n", __LINE__, Status);
-    if (EFI_ERROR (Status)) {
-      return Status;
-    }
-    ///
-    /// Reload receive length as it has been modified by the read function
-    ///
-    TempRecLength = *RecLength;
-    ///
-    /// Read Message
-    ///
-    Status = HeciReceive (HeciDev, BLOCKING, Message, &TempRecLength);
-//    printf ("(%d) HeciReceive Status = %llx\n", __LINE__, Status);
-    if (!EFI_ERROR (Status)) {
-      break;
+    HeciMbar = CheckAndFixHeciForAccess(HeciDev);
+    //  printf ("(%d) HeciMbar = %llX\n", __LINE__, HeciMbar);
+    //
+    // We start a new transaction. If the receive queue is not empty, delete it because
+    // the content was to be interpreted as a response.
+    //
+    MeCsr.ul = MMIOREADDWORD(HeciMbar + ME_CSR_HA);
+    if(FilledSlots(MeCsr.r.ME_CBRP_HRA, MeCsr.r.ME_CBWP_HRA) > 0) {
+        Status = HeciResetInterface(HeciDev);
+        if(EFI_ERROR(Status)) {
+            return Status;
+        }
     }
 
-    printf ("Retrying ... Status = %llx\n", Status);
-    //DEBUG ((
-    //  DEBUG_ERROR,
-    //  "HECI%d SendwAck: Retrying after %x failed attempt - Status = %r\n",
-    //  HECI_NAME_MAP (HeciDev),
-    //  RetryCount + 1,
-    //  Status
-    //  ));
-  }
-  ///
-  /// Return read length and status
-  ///
-  *RecLength = TempRecLength;
-  return Status;
+    for(RetryCount = 0; RetryCount < HECI_MAX_RETRY; RetryCount++) {
+        ///
+        /// Send the message
+        ///
+        //    printf ("(%d) =========== RetryCount = %x ===========\n", __LINE__, RetryCount);
+        Status = HeciSend(HeciDev, Message, Length, HostAddress, MeAddress);
+        //    printf ("(%d) HeciSend: Status = %llx\n", __LINE__, Status);
+        if(EFI_ERROR(Status)) {
+            return Status;
+        }
+        ///
+        /// Reload receive length as it has been modified by the read function
+        ///
+        TempRecLength = *RecLength;
+        ///
+        /// Read Message
+        ///
+        Status = HeciReceive(HeciDev, BLOCKING, Message, &TempRecLength);
+        //    printf ("(%d) HeciReceive Status = %llx\n", __LINE__, Status);
+        if(!EFI_ERROR(Status)) {
+            break;
+        }
+
+        printf("Retrying ... Status = %llx\n", Status);
+        // DEBUG ((
+        //   DEBUG_ERROR,
+        //   "HECI%d SendwAck: Retrying after %x failed attempt - Status = %r\n",
+        //   HECI_NAME_MAP (HeciDev),
+        //   RetryCount + 1,
+        //   Status
+        //   ));
+    }
+    ///
+    /// Return read length and status
+    ///
+    *RecLength = TempRecLength;
+    return Status;
 }
-
-
-///**
-//  Me reset and waiting for ready
-//
-//  @param[in] HeciDev              The HECI device to be accessed.
-//  @param[in] Delay                The biggest waiting time
-//
-//  @retval EFI_TIMEOUT             ME is not ready
-//  @retval EFI_SUCCESS             Me is ready
-//**/
-//EFI_STATUS
-//EFIAPI
-//HeciMeResetWait (
-//  IN  HECI_DEVICE             HeciDev,
-//  IN  UINT32                  Delay
-//  )
-//{
-//  HECI_HOST_CONTROL_REGISTER  HeciRegHCsr;
-//  UINTN                       HeciMBAR;
-//
-//  //ASSERT(HeciDev == HECI1_DEVICE);
-//  //
-//  // Make sure that HECI device BAR is correct and device is enabled.
-//  //
-//  HeciMBAR = CheckAndFixHeciForAccess (HECI1_DEVICE);
-//
-//  //
-//  // Wait for the HOST Ready bit to be cleared to signal a reset
-//  //
-//  while (1)
-//  {
-//    HeciRegHCsr.ul = MMIOREADDWORD (HeciMBAR + H_CSR);
-//    if (!HeciRegHCsr.r.H_RDY)
-//    {
-//      break;
-//    }
-//    //
-//    // If timeout has expired, return fail
-//    //
-//    if (Delay-- == 0)
-//    {
-//      return EFI_TIMEOUT;
-//    }
-//    MicroSecondDelay(1);
-//  }
-//
-//  return EFI_SUCCESS;
-//}
-
 
 /**
   Function forces a reinit of the heci interface by following the reset heci interface via host algorithm
@@ -1491,93 +1154,84 @@ HeciSendwAck (
 EFI_STATUS
 EFIAPI
 HeciResetInterface(
-  IN  HECI_DEVICE             HeciDev)
-{
-  HECI_HOST_CONTROL_REGISTER  HeciRegHCsr;
-  HECI_ME_CONTROL_REGISTER    HeciRegMeCsrHa;
-  UINT32                      Timeout = (HECI_INIT_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
-  UINTN                       HeciMBAR;
-//  printf ("(%d) HeciResetInterface()\n", __LINE__);
-  //ASSERT(HeciDev == HECI1_DEVICE);
-  //
-  // Make sure that HECI device BAR is correct and device is enabled.
-  //
-  HeciMBAR = CheckAndFixHeciForAccess (HECI1_DEVICE);
+    IN HECI_DEVICE HeciDev) {
+    HECI_HOST_CONTROL_REGISTER HeciRegHCsr;
+    HECI_ME_CONTROL_REGISTER HeciRegMeCsrHa;
+    UINT32 Timeout = (HECI_INIT_TIMEOUT + HECI_WAIT_DELAY / 2) / HECI_WAIT_DELAY;
+    UINTN HeciMBAR;
+    //  printf ("(%d) HeciResetInterface()\n", __LINE__);
+    // ASSERT(HeciDev == HECI1_DEVICE);
+    //
+    // Make sure that HECI device BAR is correct and device is enabled.
+    //
+    HeciMBAR = CheckAndFixHeciForAccess(HECI1_DEVICE);
 
-  if (((HeciMBAR & 0xFFFFFFFF) == 0xFFFFFFFF) ||
-       (HeciMBAR == 0)) {
-    printf ("[HECI] Illegal MBAR 0x%llx\n", HeciMBAR);
-    //DEBUG((DEBUG_ERROR, "[HECI] Illegal MBAR 0x%x\n", HeciMBAR));
-    return EFI_UNSUPPORTED;
-  }
+    if(((HeciMBAR & 0xFFFFFFFF) == 0xFFFFFFFF) || (HeciMBAR == 0)) {
+        printf("[HECI] Illegal MBAR 0x%llx\n", HeciMBAR);
+        // DEBUG((DEBUG_ERROR, "[HECI] Illegal MBAR 0x%x\n", HeciMBAR));
+        return EFI_UNSUPPORTED;
+    }
 
-  HeciRegHCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
-  HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
-
-  printf ("Reset HECI ... H_CSR = %08X, ME_CSR_HA = %08X, HFSTS1 = %08X\n", HeciRegHCsr.ul, HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE));
-  //DEBUG((DEBUG_WARN, "[HECI] Resetting HECI interface (CSR: %08X/%08X, MEFS1:%08X)\n",
-  //       HeciRegHCsr.ul, HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE)));
-  //
-  // Enable reset bit in host CSR, unless it is already set. This function can be called
-  // after timeout in previews call. Then it should just continue, not triggering new reset.
-  //
-  if (!HeciRegHCsr.r.H_RST)
-  {
-    HeciRegHCsr.r.H_RST = 1;
-    HeciRegHCsr.r.H_IG  = 1;
-    MMIOWRITEDWORD(HeciMBAR + H_CSR, HeciRegHCsr.ul);
-  }
-  //
-  // Wait for host ready bit cleared by HECI hardware
-  //
-  while (1)
-  {
     HeciRegHCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
-    if (!HeciRegHCsr.r.H_RDY)
-    {
-      break;
-    }
-    if (Timeout-- == 0)
-    {
-      printf ("[HECI] HECI reset failed on host side (CSR: %08X/%08X, MEFS1: %08X)\n", HeciRegHCsr.ul, MMIOREADDWORD(HeciMBAR + ME_CSR_HA), HeciPciRead32(R_FWSTATE));
-      //DEBUG((DEBUG_ERROR, "[HECI] HECI reset failed on host side (CSR: %08X/%08X, MEFS1: %08X)\n",
-      //      HeciRegHCsr.ul, MMIOREADDWORD(HeciMBAR + ME_CSR_HA), HeciPciRead32(R_FWSTATE)));
-      return EFI_TIMEOUT;
-    }
-    MicroSecondDelay(HECI_WAIT_DELAY);
-  }
-  //
-  // Wait for ME to get ready after reset procedure and signal interrupt to host
-  //
-  while (1)
-  {
     HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
-    if (HeciRegMeCsrHa.r.ME_RDY_HRA)
-    {
-      break;
-    }
-    if (Timeout-- == 0)
-    {
-      printf ("[HECI] HECI reset failed on ME side (CSR: %08X/%08X, MEFS1: %08X)\n", MMIOREADDWORD(HeciMBAR + H_CSR), HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE));
-      //DEBUG((DEBUG_ERROR, "[HECI] HECI reset failed on ME side (CSR: %08X/%08X, MEFS1: %08X)\n",
-      //       MMIOREADDWORD(HeciMBAR + H_CSR), HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE)));
-      return EFI_TIMEOUT;
-    }
-    MicroSecondDelay(HECI_WAIT_DELAY);
-  }
 
-  //
-  // Enable host side interface
-  //
-  HeciRegHCsr.ul      = MMIOREADDWORD(HeciMBAR + H_CSR);;
-  HeciRegHCsr.r.H_RST = 0;
-  HeciRegHCsr.r.H_IG  = 1;
-  HeciRegHCsr.r.H_RDY = 1;
-  MMIOWRITEDWORD(HeciMBAR + H_CSR, HeciRegHCsr.ul);
+    printf("Reset HECI ... H_CSR = %08X, ME_CSR_HA = %08X, HFSTS1 = %08X\n", HeciRegHCsr.ul, HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE));
+    // DEBUG((DEBUG_WARN, "[HECI] Resetting HECI interface (CSR: %08X/%08X, MEFS1:%08X)\n",
+    //        HeciRegHCsr.ul, HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE)));
+    //
+    //  Enable reset bit in host CSR, unless it is already set. This function can be called
+    //  after timeout in previews call. Then it should just continue, not triggering new reset.
+    //
+    if(!HeciRegHCsr.r.H_RST) {
+        HeciRegHCsr.r.H_RST = 1;
+        HeciRegHCsr.r.H_IG = 1;
+        MMIOWRITEDWORD(HeciMBAR + H_CSR, HeciRegHCsr.ul);
+    }
+    //
+    // Wait for host ready bit cleared by HECI hardware
+    //
+    while(1) {
+        HeciRegHCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
+        if(!HeciRegHCsr.r.H_RDY) {
+            break;
+        }
+        if(Timeout-- == 0) {
+            printf("[HECI] HECI reset failed on host side (CSR: %08X/%08X, MEFS1: %08X)\n", HeciRegHCsr.ul, MMIOREADDWORD(HeciMBAR + ME_CSR_HA), HeciPciRead32(R_FWSTATE));
+            // DEBUG((DEBUG_ERROR, "[HECI] HECI reset failed on host side (CSR: %08X/%08X, MEFS1: %08X)\n",
+            //       HeciRegHCsr.ul, MMIOREADDWORD(HeciMBAR + ME_CSR_HA), HeciPciRead32(R_FWSTATE)));
+            return EFI_TIMEOUT;
+        }
+        MicroSecondDelay(HECI_WAIT_DELAY);
+    }
+    //
+    // Wait for ME to get ready after reset procedure and signal interrupt to host
+    //
+    while(1) {
+        HeciRegMeCsrHa.ul = MMIOREADDWORD(HeciMBAR + ME_CSR_HA);
+        if(HeciRegMeCsrHa.r.ME_RDY_HRA) {
+            break;
+        }
+        if(Timeout-- == 0) {
+            printf("[HECI] HECI reset failed on ME side (CSR: %08X/%08X, MEFS1: %08X)\n", MMIOREADDWORD(HeciMBAR + H_CSR), HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE));
+            // DEBUG((DEBUG_ERROR, "[HECI] HECI reset failed on ME side (CSR: %08X/%08X, MEFS1: %08X)\n",
+            //        MMIOREADDWORD(HeciMBAR + H_CSR), HeciRegMeCsrHa.ul, HeciPciRead32(R_FWSTATE)));
+            return EFI_TIMEOUT;
+        }
+        MicroSecondDelay(HECI_WAIT_DELAY);
+    }
 
-  return EFI_SUCCESS;
+    //
+    // Enable host side interface
+    //
+    HeciRegHCsr.ul = MMIOREADDWORD(HeciMBAR + H_CSR);
+    ;
+    HeciRegHCsr.r.H_RST = 0;
+    HeciRegHCsr.r.H_IG = 1;
+    HeciRegHCsr.r.H_RDY = 1;
+    MMIOWRITEDWORD(HeciMBAR + H_CSR, HeciRegHCsr.ul);
+
+    return EFI_SUCCESS;
 }
-
 
 /**
 
@@ -1591,19 +1245,17 @@ HeciResetInterface(
 
 **/
 UINT8
-FilledSlots (
-  IN  UINT32 ReadPointer,
-  IN  UINT32 WritePointer
-  )
-{
-  UINT8 FilledSlots;
+FilledSlots(
+    IN UINT32 ReadPointer,
+    IN UINT32 WritePointer) {
+    UINT8 FilledSlots;
 
-  //
-  // Calculation documented in HECI HPS 0.68 section 4.2.1
-  //
-  FilledSlots = (((INT8) WritePointer) - ((INT8) ReadPointer));
-//  printf ("(%d) FilledSlots: FilledSlots = %x\n", __LINE__, FilledSlots);
-  return FilledSlots;
+    //
+    // Calculation documented in HECI HPS 0.68 section 4.2.1
+    //
+    FilledSlots = (((INT8)WritePointer) - ((INT8)ReadPointer));
+    //  printf ("(%d) FilledSlots: FilledSlots = %x\n", __LINE__, FilledSlots);
+    return FilledSlots;
 }
 
 /**
@@ -1619,147 +1271,23 @@ FilledSlots (
 
 **/
 EFI_STATUS
-OverflowCB (
-  IN  UINT32 ReadPointer,
-  IN  UINT32 WritePointer,
-  IN  UINT32 BufferDepth
-  )
-{
-  UINT8 FilledSlots;
+OverflowCB(
+    IN UINT32 ReadPointer,
+    IN UINT32 WritePointer,
+    IN UINT32 BufferDepth) {
+    UINT8 FilledSlots;
 
-  //
-  // Calculation documented in HECI HPS 0.68 section 4.2.1
-  //
-  FilledSlots = (((INT8) WritePointer) - ((INT8) ReadPointer));
-//  printf ("(%d) OverflowCB: FilledSlots = %x\n", __LINE__, FilledSlots);
-  //
-  // test for overflow
-  //
-  if (FilledSlots > ((UINT8) BufferDepth)) {
-    return EFI_DEVICE_ERROR;
-  }
+    //
+    // Calculation documented in HECI HPS 0.68 section 4.2.1
+    //
+    FilledSlots = (((INT8)WritePointer) - ((INT8)ReadPointer));
+    //  printf ("(%d) OverflowCB: FilledSlots = %x\n", __LINE__, FilledSlots);
+    //
+    // test for overflow
+    //
+    if(FilledSlots > ((UINT8)BufferDepth)) {
+        return EFI_DEVICE_ERROR;
+    }
 
-  return EFI_SUCCESS;
+    return EFI_SUCCESS;
 }
-
-///**
-//
-//    Return ME Status
-//
-//    @param MeStatus pointer for status report
-//
-//    @retval EFI_STATUS
-//
-//**/
-//EFI_STATUS
-//EFIAPI
-//HeciGetMeStatus (
-//  IN UINT32                     *MeStatus
-//  )
-//{
-//  HECI_FWS_REGISTER MeFirmwareStatus;
-//
-//  if (MeStatus == NULL) {
-//    return EFI_INVALID_PARAMETER;
-//  }
-//
-//  MeFirmwareStatus.ul = HeciPciRead32 (R_FWSTATE);
-//
-//  switch (MeFirmwareStatus.r.CurrentState) {
-//  case ME_STATE_NORMAL:
-//    if (MeFirmwareStatus.r.ErrorCode == ME_ERROR_CODE_NO_ERROR) {
-//      *MeStatus = ME_READY;
-//    }
-//    break;
-//  case ME_STATE_RECOVERY:
-//    *MeStatus = ME_IN_RECOVERY_MODE;
-//    break;
-//  case ME_STATE_INIT:
-//    *MeStatus = ME_INITIALIZING;
-//    break;
-//  case ME_STATE_DISABLE_WAIT:
-//    *MeStatus = ME_DISABLE_WAIT;
-//    break;
-//  case ME_STATE_TRANSITION:
-//    *MeStatus = ME_TRANSITION;
-//    break;
-//  case ME_STATE_DFX_FW:
-//    *MeStatus = ME_INVALID;
-//    break;
-//  default:
-//    *MeStatus = ME_NOT_READY;
-//    break;
-//  }
-//
-//  if (MeFirmwareStatus.r.FwUpdateInprogress) {
-//    *MeStatus |= ME_FW_UPDATES_IN_PROGRESS;
-//  }
-//
-//  if (MeFirmwareStatus.r.FwInitComplete == ME_FIRMWARE_COMPLETED) {
-//    *MeStatus |= ME_FW_INIT_COMPLETE;
-//  }
-//
-//  if (MeFirmwareStatus.r.MeBootOptionsPresent == ME_BOOT_OPTIONS_PRESENT) {
-//    *MeStatus |= ME_FW_BOOT_OPTIONS_PRESENT;
-//  }
-//
-//  DEBUG((EFI_D_INFO, "[HECI] MEFS1 %08X -> MeStatus %X\n", MeFirmwareStatus.ul, *MeStatus));
-//
-//  return EFI_SUCCESS;
-//}
-//
-//
-///**
-//  Return ME Mode
-//
-//  @param[out] MeMode              Pointer for ME Mode report
-//
-//  @retval EFI_SUCCESS             MeMode copied
-//  @retval EFI_INVALID_PARAMETER   Pointer of MeMode is invalid
-//**/
-//EFI_STATUS
-//EFIAPI
-//HeciGetMeMode (
-//  OUT UINT32                    *MeMode
-//  )
-//{
-//  HECI_FWS_REGISTER MeFirmwareStatus;
-//
-//  if (MeMode == NULL) {
-//    return EFI_INVALID_PARAMETER;
-//  }
-//  MeFirmwareStatus.ul = HeciPciRead32 (R_FWSTATE);
-//  //
-//  // Check if it's DFX ME FW first
-//  //
-//  if (MeFirmwareStatus.r.CurrentState == ME_STATE_DFX_FW) {
-//    *MeMode = ME_MODE_DFX_FW;
-//  } else {
-//    switch (MeFirmwareStatus.r.MeOperationMode) {
-//      case ME_OPERATION_MODE_NORMAL:
-//    case ME_OPERATION_MODE_SPS:
-//        *MeMode = ME_MODE_NORMAL;
-//        break;
-//
-//      case ME_OPERATION_MODE_DEBUG:
-//        *MeMode = ME_MODE_DEBUG;
-//        break;
-//
-//      case ME_OPERATION_MODE_SOFT_TEMP_DISABLE:
-//        *MeMode = ME_MODE_TEMP_DISABLED;
-//        break;
-//
-//      case ME_OPERATION_MODE_SECOVR_JMPR:
-//      case ME_OPERATION_MODE_SECOVR_HECI_MSG:
-//        *MeMode = ME_MODE_SECOVER;
-//        break;
-//
-//      default:
-//        *MeMode = ME_MODE_FAILED;
-//    }
-//  }
-//  DEBUG((EFI_D_INFO, "[HECI] MEFS1: %08X -> MeMode %d\n", MeFirmwareStatus.ul, *MeMode));
-//
-//  return EFI_SUCCESS;
-//}
-//

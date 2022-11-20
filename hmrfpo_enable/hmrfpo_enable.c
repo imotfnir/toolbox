@@ -32,11 +32,9 @@ HeciReqHmrfpoEnable(
     } HeciMsg;
 
     printf("Sending HMRFPO_ENABLE, HFSTS1 = 0x%08X\n", HeciPciRead32(SPS_REG_MEFS1));
-    // DEBUG((DEBUG_INFO, "[SPS] Sending HMRFPO_ENABLE, MEFS1: 0x%08X\n", HeciPciRead32(SPS_REG_MEFS1) ));
 
     // Construct HMRFPO_ENABLE request message
     memset(&HeciMsg, 0, sizeof(HeciMsg));
-    // ZeroMem(&HeciMsg, sizeof(HeciMsg));
 
     HeciMsg.Req.Mkhi.Data = HECI_MSG_ENABLE_REQ_MKHI_HDR;
     HeciMsg.Req.Nonce = Nonce;
@@ -47,21 +45,21 @@ HeciReqHmrfpoEnable(
     printf("HFSTS1 = 0x%08X\n", HeciPciRead32(SPS_REG_MEFS1));
 
     if(EFI_ERROR(Status)) {
-        printf("HMRFPO_ENABLE sending failed, Status = %llx\n", Status);
+        debug(DEBUG_ERROR, "HMRFPO_ENABLE sending failed, Status = %llx\n", Status);
         return Status;
     }
 
     if(HeciMsg.Rsp.Mkhi.Data != HECI_MSG_ENABLE_RSP_MKHI_HDR) {
-        printf("HMRFPO_ENABLE response Invalid, MKHI = 0x%08X)\n", HeciMsg.Rsp.Mkhi.Data);
+        debug(DEBUG_ERROR, "HMRFPO_ENABLE response Invalid, MKHI = 0x%08X)\n", HeciMsg.Rsp.Mkhi.Data);
         return EFI_UNSUPPORTED;
     }
 
     if(HeciMsg.Rsp.Status != 0) {
-        printf("HMRFPO_ENABLE command refused, reason = %d)\n", HeciMsg.Rsp.Status);
+        debug(DEBUG_ERROR, "HMRFPO_ENABLE command refused, reason = %d)\n", HeciMsg.Rsp.Status);
         return EFI_UNSUPPORTED;
     }
-    printf("HMRFPO_ENABLE command success\n");
 
+    printf("HMRFPO_ENABLE command success\n");
     printf("==================================================================\n");
     printf("\E[1;31;40m");
     printf("Do power cycle instead of \"reboot\" if HMRFPO_ENABLE command success.\n");
@@ -130,6 +128,7 @@ int main(void) {
     // Unknown chipset
     else {
         printf("Unknown chipset!!!!!\n");
+        close(fd);
         return 1;
     }
 
