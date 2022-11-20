@@ -21,7 +21,7 @@
 #include "lpc_hal.h"
 
 EFI_STATUS
-HeciReq_HmrfpoEnable(
+HeciReqHmrfpoEnable(
     IN UINT64 Nonce) {
     UINT32 RspLen;
     EFI_STATUS Status;
@@ -94,7 +94,7 @@ int main(void) {
 
         StratchBus = PciRead8(0x0, 0x5, 0x0, 0x109);
         Nonce = ((UINT64)PciRead32(StratchBus, 0x10, 0x7, 0x54) << 32) | PciRead32(StratchBus, 0x10, 0x7, 0x50);
-        HeciReq_HmrfpoEnable(Nonce);
+        HeciReqHmrfpoEnable(Nonce);
     }
     // Skylake-D
     else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
@@ -104,7 +104,7 @@ int main(void) {
         // Get Nonce and send hmfpo_enable command
         Nonce = ((UINT64)PciRead32(0x0, 0x8, 0x2, 0xB0) << 32) | PciRead32(0x0, 0x8, 0x2, 0xAC);
         // printf ("Nonce = 0x%08llx\n", Nonce);
-        HeciReq_HmrfpoEnable(Nonce);
+        HeciReqHmrfpoEnable(Nonce);
     }
     // Denverton
     else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
@@ -115,7 +115,7 @@ int main(void) {
         lpc_halRegGet(0xE3F8, &Data32);
         Nonce = (Nonce | Data32);
         // printf ("Nonce = 0x%08llx\n", Nonce);
-        HeciReq_HmrfpoEnable(Nonce);
+        HeciReqHmrfpoEnable(Nonce);
     }
     // Icelake-D
     else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
@@ -126,7 +126,7 @@ int main(void) {
         lpc_halRegGet(0x6F8, &Data32);
         Nonce = (Nonce | Data32);
         printf("Nonce = 0x%08llx\n", Nonce);
-        HeciReq_HmrfpoEnable(Nonce);
+        HeciReqHmrfpoEnable(Nonce);
     }
     // Unknown chipset
     else {

@@ -13,143 +13,45 @@ UINT8 ME_Fun;
 UINT32 PciBase;
 
 UINT8 PciRead8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
-    UINT8 read_result; //, read_result_msb, read_result_lsb;
-    void *map_base, *virt_addr;
     off_t target;
-    int fd;
-
-    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
-
-    /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
-    if(map_base == (void *)-1) FATAL;
-    fflush(stdout);
-
-    virt_addr = map_base + (target & MAP_MASK);
-    read_result = *((UINT8 *)virt_addr);
-
-    if(munmap(map_base, MAP_SIZE) == -1) FATAL;
-    close(fd);
-    return read_result;
+    return MmioRead8(target);
 }
 
 UINT16 PciRead16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
-    UINT16 read_result; //, read_result_msb, read_result_lsb;
-    void *map_base, *virt_addr;
     off_t target;
-    int fd;
-
-    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
-
-    /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
-    if(map_base == (void *)-1) FATAL;
-
-    fflush(stdout);
-
-    virt_addr = map_base + (target & MAP_MASK);
-    read_result = *((UINT16 *)virt_addr);
-
-    if(munmap(map_base, MAP_SIZE) == -1) FATAL;
-    close(fd);
-    return read_result;
+    return MmioRead16(target);
 }
 
 UINT32 PciRead32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
-    UINT32 read_result; //, read_result_msb, read_result_lsb;
-    void *map_base, *virt_addr;
     off_t target;
-    int fd;
-
-    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
-
-    /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
-    if(map_base == (void *)-1) FATAL;
-
-    fflush(stdout);
-
-    virt_addr = map_base + (target & MAP_MASK);
-    read_result = *((unsigned int *)virt_addr);
-
-    if(munmap(map_base, MAP_SIZE) == -1) FATAL;
-    close(fd);
-    return read_result;
+    return MmioRead32(target);
 }
 
-UINT8 PciWrite8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT8 writeval) {
-    void *map_base, *virt_addr;
+UINT8 PciWrite8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT8 Data) {
     off_t target;
-    int fd;
-
-    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
-
-    /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
-    if(map_base == (void *)-1) FATAL;
-
-    fflush(stdout);
-
-    virt_addr = map_base + (target & MAP_MASK);
-    *((UINT8 *)virt_addr) = (UINT8)writeval;
-
-    if(munmap(map_base, MAP_SIZE) == -1) FATAL;
-    close(fd);
-    return 0;
+    return MmioWrite8(target, Data);
 }
 
-UINT16 PciWrite16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT16 writeval) {
-    void *map_base, *virt_addr;
+UINT16 PciWrite16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT16 Data) {
     off_t target;
-    int fd;
-
-    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
-
-    /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
-    if(map_base == (void *)-1) FATAL;
-
-    fflush(stdout);
-
-    virt_addr = map_base + (target & MAP_MASK);
-    *((UINT16 *)virt_addr) = (UINT16)writeval;
-
-    if(munmap(map_base, MAP_SIZE) == -1) FATAL;
-    close(fd);
-    return 0;
+    return MmioWrite16(target, Data);
 }
 
-UINT32 PciWrite32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT32 writeval) {
-    void *map_base, *virt_addr;
+UINT32 PciWrite32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT32 Data) {
     off_t target;
-    int fd;
-
-    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
-
-    /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
-    if(map_base == (void *)-1) FATAL;
-
-    fflush(stdout);
-
-    virt_addr = map_base + (target & MAP_MASK);
-    *((unsigned int *)virt_addr) = (unsigned int)writeval;
-
-    if(munmap(map_base, MAP_SIZE) == -1) FATAL;
-    close(fd);
-    return 0;
+    return MmioWrite32(target, Data);
 }
 
 UINT8 MmioRead8(off_t target) {
@@ -158,6 +60,7 @@ UINT8 MmioRead8(off_t target) {
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_TRACE, "fd = %d, addr = 0x%x %s %d  \n", fd, target, __FUNCTION__, __LINE__);
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
     if(map_base == (void *)-1) FATAL;
@@ -178,6 +81,7 @@ UINT16 MmioRead16(off_t target) {
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_TRACE, "fd = %d, addr = 0x%x %s %d  \n", fd, target, __FUNCTION__, __LINE__);
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
     if(map_base == (void *)-1) FATAL;
@@ -198,6 +102,7 @@ UINT32 MmioRead32(off_t target) {
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_TRACE, "fd = %d, addr = 0x%x %s %d  \n", fd, target, __FUNCTION__, __LINE__);
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
     if(map_base == (void *)-1) FATAL;
@@ -211,57 +116,60 @@ UINT32 MmioRead32(off_t target) {
     return read_result;
 }
 
-UINT8 MmioWrite8(off_t target, UINT8 writeval) {
+UINT8 MmioWrite8(off_t Target, UINT8 Data) {
     void *map_base, *virt_addr;
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_TRACE, "fd = %d, addr = 0x%x %s %d  \n", fd, Target, __FUNCTION__, __LINE__);
     /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
+    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, Target & ~MAP_MASK);
     if(map_base == (void *)-1) FATAL;
 
     fflush(stdout);
 
-    virt_addr = map_base + (target & MAP_MASK);
-    *((UINT8 *)virt_addr) = writeval;
+    virt_addr = map_base + (Target & MAP_MASK);
+    *((UINT8 *)virt_addr) = Data;
 
     if(munmap(map_base, MAP_SIZE) == -1) FATAL;
     close(fd);
     return 0;
 }
 
-UINT16 MmioWrite16(off_t target, UINT16 writeval) {
+UINT16 MmioWrite16(off_t Target, UINT16 Data) {
     void *map_base, *virt_addr;
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_TRACE, "fd = %d, addr = 0x%x %s %d  \n", fd, Target, __FUNCTION__, __LINE__);
     /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
+    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, Target & ~MAP_MASK);
     if(map_base == (void *)-1) FATAL;
 
     fflush(stdout);
 
-    virt_addr = map_base + (target & MAP_MASK);
-    *((UINT16 *)virt_addr) = writeval;
+    virt_addr = map_base + (Target & MAP_MASK);
+    *((UINT16 *)virt_addr) = Data;
 
     if(munmap(map_base, MAP_SIZE) == -1) FATAL;
     close(fd);
     return 0;
 }
 
-UINT32 MmioWrite32(off_t target, UINT32 writeval) {
+UINT32 MmioWrite32(off_t Target, UINT32 Data) {
     void *map_base, *virt_addr;
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_TRACE, "fd = %d, addr = 0x%x %s %d  \n", fd, Target, __FUNCTION__, __LINE__);
     /* Map one page */
-    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
+    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, Target & ~MAP_MASK);
     if(map_base == (void *)-1) FATAL;
 
     fflush(stdout);
 
-    virt_addr = map_base + (target & MAP_MASK);
-    *((unsigned int *)virt_addr) = (unsigned int)writeval;
+    virt_addr = map_base + (Target & MAP_MASK);
+    *((unsigned int *)virt_addr) = (unsigned int)Data;
 
     if(munmap(map_base, MAP_SIZE) == -1) FATAL;
     close(fd);

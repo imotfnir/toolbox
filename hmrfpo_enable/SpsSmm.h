@@ -108,7 +108,7 @@ HeciReq_HmrfpoLock(
   );
 
 EFI_STATUS
-HeciReq_HmrfpoEnable(
+HeciReqHmrfpoEnable(
 //  IN HECI_PROTOCOL *pSmmHeci,
   IN UINT64        Nonce
   );
