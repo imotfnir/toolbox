@@ -223,7 +223,8 @@ UINT8 HeciPciOr8(UINT32 Register, UINT8 Data) {
     return MmioOr8((PciBase | (MeBus << 20) | (MeDev << 15) | (MeFun << 12)) + Register, Data);
 }
 
-VOID InitVar() {
+VOID InitPlatformInfo() {
+    debug(DEBUG_INFO, "%s %d  \n", __FUNCTION__, __LINE__);
     MeBus = 0;
     MeDev = 0;
     MeFun = 0;
@@ -233,21 +234,32 @@ VOID InitVar() {
 
     // Broadwell-DE
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
+        PciBase = 0x80000000;
         MeDev = 22;
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x", PciBase, MeBus, MeDev, MeFun);
+        return;
     }
     // Skylake-D
-    else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
+    if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
+        PciBase = 0x80000000;
         MeDev = 22;
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x", PciBase, MeBus, MeDev, MeFun);
+        return;
     }
     // Icelake-D
-    else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
+    if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
+        PciBase = 0x80000000;
         MeDev = 24;
-    } else {
-        // Try PCIe Base = 0xe0000000;
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x", PciBase, MeBus, MeDev, MeFun);
+        return;
+    }
+    // Try PCIe Base = 0xe0000000;
+    PciBase = 0xe0000000;
+    // Denverton
+    if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
         PciBase = 0xe0000000;
-        // Denverton
-        if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
-            MeDev = 24;
-        }
+        MeDev = 24;
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x", PciBase, MeBus, MeDev, MeFun);
+        return;
     }
 }

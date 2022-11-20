@@ -80,7 +80,7 @@ int main(void) {
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     fflush(stdout);
 
-    InitVar();
+    InitPlatformInfo();
 
     // Broadwell-DE
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {

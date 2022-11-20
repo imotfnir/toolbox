@@ -42,7 +42,7 @@ UINT32 MmioAndThenOr32(UINTN Address, UINT32 AndData, UINT32 OrData);
 UINT8 MmioOr8(UINTN Address, UINT8 OrData);
 UINT16 MmioOr16(UINTN Address, UINT16 OrData);
 
-VOID InitVar();
+VOID InitPlatformInfo(VOID);
 UINT32 HeciPciRead32(UINT32 Register);
 UINT32 HeciPciWrite32(UINT32 Register, UINT32 Data);
 UINT8 HeciPciRead8(UINT32 Register);
