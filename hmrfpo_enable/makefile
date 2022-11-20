@@ -4,7 +4,7 @@
 DEBUG_LEVEL := 2
 MAJOR := 1
 MINOR := 6
-PATCH := 3
+PATCH := 4
 SEM_VER := v$(MAJOR).$(MINOR).$(PATCH)
 VERSION := \"$(SEM_VER)\"
 TOOL_NAME = hmrfpo_enable

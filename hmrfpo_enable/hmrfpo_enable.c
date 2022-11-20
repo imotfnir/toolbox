@@ -79,12 +79,6 @@ int main(void) {
     UINTN i;
     int fd;
 
-    printf("hmrfpo_enable version : %s\n", VERSION);
-
-    debug(2, "this is the debug message %d %s", 123, "haha");
-
-    return 0;
-
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     // printf("/dev/mem opened.\n");
     fflush(stdout);

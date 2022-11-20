@@ -19,7 +19,7 @@ UINT8 PciRead8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %a %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
@@ -42,7 +42,7 @@ UINT16 PciRead16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %a %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
@@ -66,7 +66,7 @@ UINT32 PciRead32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    debug(DEBUG_INFO, "fd = %d %a %d  \n", fd, __FUNCTION__, __LINE__);
+    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
@@ -89,6 +89,7 @@ UINT8 PciWrite8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT8 writeval) {
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
@@ -111,6 +112,7 @@ UINT16 PciWrite16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT16 writeval)
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
@@ -133,6 +135,7 @@ UINT32 PciWrite32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT32 writeval)
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
+    debug(DEBUG_INFO, "fd = %d %s %d  \n", fd, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
