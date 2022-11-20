@@ -14,42 +14,42 @@ UINT32 PciBase;
 
 UINT8 PciRead8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     off_t target;
-    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, Addr=0x%x %s %d \n", Bus, Dev, Fun, Addr, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
     return MmioRead8(target);
 }
 
 UINT16 PciRead16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     off_t target;
-    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, Addr=0x%x %s %d \n", Bus, Dev, Fun, Addr, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
     return MmioRead16(target);
 }
 
 UINT32 PciRead32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     off_t target;
-    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, Addr=0x%x %s %d \n", Bus, Dev, Fun, Addr, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
     return MmioRead32(target);
 }
 
 UINT8 PciWrite8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT8 Data) {
     off_t target;
-    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, Addr=0x%x %s %d \n", Bus, Dev, Fun, Addr, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
     return MmioWrite8(target, Data);
 }
 
 UINT16 PciWrite16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT16 Data) {
     off_t target;
-    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, Addr=0x%x %s %d \n", Bus, Dev, Fun, Addr, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
     return MmioWrite16(target, Data);
 }
 
 UINT32 PciWrite32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT32 Data) {
     off_t target;
-    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, %s %d \n", Bus, Dev, Fun, __FUNCTION__, __LINE__);
+    debug(DEBUG_TRACE, "Bus = 0x%x, Dev=0x%x, Fun=0x%x, Addr=0x%x %s %d \n", Bus, Dev, Fun, Addr, __FUNCTION__, __LINE__);
     target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
     return MmioWrite32(target, Data);
 }
@@ -208,27 +208,19 @@ MmioOr16(
     return MmioWrite16(Address, (UINT16)(MmioRead16(Address) | OrData));
 }
 
-UINTN PCIE_CFG_ADDRESS(UINT8 Bus, UINT8 Dev, UINT8 func, UINT32 reg) {
-    return ((UINTN)(PciBase + ((Bus) << 20) + ((Dev) << 15) + ((func) << 12) + reg));
-}
-
-UINTN MmPciBase(UINT8 Bus, UINT8 Dev, UINT8 Fun) {
-    return PCIE_CFG_ADDRESS(ME_Bus, ME_Dev, ME_Fun, 0);
-}
-
 UINT32 HeciPciRead32(UINT32 Register) {
-    return MmioRead32(MmPciBase(ME_Bus, ME_Dev, ME_Fun) + Register);
+    return PciRead32(ME_Bus, ME_Dev, ME_Fun, Register);
 }
 
 UINT32 HeciPciWrite32(UINT32 Register, UINT32 Data) {
-    return MmioWrite32(MmPciBase(ME_Bus, ME_Dev, ME_Fun) + Register, (UINT32)Data);
+    return PciWrite32(ME_Bus, ME_Dev, ME_Fun, Register, Data);
 }
 UINT8 HeciPciRead8(UINT32 Register) {
-    return MmioRead8(MmPciBase(ME_Bus, ME_Dev, ME_Fun) + Register);
+    return PciRead8(ME_Bus, ME_Dev, ME_Fun, Register);
 }
 
-UINT8 HeciPciOr8(UINT32 Register, UINT32 Data) {
-    return MmioOr8(MmPciBase(ME_Bus, ME_Dev, ME_Fun) + Register, (UINT8)Data);
+UINT8 HeciPciOr8(UINT32 Register, UINT8 Data) {
+    return MmioOr8((PciBase | (ME_Bus << 20) | (ME_Dev << 15) | (ME_Fun << 12)) + Register, Data);
 }
 
 VOID InitVar() {

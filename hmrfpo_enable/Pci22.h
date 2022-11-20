@@ -22,6 +22,8 @@
 #ifndef _PCI22_H_
 #define _PCI22_H_
 
+#include "efilib.h"
+
 #define PCI_MAX_BUS     255
 #define PCI_MAX_DEVICE  31
 #define PCI_MAX_FUNC    7
