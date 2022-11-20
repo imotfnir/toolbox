@@ -80,7 +80,6 @@ int main(void) {
     int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    // printf("/dev/mem opened.\n");
     fflush(stdout);
 
     InitVar();
@@ -103,7 +102,7 @@ int main(void) {
         PciWrite8(0x0, 0x16, 0x0, 0x8E, PciRead8(0x0, 0x16, 0x0, 0x8E) & 0xFE);
         // Get Nonce and send hmfpo_enable command
         Nonce = ((UINT64)PciRead32(0x0, 0x8, 0x2, 0xB0) << 32) | PciRead32(0x0, 0x8, 0x2, 0xAC);
-        // printf ("Nonce = 0x%08llx\n", Nonce);
+        debug(DEBUG_INFO, "Nonce = 0x%08llx, %s, %d\n", Nonce, __FUNCTION__, __LINE__);
         HeciReqHmrfpoEnable(Nonce);
     }
     // Denverton
@@ -114,7 +113,7 @@ int main(void) {
         Nonce = (Nonce | Data32) << 32;
         lpc_halRegGet(0xE3F8, &Data32);
         Nonce = (Nonce | Data32);
-        // printf ("Nonce = 0x%08llx\n", Nonce);
+        debug(DEBUG_INFO, "Nonce = 0x%08llx, %s, %d\n", Nonce, __FUNCTION__, __LINE__);
         HeciReqHmrfpoEnable(Nonce);
     }
     // Icelake-D
@@ -125,7 +124,7 @@ int main(void) {
         Nonce = (Nonce | Data32) << 32;
         lpc_halRegGet(0x6F8, &Data32);
         Nonce = (Nonce | Data32);
-        printf("Nonce = 0x%08llx\n", Nonce);
+        debug(DEBUG_INFO, "Nonce = 0x%08llx, %s, %d\n", Nonce, __FUNCTION__, __LINE__);
         HeciReqHmrfpoEnable(Nonce);
     }
     // Unknown chipset
