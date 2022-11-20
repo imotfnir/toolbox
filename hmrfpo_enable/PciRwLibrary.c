@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "PciRwLibrary.h"
+#include "debug_lib.h"
 #include "efilib.h"
 
 #define MAP_SIZE 4096UL
@@ -9,16 +10,17 @@
 UINT8 ME_Bus;
 UINT8 ME_Dev;
 UINT8 ME_Fun;
-UINT32 PCIBase;
+UINT32 PciBase;
 
-UINT8 PciRead8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
+UINT8 PciRead8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     UINT8 read_result; //, read_result_msb, read_result_lsb;
     void *map_base, *virt_addr;
     off_t target;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    target = PCIBase | (bus << 20) | (dev << 15) | (fun << 12) | addr;
+    debug(DEBUG_INFO, "fd = %d %a %d  \n", fd, __FUNCTION__, __LINE__);
+    target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
@@ -33,14 +35,15 @@ UINT8 PciRead8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     return read_result;
 }
 
-UINT16 PciRead16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
+UINT16 PciRead16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     UINT16 read_result; //, read_result_msb, read_result_lsb;
     void *map_base, *virt_addr;
     off_t target;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    target = PCIBase | (bus << 20) | (dev << 15) | (fun << 12) | addr;
+    debug(DEBUG_INFO, "fd = %d %a %d  \n", fd, __FUNCTION__, __LINE__);
+    target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
@@ -56,14 +59,15 @@ UINT16 PciRead16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     return read_result;
 }
 
-UINT32 PciRead32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
+UINT32 PciRead32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
     UINT32 read_result; //, read_result_msb, read_result_lsb;
     void *map_base, *virt_addr;
     off_t target;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    target = PCIBase | (bus << 20) | (dev << 15) | (fun << 12) | addr;
+    debug(DEBUG_INFO, "fd = %d %a %d  \n", fd, __FUNCTION__, __LINE__);
+    target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
@@ -79,13 +83,13 @@ UINT32 PciRead32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr) {
     return read_result;
 }
 
-UINT8 PciWrite8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT8 writeval) {
+UINT8 PciWrite8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT8 writeval) {
     void *map_base, *virt_addr;
     off_t target;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    target = PCIBase | (bus << 20) | (dev << 15) | (fun << 12) | addr;
+    target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
@@ -101,13 +105,13 @@ UINT8 PciWrite8(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT8 writeval) {
     return 0;
 }
 
-UINT16 PciWrite16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT16 writeval) {
+UINT16 PciWrite16(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT16 writeval) {
     void *map_base, *virt_addr;
     off_t target;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    target = PCIBase | (bus << 20) | (dev << 15) | (fun << 12) | addr;
+    target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
@@ -123,13 +127,13 @@ UINT16 PciWrite16(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT16 writeval)
     return 0;
 }
 
-UINT32 PciWrite32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT32 writeval) {
+UINT32 PciWrite32(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr, UINT32 writeval) {
     void *map_base, *virt_addr;
     off_t target;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    target = PCIBase | (bus << 20) | (dev << 15) | (fun << 12) | addr;
+    target = PciBase | (Bus << 20) | (Dev << 15) | (Fun << 12) | Addr;
 
     /* Map one page */
     map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, target & ~MAP_MASK);
@@ -148,7 +152,7 @@ UINT32 PciWrite32(UINT8 bus, UINT8 dev, UINT8 fun, UINT32 addr, UINT32 writeval)
 UINT8 MmioRead8(off_t target) {
     UINT8 read_result;
     void *map_base, *virt_addr;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     /* Map one page */
@@ -168,7 +172,7 @@ UINT8 MmioRead8(off_t target) {
 UINT16 MmioRead16(off_t target) {
     UINT16 read_result;
     void *map_base, *virt_addr;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     /* Map one page */
@@ -188,7 +192,7 @@ UINT16 MmioRead16(off_t target) {
 UINT32 MmioRead32(off_t target) {
     UINT32 read_result;
     void *map_base, *virt_addr;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     /* Map one page */
@@ -206,7 +210,7 @@ UINT32 MmioRead32(off_t target) {
 
 UINT8 MmioWrite8(off_t target, UINT8 writeval) {
     void *map_base, *virt_addr;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     /* Map one page */
@@ -225,7 +229,7 @@ UINT8 MmioWrite8(off_t target, UINT8 writeval) {
 
 UINT16 MmioWrite16(off_t target, UINT16 writeval) {
     void *map_base, *virt_addr;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     /* Map one page */
@@ -244,7 +248,7 @@ UINT16 MmioWrite16(off_t target, UINT16 writeval) {
 
 UINT32 MmioWrite32(off_t target, UINT32 writeval) {
     void *map_base, *virt_addr;
-    UINTN fd;
+    int fd;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
     /* Map one page */
@@ -293,11 +297,11 @@ MmioOr16(
     return MmioWrite16(Address, (UINT16)(MmioRead16(Address) | OrData));
 }
 
-UINTN PCIE_CFG_ADDRESS(UINT8 bus, UINT8 dev, UINT8 func, UINT32 reg) {
-    return ((UINTN)(PCIBase + ((bus) << 20) + ((dev) << 15) + ((func) << 12) + reg));
+UINTN PCIE_CFG_ADDRESS(UINT8 Bus, UINT8 Dev, UINT8 func, UINT32 reg) {
+    return ((UINTN)(PciBase + ((Bus) << 20) + ((Dev) << 15) + ((func) << 12) + reg));
 }
 
-UINTN MmPciBase(UINT8 bus, UINT8 dev, UINT8 fun) {
+UINTN MmPciBase(UINT8 Bus, UINT8 Dev, UINT8 Fun) {
     return PCIE_CFG_ADDRESS(ME_Bus, ME_Dev, ME_Fun, 0);
 }
 
@@ -322,7 +326,7 @@ VOID InitVar() {
     ME_Fun = 0;
 
     // Try PCIe Base = 0x80000000 first;
-    PCIBase = 0x80000000;
+    PciBase = 0x80000000;
 
     // Broadwell-DE
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
@@ -337,7 +341,7 @@ VOID InitVar() {
         ME_Dev = 24;
     } else {
         // Try PCIe Base = 0xe0000000;
-        PCIBase = 0xe0000000;
+        PciBase = 0xe0000000;
         // Denverton
         if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
             ME_Dev = 24;

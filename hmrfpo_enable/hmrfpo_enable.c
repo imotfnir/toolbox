@@ -77,7 +77,7 @@ int main(void) {
     UINT32 Data32;
     UINT8 StratchBus;
     UINTN i;
-    UINTN fd;
+    int fd;
 
     printf("hmrfpo_enable version : %s\n", VERSION);
 
