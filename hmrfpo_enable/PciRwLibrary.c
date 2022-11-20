@@ -7,9 +7,9 @@
 #define MAP_SIZE 4096UL
 #define MAP_MASK (MAP_SIZE - 1)
 
-UINT8 ME_Bus;
-UINT8 ME_Dev;
-UINT8 ME_Fun;
+UINT8 MeBus;
+UINT8 MeDev;
+UINT8 MeFun;
 UINT32 PciBase;
 
 UINT8 PciRead8(UINT8 Bus, UINT8 Dev, UINT8 Fun, UINT32 Addr) {
@@ -209,45 +209,45 @@ MmioOr16(
 }
 
 UINT32 HeciPciRead32(UINT32 Register) {
-    return PciRead32(ME_Bus, ME_Dev, ME_Fun, Register);
+    return PciRead32(MeBus, MeDev, MeFun, Register);
 }
 
 UINT32 HeciPciWrite32(UINT32 Register, UINT32 Data) {
-    return PciWrite32(ME_Bus, ME_Dev, ME_Fun, Register, Data);
+    return PciWrite32(MeBus, MeDev, MeFun, Register, Data);
 }
 UINT8 HeciPciRead8(UINT32 Register) {
-    return PciRead8(ME_Bus, ME_Dev, ME_Fun, Register);
+    return PciRead8(MeBus, MeDev, MeFun, Register);
 }
 
 UINT8 HeciPciOr8(UINT32 Register, UINT8 Data) {
-    return MmioOr8((PciBase | (ME_Bus << 20) | (ME_Dev << 15) | (ME_Fun << 12)) + Register, Data);
+    return MmioOr8((PciBase | (MeBus << 20) | (MeDev << 15) | (MeFun << 12)) + Register, Data);
 }
 
 VOID InitVar() {
-    ME_Bus = 0;
-    ME_Dev = 0;
-    ME_Fun = 0;
+    MeBus = 0;
+    MeDev = 0;
+    MeFun = 0;
 
     // Try PCIe Base = 0x80000000 first;
     PciBase = 0x80000000;
 
     // Broadwell-DE
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
-        ME_Dev = 22;
+        MeDev = 22;
     }
     // Skylake-D
     else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
-        ME_Dev = 22;
+        MeDev = 22;
     }
     // Icelake-D
     else if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
-        ME_Dev = 24;
+        MeDev = 24;
     } else {
         // Try PCIe Base = 0xe0000000;
         PciBase = 0xe0000000;
         // Denverton
         if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
-            ME_Dev = 24;
+            MeDev = 24;
         }
     }
 }
