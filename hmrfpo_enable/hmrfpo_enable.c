@@ -74,11 +74,6 @@ int main(void) {
     UINT32 RCBA;
     UINT32 Data32;
     UINT8 StratchBus;
-    UINTN i;
-    int fd;
-
-    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) FATAL;
-    fflush(stdout);
 
     InitPlatformInfo();
 
@@ -128,10 +123,8 @@ int main(void) {
     // Unknown chipset
     else {
         printf("Unknown chipset!!!!!\n");
-        close(fd);
         return 1;
     }
 
-    close(fd);
     return 0;
 }

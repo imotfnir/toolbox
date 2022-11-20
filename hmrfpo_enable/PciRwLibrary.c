@@ -113,6 +113,7 @@ UINT32 MmioRead32(off_t target) {
     read_result = *((unsigned int *)virt_addr);
 
     if(munmap(map_base, MAP_SIZE) == -1) FATAL;
+    close(fd);
     return read_result;
 }
 
@@ -236,21 +237,21 @@ VOID InitPlatformInfo() {
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
         PciBase = 0x80000000;
         MeDev = 22;
-        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x", PciBase, MeBus, MeDev, MeFun);
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x \n", PciBase, MeBus, MeDev, MeFun);
         return;
     }
     // Skylake-D
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
         PciBase = 0x80000000;
         MeDev = 22;
-        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x", PciBase, MeBus, MeDev, MeFun);
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x \n", PciBase, MeBus, MeDev, MeFun);
         return;
     }
     // Icelake-D
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
         PciBase = 0x80000000;
         MeDev = 24;
-        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x", PciBase, MeBus, MeDev, MeFun);
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x \n", PciBase, MeBus, MeDev, MeFun);
         return;
     }
     // Try PCIe Base = 0xe0000000;
@@ -259,7 +260,7 @@ VOID InitPlatformInfo() {
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
         PciBase = 0xe0000000;
         MeDev = 24;
-        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x", PciBase, MeBus, MeDev, MeFun);
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x \n", PciBase, MeBus, MeDev, MeFun);
         return;
     }
 }
