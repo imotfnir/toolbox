@@ -4,6 +4,14 @@
 
 *.bin binary
 *.BIN binary
+*.efi binary
+*.EFI binary
+*.rom binary
+*.ROM binary
+*.gz binary
+spsInfo* binary
+106bVCmd binary
+1062xfwdl binary
 
 *.bin binary diff=hex
 *.BIN binary diff=hex
