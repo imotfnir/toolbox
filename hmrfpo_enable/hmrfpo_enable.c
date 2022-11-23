@@ -75,6 +75,8 @@ int main(void) {
     UINT32 Data32;
     UINT8 StratchBus;
 
+    printf("%s version: %s \n", TOOL_NAME, VERSION);
+
     InitPlatformInfo();
 
     // Broadwell-DE

@@ -1,7 +1,7 @@
 ####################################################################
 # Variable
 ####################################################################
-DEBUG_LEVEL := 6
+DEBUG_LEVEL := 4
 MAJOR := 1
 MINOR := 6
 PATCH := 5
@@ -20,8 +20,9 @@ RANLIB := $(CROSS_COMPILE)ranlib
 STRIP := $(CROSS_COMPILE)strip
 
 CFLAGS += -g -O2 --save-temps
-CFLAGS += -DDEBUG_LEVEL=$(DEBUG_LEVEL)
-CFLAGS += -DVERSION=$(VERSION)
+CFLAGS += -D DEBUG_LEVEL=$(DEBUG_LEVEL)
+CFLAGS += -D TOOL_NAME=\"$(TOOL_NAME)\"
+CFLAGS += -D VERSION=$(VERSION)
 
 ####################################################################
 # Build

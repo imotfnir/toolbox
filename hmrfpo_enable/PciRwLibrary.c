@@ -225,7 +225,7 @@ UINT8 HeciPciOr8(UINT32 Register, UINT8 Data) {
 }
 
 VOID InitPlatformInfo() {
-    debug(DEBUG_INFO, "%s %d  \n", __FUNCTION__, __LINE__);
+    debug(DEBUG_DEBUG, "%s %d  \n", __FUNCTION__, __LINE__);
     MeBus = 0;
     MeDev = 0;
     MeFun = 0;
@@ -237,21 +237,21 @@ VOID InitPlatformInfo() {
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x8C548086) {
         PciBase = 0x80000000;
         MeDev = 22;
-        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x \n", PciBase, MeBus, MeDev, MeFun);
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x %s %d  \n", PciBase, MeBus, MeDev, MeFun, __FUNCTION__, __LINE__);
         return;
     }
     // Skylake-D
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0xA1C88086) {
         PciBase = 0x80000000;
         MeDev = 22;
-        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x \n", PciBase, MeBus, MeDev, MeFun);
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x %s %d  \n", PciBase, MeBus, MeDev, MeFun, __FUNCTION__, __LINE__);
         return;
     }
     // Icelake-D
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x18DC8086) {
         PciBase = 0x80000000;
         MeDev = 24;
-        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x \n", PciBase, MeBus, MeDev, MeFun);
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x %s %d  \n", PciBase, MeBus, MeDev, MeFun, __FUNCTION__, __LINE__);
         return;
     }
     // Try PCIe Base = 0xe0000000;
@@ -260,7 +260,7 @@ VOID InitPlatformInfo() {
     if(PciRead32(0x0, 0x1F, 0x0, 0x0) == 0x19DC8086) {
         PciBase = 0xe0000000;
         MeDev = 24;
-        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x \n", PciBase, MeBus, MeDev, MeFun);
+        debug(DEBUG_INFO, "PciBase=0x%x, MeBus = 0x%x, MeDev = 0x%x, MeFun=0x%x %s %d  \n", PciBase, MeBus, MeDev, MeFun, __FUNCTION__, __LINE__);
         return;
     }
 }
