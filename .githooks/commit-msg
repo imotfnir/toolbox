@@ -27,6 +27,12 @@ open( my $fh, '<', @INPUT_FILE )
 my ( $platform, $label, $version, $space, $type, $scope, $colon, $message );
 
 my $first_line = <$fh>;
+
+if ( $first_line =~ /^temp/gm ) {
+    print "Temporary commit detect, skip commit message format check";
+    exit 0;
+}
+
 if (
     $first_line =~ /^(?<type>$type_list)
                     (\((?<scope>($scope_list,\s)*$scope_list)\))?
