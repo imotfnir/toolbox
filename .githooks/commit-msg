@@ -41,8 +41,7 @@ if (
     var_print "message", $+{message};
 }
 else {
-    print "\nCOMMIT MESSAGE FORMAT INCORRECT\n";
-    print "Please use the correct format of the commit message:\n";
+    print "\nPlease use the correct format of the commit message:\n";
     print "
         <CommitType>(OptionalScope, ... ): <Message>\n
         <OptionalBody>\n
@@ -56,6 +55,9 @@ else {
         build(githooks): Release v0.1.0\n
         See merge request tool/toolbox!183\n
 ";
+    print "\e[1;31m";
+    print "\nCOMMIT MESSAGE FORMAT INCORRECT\n";
+    print "\e[0m";
     exit(1);
 }
 
