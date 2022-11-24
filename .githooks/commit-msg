@@ -28,10 +28,10 @@ my ( $platform, $label, $version, $space, $type, $scope, $colon, $message );
 
 my $first_line = <$fh>;
 if (
-    $first_line =~ /(?<type>$type_list)
-                    \((?<scope>($scope_list,\s)*$scope_list)\)
+    $first_line =~ /^(?<type>$type_list)
+                    (\((?<scope>($scope_list,\s)*$scope_list)\))?
                     (?<colon>:\s)
-                    (?<message>(\S+\s)+\S+\b$)
+                    (?<message>(\S+\s)*\S+\b$)
                     /gmx
   )
 {
@@ -41,12 +41,15 @@ if (
     var_print "message", $+{message};
 }
 else {
+    print "\nCOMMIT MESSAGE FORMAT INCORRECT\n";
     print "Please use the correct format of the commit message:\n";
     print "
         <CommitType>(OptionalScope, ... ): <Message>\n
         <OptionalBody>\n
         <OptionalFooter(s)>\n
 ";
+    print "Which CommitType is $type_list\n";
+    print "Which OptionalScope is $scope_list\n";
 
     print "Example:\n";
     print "
