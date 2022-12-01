@@ -2,9 +2,12 @@ localtest
 cscope.*
 tag*
 .tag*
-.trunk
-.vscode
+.trunk/
+.vscode/
 
 *.o
 *.s
 *.i
+/build/
+
+pcie_tools/pcie_tools
