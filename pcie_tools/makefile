@@ -8,20 +8,33 @@ TOOLS_NAME = pcie_tools
 OUTPUT_BIN = $(TOOLS_NAME)
 
 # Directory
-PCIE_TOOLS_DIR := $(shell pwd)
-REPO_DIR := $(shell cd .. && pwd)
+ifndef REPO_DIR
+	REPO_DIR := $(shell cd .. && pwd)
+endif
+ifndef INCLUDE_DIR
+	INCLUDE_DIR = $(REPO_DIR)/include
+endif
+ifndef SRC_DIR
+	SRC_DIR = $(REPO_DIR)/src
+endif
+ifndef TEST_DIR
+	TEST_DIR = $(REPO_DIR)/test
+endif
+ifndef TOOLS_DIR
+	TOOLS_DIR = $(REPO_DIR)/tools
+endif
+ifndef BUILD_DIR
+	BUILD_DIR = $(REPO_DIR)/build
+endif
+ifndef OUT_OBJS_DIR
+	OUT_OBJS_DIR = $(BUILD_DIR)
+endif
+PCIE_TOOLS_DIR = $(REPO_DIR)/$(TOOLS_NAME)
 
-INCLUDE_DIR = $(REPO_DIR)/include
-SRC_DIR = $(REPO_DIR)/src
-TEST_DIR = $(REPO_DIR)/test
-TOOLS_DIR = $(REPO_DIR)/tools
-BUILD_DIR = $(REPO_DIR)/build
-OUT_OBJS_DIR = $(BUILD_DIR)
 VPATH = $(SRC_DIR) $(BUILD_DIR) $(INCLUDE_DIR)
 vpath %.c $(SRC_DIR)
 vpath %.o $(OUT_OBJS_DIR)
 vpath %.h $(INCLUDE_DIR)
-
 
 # Tools and files
 CC = $(CROSS_COMPILE)gcc
