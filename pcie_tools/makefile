@@ -54,7 +54,7 @@ objs += $(addprefix $(out_objs_dir),$(notdir $(subst .c,.o,$(libs))))
 # Flags
 CFLAGS = -g -O3 --save-temp -Wall
 incs = $(include_dir)
-marco = DEBUG=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) TOOLS_NAME=$(TOOLS_NAME)
+marco = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) TOOLS_NAME=$(TOOLS_NAME)
 incs_param = $(foreach d, $(incs), -I$d)
 marco_param = $(foreach d, $(marco), -D$d)
 
@@ -71,9 +71,6 @@ $(build_dir):
 
 $(out_objs_dir):
 	mkdir -p $@
-
-$(target): $(objs) $(TOOLS_NAME).c
-	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)/$@
 
 $(target): $(objs) $(TOOLS_NAME).c
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)/$@
