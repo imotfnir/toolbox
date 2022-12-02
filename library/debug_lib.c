@@ -1,9 +1,10 @@
 #include <debug_lib.h>
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 
-void debug(__uint8_t debug_level, char *format, ...) {
+void debug_print(__uint8_t debug_level, char *format, ...) {
     va_list marker;
 
     va_start(marker, format);

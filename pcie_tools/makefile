@@ -1,5 +1,6 @@
 # Environment Variable
-DEBUG_LEVEL = 4
+DEBUG_LEVEL = 7
+IS_TRACE = true
 MAJOR = 0
 MINOR = 0
 PATCH = 1
@@ -54,7 +55,7 @@ incs_file = $(wildcard $(incs_dir)*.h)
 # Flags
 CFLAGS = -g -O3 --save-temp -Wall
 incs_dir = $(include_dir)
-marco = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) TOOLS_NAME=$(TOOLS_NAME)
+marco = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) TOOLS_NAME=$(TOOLS_NAME) IS_TRACE=$(IS_TRACE)
 incs_param = $(foreach d, $(incs_dir), -I$d)
 marco_param = $(foreach d, $(marco), -D$d)
 

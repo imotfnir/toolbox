@@ -7,20 +7,21 @@ __uint8_t io_read(__uint16_t address) {
     __uint8_t value;
 
     if(iopl(3) < 0) {
-        printf("fail to change iopl, errno(%s)\n", strerror(errno));
+        debug_print(DEBUG_ERROR, "fail to change iopl, errno(%s)\n", strerror(errno));
     }
 
     if(ioperm(address, 1, true) < 0) {
-        printf("fail to set ioperm\n");
+        debug_print(DEBUG_ERROR, "fail to set ioperm\n");
     }
     value = inb(address);
+    TRACE_PRINT("address:0x%x, value:0x%x", address, value);
 
     if(iopl(0) < 0) {
-        printf("fail to change iopl\n");
+        debug_print(DEBUG_ERROR, "fail to change iopl\n");
     }
 
     if(ioperm(address, 1, false) < 0) {
-        printf("fail to set ioperm\n");
+        debug_print(DEBUG_ERROR, "fail to set ioperm\n");
     }
 
     return value;
