@@ -2,6 +2,7 @@
 #define _DEBUG_LIB_H_
 
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,15 +26,15 @@
         exit(1);                                                                                              \
     } while(0)
 
-#define TRACE_PRINT(format, ...)                                                                                      \
-    do {                                                                                                              \
-        if(IS_TRACE) {                                                                                                \
-            debug_print(DEBUG_TRACE, format, __VA_ARGS__);                                                            \
+#define TRACE_PRINT(format, ...)                                                                                        \
+    do {                                                                                                                \
+        if(IS_TRACE) {                                                                                                  \
+            debug_print(DEBUG_TRACE, format, __VA_ARGS__);                                                              \
             debug_print(DEBUG_TRACE, "# Trace at func (%s), line (%d) in file (%s), \n", __func__, __LINE__, __FILE__); \
-        }                                                                                                             \
+        }                                                                                                               \
     } while(0)
 
 // Function declaration
-void debug_print(__uint8_t debug_level, char *format, ...);
+void debug_print(uint8_t debug_level, char *format, ...);
 
 #endif //_DEBUG_LIB_H_

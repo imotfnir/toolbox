@@ -5,10 +5,11 @@
 #include <stdint.h>
 #include <sys/io.h>
 #include <sys/stat.h>
-#include <sys/types.h>
+#include <stdint.h>
 #include <unistd.h>
 
-__uint8_t io_read(__uint16_t address);
-__uint8_t mmio_read(__uint64_t address);
+uint8_t io_read(uint16_t address);
+uint8_t mmio_read(uint64_t address);
+uint8_t pci_read(uint8_t bus, uint8_t dev, uint8_t fun, off_t off);
 
 #endif //_IO_LIB_H_

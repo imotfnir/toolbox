@@ -3,12 +3,13 @@
 
 #include <fcntl.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/io.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-__uint8_t io_read(__uint16_t address) {
-    __uint8_t value;
+uint8_t io_read(uint16_t address) {
+    uint8_t value;
 
     if(iopl(3) < 0) {
         debug_print(DEBUG_ERROR, "fail to change iopl, errno(%s)\n", strerror(errno));
@@ -31,7 +32,7 @@ __uint8_t io_read(__uint16_t address) {
     return value;
 }
 
-__uint8_t mmio_read(__uint64_t address) {
+uint8_t mmio_read(uint64_t address) {
     int fd;
     void *map_base;
 
@@ -41,5 +42,5 @@ __uint8_t mmio_read(__uint64_t address) {
     TRACE_PRINT("mmap at address %p", map_base);
 
     close(fd);
-    return *((__uint8_t *)map_base);
+    return *((uint8_t *)map_base);
 }
