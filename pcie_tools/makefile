@@ -46,20 +46,20 @@ vpath %.h $(include_dir)
 
 # Files
 target = $(TOOLS_NAME)
-srcs = $(wildcard $(src_dir)*.c)
-libs = $(wildcard $(library_dir)*.c)
-objs += $(addprefix $(out_objs_dir),$(notdir $(subst .c,.o,$(srcs))))
-objs += $(addprefix $(out_objs_dir),$(notdir $(subst .c,.o,$(libs))))
-
+srcs_file = $(wildcard $(src_dir)*.c)
+libs_file = $(wildcard $(library_dir)*.c)
+objs_file += $(addprefix $(out_objs_dir),$(notdir $(subst .c,.o,$(srcs_file))))
+objs_file += $(addprefix $(out_objs_dir),$(notdir $(subst .c,.o,$(libs_file))))
+incs_file = $(wildcard $(incs_dir)*.h)
 # Flags
 CFLAGS = -g -O3 --save-temp -Wall
-incs = $(include_dir)
+incs_dir = $(include_dir)
 marco = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) TOOLS_NAME=$(TOOLS_NAME)
-incs_param = $(foreach d, $(incs), -I$d)
+incs_param = $(foreach d, $(incs_dir), -I$d)
 marco_param = $(foreach d, $(marco), -D$d)
 
 # Build rule
-all: $(target) $(build_dir) $(out_objs_dir)
+all: $(build_dir) $(out_objs_dir) $(target)
 
 rebuild: clean all
 
@@ -72,16 +72,20 @@ $(build_dir):
 $(out_objs_dir):
 	mkdir -p $@
 
-$(target): $(objs) $(TOOLS_NAME).c
-	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)/$@
+$(target): $(objs_file) $(TOOLS_NAME).c
+	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)$@
 
-$(objs): %.c %.h
-	$(CC) $(CFLAGS) $(incs_param) -c $< -o $@
+$(out_objs_dir)io_lib.o: $(library_dir)io_lib.c $(out_objs_dir)debug_lib.o $(include_dir)debug_lib.h
+	$(CC) $(CFLAGS) $(incs_param) $(marco_param) -c $< -o $@
+
+
+$(out_objs_dir)debug_lib.o: $(library_dir)debug_lib.c $(include_dir)debug_lib.h
+	$(CC) $(CFLAGS) $(incs_param) $(marco_param) -c $< -o $@
 
 debug:
 	@echo repo_dir = $(repo_dir)
-	@echo srcs = $(srcs)
-	@echo libs = $(libs)
-	@echo objs = $(objs)
+	@echo srcs_file = $(srcs_file)
+	@echo libs_file = $(libs_file)
+	@echo objs_file = $(objs_file)
 
 .PHONY: all clean debug rebuild
