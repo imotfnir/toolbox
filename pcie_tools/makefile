@@ -75,11 +75,10 @@ $(out_objs_dir):
 $(target): $(objs_file) $(TOOLS_NAME).c
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)$@
 
-$(out_objs_dir)io_lib.o: $(library_dir)io_lib.c $(out_objs_dir)debug_lib.o $(include_dir)debug_lib.h
+$(out_objs_dir)io_lib.o: io_lib.c debug_lib.o debug_lib.h
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) -c $< -o $@
 
-
-$(out_objs_dir)debug_lib.o: $(library_dir)debug_lib.c $(include_dir)debug_lib.h
+$(out_objs_dir)debug_lib.o: debug_lib.c debug_lib.h
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) -c $< -o $@
 
 debug:
