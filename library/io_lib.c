@@ -44,3 +44,24 @@ uint8_t mmio_read(uint64_t address) {
     close(fd);
     return *((uint8_t *)map_base);
 }
+
+uint8_t pci_read(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
+    char *pcie_dir = malloc(50);
+    if(dev >= 32) {
+        debug_print(DEBUG_ERROR, "device number out of range = %d >= 32\n", dev);
+        return 0xff;
+    }
+    if(fun >= 8) {
+        debug_print(DEBUG_ERROR, "function number out of range = %d >= 8\n", fun);
+        return 0xff;
+    }
+    if(off >= 0x1000) {
+        debug_print(DEBUG_ERROR, "offset out of range = %d >= 4096\n", off);
+        return 0xff;
+    }
+
+    sprintf(pcie_dir, "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/\n", 0x0, bus, dev, fun);
+    printf("%s", pcie_dir);
+
+    return 0;
+}
