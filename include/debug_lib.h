@@ -9,12 +9,12 @@
 
 // Marco Variable
 // Debug Level
-#define DEBUG_FATAL 1
-#define DEBUG_ERROR 2
-#define DEBUG_WARN 3
-#define DEBUG_INFO 4
-#define DEBUG_DEBUG 5
-#define DEBUG_TRACE 6
+#define DEBUG_FATAL     1
+#define DEBUG_ERROR     2
+#define DEBUG_WARN      3
+#define DEBUG_INFO      4
+#define DEBUG_DEBUG     5
+#define DEBUG_TRACE     6
 #define DEBUG_FUNC_CALL 7
 
 // Marco Function

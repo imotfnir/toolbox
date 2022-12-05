@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/pci.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <sys/io.h>
@@ -47,8 +48,8 @@ uint8_t mmio_read(uint64_t address) {
 }
 
 uint8_t pci_read(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
-    char *pcie_csr_file = malloc(50);
-    FILE *file;
+    char *csr_file = malloc(50);
+    FILE *fp;
     uint8_t value;
 
     if(dev >= 32) {
@@ -64,20 +65,19 @@ uint8_t pci_read(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
         return -1;
     }
 
-    sprintf(pcie_csr_file, "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config", 0x0, bus, dev, fun);
-    printf("%s\n", pcie_csr_file);
+    sprintf(csr_file, "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config", 0x0, bus, dev, fun);
 
-    file = fopen(pcie_csr_file, "rb");
-    if(file == NULL) {
+    fp = fopen(csr_file, "rb");
+    if(fp == NULL) {
         perror("Error while opening the file.\n");
-        exit(EXIT_FAILURE);
+        FATAL;
     }
 
-    fseek(file, off, SEEK_SET);
+    fseek(fp, off, SEEK_SET);
 
-    value = (uint8_t)fgetc(file);
+    value = (uint8_t)fgetc(fp);
 
-    fclose(file);
+    fclose(fp);
 
     return value;
 }
