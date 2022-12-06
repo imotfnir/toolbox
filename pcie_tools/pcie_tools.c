@@ -5,13 +5,14 @@
 
 int main() {
     int test;
-    test = io_read(0x600);
+    test = io_read8(0x600);
     printf("0x%x\n", test);
-    test = mmio_read(0xa0000);
+    test = io_read16(0x600);
     printf("0x%x\n", test);
-    test = pci_read(0x16, 0x33, 0x2, 0x100);
+    test = io_read32(0x600);
     printf("0x%x\n", test);
-    test = pci_read(0x0, 0x2, 0x0, 0x10);
+    test = io_read64(0x600);
     printf("0x%x\n", test);
+
     return 0;
 }

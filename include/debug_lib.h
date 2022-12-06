@@ -26,6 +26,11 @@
         exit(1);                                                                                              \
     } while(0)
 
+#define ERROR                                                                                                 \
+    do {                                                                                                      \
+        fprintf(stderr, "Error at line %d, file %s (%d) [%s]\n", __LINE__, __FILE__, errno, strerror(errno)); \
+    } while(0)
+
 #define TRACE_PRINT(format, ...)                                                                                        \
     do {                                                                                                                \
         if(IS_TRACE) {                                                                                                  \

@@ -10,31 +10,59 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-uint8_t io_read(uint16_t address) {
-    uint8_t value;
+// static function declaration
+static uint64_t _io_read_worker(uint16_t address, io_width width);
 
-    if(iopl(3) < 0) {
-        debug_print(DEBUG_ERROR, "fail to change iopl, errno(%s)\n", strerror(errno));
-    }
+static uint64_t _io_read_worker(uint16_t address, io_width width) {
+    uint64_t value;
 
-    if(ioperm(address, 1, true) < 0) {
+    if(ioperm(address, width, true) < 0) {
         debug_print(DEBUG_ERROR, "fail to set ioperm\n");
     }
-    value = inb(address);
-    TRACE_PRINT("address:0x%x, value:0x%x", address, value);
 
-    if(iopl(0) < 0) {
-        debug_print(DEBUG_ERROR, "fail to change iopl\n");
+    switch(width) {
+    case io_width_8:
+        value = inb(address);
+        break;
+    case io_width_16:
+        value = inw(address);
+        break;
+    case io_width_32:
+        value = inl(address);
+        break;
+    case io_width_64:
+        value = (((uint64_t)inl(address + 4)) << 32) | inl(address);
+        break;
+    default:
+        debug_print(DEBUG_ERROR, "io width upsupport\n");
+        break;
     }
+    TRACE_PRINT("address:0x%x, width:%d, value:0x%x", address, width, value);
 
-    if(ioperm(address, 1, false) < 0) {
+    if(ioperm(address, width, false) < 0) {
         debug_print(DEBUG_ERROR, "fail to set ioperm\n");
     }
 
     return value;
 }
 
-uint8_t mmio_read(uint64_t address) {
+uint8_t io_read8(uint16_t address) {
+    return (uint8_t)_io_read_worker(address, io_width_8);
+}
+
+uint16_t io_read16(uint16_t address) {
+    return (uint16_t)_io_read_worker(address, io_width_16);
+}
+
+uint32_t io_read32(uint16_t address) {
+    return (uint32_t)_io_read_worker(address, io_width_32);
+}
+
+uint64_t io_read64(uint16_t address) {
+    return (uint64_t)_io_read_worker(address, io_width_64);
+}
+
+uint8_t mmio_read8(uint64_t address) {
     int fd;
     void *map_base;
 
@@ -47,7 +75,7 @@ uint8_t mmio_read(uint64_t address) {
     return *((uint8_t *)map_base);
 }
 
-uint8_t pci_read(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
+uint8_t pci_read8(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
     char *csr_file = malloc(50);
     FILE *fp;
     uint8_t value;
