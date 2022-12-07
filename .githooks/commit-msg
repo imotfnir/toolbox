@@ -9,7 +9,7 @@ my @INPUT_FILE = @ARGV;
 # define commit type and scope
 my $type_list =
   "(build|ci|docs|feat|fix|perf|refactor|style|test|revert|merge)";
-my $scope_list = "(ssd|pcie|hmrfpo|githooks|tools|nvm)";
+my $scope_list = "(ssd|pcie|hmrfpo|githooks|tools|nvm|library|autotest|bringup|docker)";
 
 sub var_print {
     my ( $name, $value ) = @_;
