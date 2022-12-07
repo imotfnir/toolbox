@@ -11,8 +11,6 @@ int main() {
     printf("0x%x\n", test);
     test = io_read32(0x600);
     printf("0x%x\n", test);
-    test = io_read64(0x600);
-    printf("0x%x\n", test);
-
+    test = io_write8(0x600, 0x0);
     return 0;
 }

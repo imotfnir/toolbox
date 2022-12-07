@@ -12,12 +12,20 @@
 
 // static function declaration
 static uint64_t _io_read_worker(uint16_t address, io_width width);
+static uint64_t _io_write_worker(uint16_t address, io_width width, uint64_t value);
 
+// function definition
 static uint64_t _io_read_worker(uint16_t address, io_width width) {
     uint64_t value;
 
+    if((address & (width - 1)) != 0) {
+        debug_print(DEBUG_ERROR, "io width is not aligned\n");
+        return -1;
+    }
+
     if(ioperm(address, width, true) < 0) {
         debug_print(DEBUG_ERROR, "fail to set ioperm\n");
+        return -1;
     }
 
     switch(width) {
@@ -34,13 +42,14 @@ static uint64_t _io_read_worker(uint16_t address, io_width width) {
         value = (((uint64_t)inl(address + 4)) << 32) | inl(address);
         break;
     default:
-        debug_print(DEBUG_ERROR, "io width upsupport\n");
+        debug_print(DEBUG_ERROR, "io width unsupport\n");
         break;
     }
     TRACE_PRINT("address:0x%x, width:%d, value:0x%x", address, width, value);
 
     if(ioperm(address, width, false) < 0) {
         debug_print(DEBUG_ERROR, "fail to set ioperm\n");
+        return -1;
     }
 
     return value;
@@ -60,6 +69,49 @@ uint32_t io_read32(uint16_t address) {
 
 uint64_t io_read64(uint16_t address) {
     return (uint64_t)_io_read_worker(address, io_width_64);
+}
+
+static uint64_t _io_write_worker(uint16_t address, io_width width, uint64_t value) {
+    if((address & (width - 1)) != 0) {
+        debug_print(DEBUG_ERROR, "io width is not aligned\n");
+        return -1;
+    }
+
+    if(ioperm(address, width, true) < 0) {
+        debug_print(DEBUG_ERROR, "fail to set ioperm\n");
+        return -1;
+    }
+
+    switch(width) {
+    case io_width_8:
+        outb(value, address);
+        break;
+    case io_width_16:
+        outw(value, address);
+        break;
+    case io_width_32:
+        outl(value, address);
+        break;
+    case io_width_64:
+        outl(value, address);
+        outl(value >> 32, address + 4);
+        break;
+    default:
+        debug_print(DEBUG_ERROR, "io width unsupport\n");
+        break;
+    }
+    TRACE_PRINT("address:0x%x, width:%d, value:0x%x", address, width, value);
+
+    if(ioperm(address, width, false) < 0) {
+        debug_print(DEBUG_ERROR, "fail to set ioperm\n");
+        return -1;
+    }
+
+    return value;
+}
+
+uint8_t io_write8(uint16_t address, uint8_t value) {
+    return (uint8_t)_io_write_worker(address, io_width_8, value);
 }
 
 uint8_t mmio_read8(uint64_t address) {
