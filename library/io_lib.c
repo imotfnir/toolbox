@@ -113,6 +113,15 @@ static uint64_t _io_write_worker(uint16_t address, io_width width, uint64_t valu
 uint8_t io_write8(uint16_t address, uint8_t value) {
     return (uint8_t)_io_write_worker(address, io_width_8, value);
 }
+uint16_t io_write16(uint16_t address, uint16_t value) {
+    return (uint16_t)_io_write_worker(address, io_width_16, value);
+}
+uint32_t io_write32(uint16_t address, uint32_t value) {
+    return (uint32_t)_io_write_worker(address, io_width_32, value);
+}
+uint64_t io_write64(uint16_t address, uint64_t value) {
+    return (uint64_t)_io_write_worker(address, io_width_64, value);
+}
 
 uint8_t mmio_read8(uint64_t address) {
     int fd;
