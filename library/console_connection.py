@@ -20,7 +20,7 @@ class console_connection:
                                      self._ip,
                                      '-p',
                                      self._port])
-        if(self.wait_for_pattern('[P|p]assword:')):
+        if (self.wait_for_pattern('[P|p]assword:')):
             print('Terminal server Enter password')
             self.send_command(self._password)
             print('Terminal server Login success') if self.wait_for_pattern(
