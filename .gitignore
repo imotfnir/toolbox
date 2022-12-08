@@ -4,6 +4,7 @@ tag*
 .tag*
 .trunk/
 .vscode/
+__pycache__/
 
 *.o
 *.s
