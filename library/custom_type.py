@@ -1,4 +1,5 @@
 import logging
+import ipaddress
 
 
 class Ipv4:
@@ -10,8 +11,8 @@ class Ipv4:
     def get_ip(self) -> str:
         return self._ip
 
-    def set_ip(self) -> None:
-        # ToDo
+    def set_ip(self, ip: str) -> None:
+        self._ip = ipaddress.ip_address(ip).__str__()
         return
 
     def get_port(self) -> int:
