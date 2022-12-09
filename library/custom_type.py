@@ -23,6 +23,19 @@ class Ipv4:
 
     @port.setter
     def port(self, port: int) -> None:
+        if (port < 0):
+            logging.warning("port number only can be 0~65535")
+            return
+        if (port > 65535):
+            logging.warning("port number only can be 0~65535")
+            return
+        self._port = port
+        return
+
+
+class ConsoleIp(Ipv4):
+    @Ipv4.port.setter
+    def port(self, port: int) -> None:
         if (port < 1):
             logging.warning("port number only can be 5101~5116")
             return
@@ -39,5 +52,23 @@ class Ipv4:
         return
 
 
+class SshIp(Ipv4):
+    @Ipv4.port.setter
+    def port(self, port: int) -> None:
+        self._port = 22
+        return
+
+
+class Connection:
+    def __init__(self, ipv4: Ipv4, username: str, password: str) -> None:
+        self._ipv4 = ipv4
+        self._username = username
+        self._password = password
+        pass
+
+
 if __name__ == "__main__":
+    a = ConsoleIp('123.123.123.123', 6000)
+    print(a.ip)
+    print(a.port)
     pass
