@@ -1,7 +1,9 @@
+from custom_type import Ipv4
+
+
 class PowerSwitch():
-    def __init__(self, ipv4_ip: str, ipv4_port: int, port: int) -> None:
-        self._ipv4_ip = ipv4_ip
-        self._ipv4_port = ipv4_port
+    def __init__(self, ipv4: Ipv4, port: int) -> None:
+        self._ipv4_ip = ipv4
         self._port = port
 
     def get_port(self) -> str:
@@ -15,20 +17,9 @@ class PowerSwitch():
         self._port = port
         return
 
-    def get_ipv4_ip(self) -> str:
-        return self._ipv4_ip
+    def get_ipv4(self) -> str:
+        return self._ipv4
 
-    def get_ipv4_ip(self, ip: str) -> None:
-        # ToDO
-        return
 
-    def get_ipv4_port(self) -> int:
-        return self._ipv4_port
-
-    def get_ipv4_port(self, port: int) -> None:
-        if (port < 5101):
-            self._ipv4_port = 5101
-        if (port > 5116):
-            self._ipv4_port = 5116
-        self._ipv4_port = port
-        return
+if __name__ == "__main__":
+    pass
