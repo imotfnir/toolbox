@@ -5,10 +5,12 @@ tag*
 .trunk/
 .vscode/
 __pycache__/
+*cache/
 
 *.o
 *.s
 *.i
+*.pyc
 /build/
 
 pcie_tools/pcie_tools
