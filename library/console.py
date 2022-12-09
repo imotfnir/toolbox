@@ -1,15 +1,15 @@
 import pexpect
 import time
+from library.custom_type import Ipv4
 
 
-class console_connection:
-    delay = 0.2
+class Console:
 
-    def __init__(self, ip, username, password, port):
-        self._ip = ip
+    def __init__(self, ipv4: Ipv4, username: str, password: str):
+        self.delay: float = 0.2
+        self._ipv4 = ipv4
         self._username = username
         self._password = password
-        self._port = port
         self._child = pexpect.spawn('ssh',
                                     ['-o',
                                      'StrictHostKeyChecking=no',
@@ -17,9 +17,9 @@ class console_connection:
                                      'UserKnownHostsFile=/dev/null',
                                      '-l',
                                      self._username,
-                                     self._ip,
+                                     self._ipv4.ip,
                                      '-p',
-                                     self._port])
+                                     self._ipv4.port])
         if (self.wait_for_pattern('[P|p]assword:')):
             print('Terminal server Enter password')
             self.send_command(self._password)

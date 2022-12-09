@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import library.console_connection as cc
+import library.console as cc
 import time
 
 
 PROMPT = "root@ubuntu:~#"
-console = cc.console_connection(
+console = cc.Console(
     ip='192.168.162.2',
     username='administrator',
     password='ufispace',

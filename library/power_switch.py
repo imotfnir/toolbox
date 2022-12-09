@@ -1,4 +1,4 @@
-from custom_type import Ipv4
+from library.custom_type import Ipv4
 
 
 class PowerSwitch():
