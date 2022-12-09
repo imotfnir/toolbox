@@ -21,6 +21,7 @@ export LIBRARY_DIR
 
 shell_files=$(find "${ROOT_DIR}" -name "*.sh" -not -path "./.githooks/*")
 shell_test_files=$(find "${ROOT_DIR}" -name "*.bats" -not -path "./.githooks/*")
+python_files=$(find "${ROOT_DIR}" -name "*.py" -not -path "./.githooks/*")
 
 color_print() {
     printf "\e[1;35m"
@@ -29,8 +30,10 @@ color_print() {
 }
 
 color_print "Checking *.sh *.bats code style"
-if ! shfmt -d -i 4 ${shell_files} ${shell_test_files}; then
-    echo "Check code style fail, please format your code by shfmt with 4 space indent"
+if shfmt -d -i 4 ${shell_files} ${shell_test_files}; then
+    echo "shfmt pass"
+else
+    echo >&2 "Check code style fail, please format your code by shfmt with 4 space indent"
     exit 1
 fi
 
@@ -45,6 +48,13 @@ if shellcheck --shell=bash ${shell_files}; then
 else
     echo >&2 "Shellcheck failed, please review your code again"
     exit 1
+fi
+
+color_print "Runing autopep8"
+if autopep8 -d --exit-code ${python_files}; then
+    echo "autopep8 pass"
+else
+    echo >&2 "autopep8 check fail"
 fi
 
 # Check non ascii code file
