@@ -57,6 +57,9 @@ else
     echo >&2 "autopep8 check fail"
 fi
 
+# ToDo: run mypy before commit
+# ToDo: run pytest before commit
+
 # Check non ascii code file
 if git rev-parse --verify HEAD >/dev/null 2>&1; then
     against=HEAD
