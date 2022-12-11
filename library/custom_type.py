@@ -4,8 +4,8 @@ import ipaddress
 
 class Ipv4:
     def __init__(self, ip: str, port: int) -> None:
-        self._ip = ip
-        self._port = port
+        self.ip = ip
+        self.port = port
         return
 
     @property
@@ -25,10 +25,10 @@ class Ipv4:
     def port(self, port: int) -> None:
         if (port < 0):
             logging.warning("port number only can be 0~65535")
-            return
+            raise ValueError("port number only can be 0~65535")
         if (port > 65535):
             logging.warning("port number only can be 0~65535")
-            return
+            raise ValueError("port number only can be 0~65535")
         self._port = port
         return
 
@@ -38,13 +38,13 @@ class ConsoleIp(Ipv4):
     def port(self, port: int) -> None:
         if (port < 1):
             logging.warning("port number only can be 5101~5116")
-            return
+            raise ValueError("port number only can be 5101~5116")
         if (port > 5116):
             logging.warning("port number only can be 5101~5116")
-            return
+            raise ValueError("port number only can be 5101~5116")
         if (port < 5101) and (port > 16):
             logging.warning("port number only can be 5101~5116")
-            return
+            raise ValueError("port number only can be 5101~5116")
         if (port <= 16):
             self._port = port + 5100
             return
@@ -55,6 +55,9 @@ class ConsoleIp(Ipv4):
 class SshIp(Ipv4):
     @Ipv4.port.setter
     def port(self, port: int) -> None:
+        if (port != 22):
+            raise ValueError("port number only can be 22")
+        logging.warning("port number only can be 22")
         self._port = 22
         return
 
@@ -68,7 +71,8 @@ class Connection:
 
 
 if __name__ == "__main__":
-    a = ConsoleIp('123.123.123.123', 6000)
-    print(a.ip)
+    a = Ipv4('123.123.123.123', 6000)
+    print(a.port)
+    a.port = -1
     print(a.port)
     pass
