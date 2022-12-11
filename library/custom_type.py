@@ -36,18 +36,12 @@ class Ipv4:
 class ConsoleIp(Ipv4):
     @Ipv4.port.setter
     def port(self, port: int) -> None:
-        if (port < 1):
+        if (port < 5101):
             logging.warning("port number only can be 5101~5116")
             raise ValueError("port number only can be 5101~5116")
         if (port > 5116):
             logging.warning("port number only can be 5101~5116")
             raise ValueError("port number only can be 5101~5116")
-        if (port < 5101) and (port > 16):
-            logging.warning("port number only can be 5101~5116")
-            raise ValueError("port number only can be 5101~5116")
-        if (port <= 16):
-            self._port = port + 5100
-            return
         self._port = port
         return
 
