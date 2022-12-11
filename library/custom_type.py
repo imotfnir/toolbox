@@ -47,6 +47,11 @@ class ConsoleIp(Ipv4):
 
 
 class SshIp(Ipv4):
+    def __init__(self, ip: str) -> None:
+        self.ip = ip
+        self.port = 22
+        return
+
     @Ipv4.port.setter
     def port(self, port: int) -> None:
         if (port != 22):

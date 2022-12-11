@@ -4,7 +4,7 @@ from library.custom_type import *
 
 ipv4_obj = Ipv4(ip='192.168.162.2', port=5102)
 console_obj = ConsoleIp(ip="192.168.0.1", port=5101)
-ssh_obj = SshIp(ip="192.168.0.1", port=22)
+ssh_obj = SshIp(ip="192.168.0.1")
 
 
 def ipv4_item(obj: Ipv4) -> None:
