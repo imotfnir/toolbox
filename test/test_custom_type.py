@@ -49,12 +49,25 @@ def console_item(obj: Ipv4) -> None:
     return
 
 
+def console_exception_item(obj: Ipv4) -> None:
+    ipv4_exception_item(obj)
+    with pytest.raises(ValueError):
+        obj.port = 5117
+    with pytest.raises(ValueError):
+        obj.port = 5100
+    with pytest.raises(ValueError):
+        obj.port = 2000
+    return
+
+
 def ssh_item(obj: Ipv4) -> None:
     obj.ip = "10.58.151.139"
     assert obj.ip == "10.58.151.139"
     obj.port = 22
     assert obj.port == 22
     return
+
+
 # Test
 
 
@@ -75,13 +88,7 @@ def test_console() -> None:
 
 
 def test_console_exception() -> None:
-    ipv4_exception_item(console_obj)
-    with pytest.raises(ValueError):
-        console_obj.port = 5117
-    with pytest.raises(ValueError):
-        console_obj.port = 5100
-    with pytest.raises(ValueError):
-        console_obj.port = 2000
+    console_exception_item(console_obj)
     return
 
 

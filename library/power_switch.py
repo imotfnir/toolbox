@@ -1,24 +1,32 @@
-from library.custom_type import Ipv4
+from library.custom_type import *
 
 
 class PowerSwitch():
-    def __init__(self, ipv4: Ipv4, port: int) -> None:
-        self._ipv4_ip = ipv4
-        self._port = port
+    def __init__(self, console: ConsoleIp, port: int) -> None:
+        self.console = console
+        self.port = port
 
-    def get_port(self) -> str:
-        return self._port
+    @property
+    def console(self) -> ConsoleIp:
+        return self._console
 
-    def set_port(self, port: int) -> None:
-        if (port < 0):
-            self._port = 0
-        if (port > 4):
-            self._port = 4
-        self._port = port
+    @console.setter
+    def console(self, console: ConsoleIp) -> None:
+        self._console = console
         return
 
-    def get_ipv4(self) -> str:
-        return self._ipv4
+    @property
+    def port(self) -> int:
+        return self._port
+
+    @port.setter
+    def port(self, port: int) -> None:
+        if (port < 1):
+            raise ValueError("Power switch port number only can be 1,2,3,4")
+        if (port > 4):
+            raise ValueError("Power switch port number only can be 1,2,3,4")
+        self._port = port
+        return
 
 
 if __name__ == "__main__":
