@@ -55,6 +55,7 @@ if autopep8 -d --exit-code ${python_files}; then
     echo "autopep8 pass"
 else
     echo >&2 "autopep8 check fail"
+    exit 1
 fi
 
 # ToDo: run mypy before commit
