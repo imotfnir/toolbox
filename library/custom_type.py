@@ -71,8 +71,4 @@ class Connection:
 
 
 if __name__ == "__main__":
-    a = Ipv4('123.123.123.123', 6000)
-    print(a.port)
-    a.port = -1
-    print(a.port)
     pass
