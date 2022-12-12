@@ -32,5 +32,14 @@ def test_ps_exception():
     return
 
 
+def test_ps_command():
+    ps.port = 4
+    assert ps.poweroff_cmd == ":040402f5"
+    assert ps.poweron_cmd == ":040401f6"
+    ps.port = 1
+    assert ps.poweroff_cmd == ":040102f8"
+    assert ps.poweron_cmd == ":040101f9"
+
+
 if __name__ == "__main__":
     pass
