@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import library.console as cc
+import library.connection as cc
 import time
 
 
