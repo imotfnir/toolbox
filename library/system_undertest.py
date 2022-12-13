@@ -2,7 +2,8 @@ from library.custom_type import *
 
 
 class system_undertest():
-    def __init__(self, console_ip: ConsoleIp = None, ssh_ip: SshIp = None, bmc_ip: SshIp = None) -> None:
+    def __init__(self, console_ip: ConsoleIp = None,
+                 ssh_ip: SshIp = None, bmc_ip: SshIp = None) -> None:
         self._console_ip = console_ip
         self._ssh_ip = ssh_ip
         self._bmc_ip = bmc_ip

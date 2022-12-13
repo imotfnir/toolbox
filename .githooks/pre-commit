@@ -50,8 +50,10 @@ else
     exit 1
 fi
 
+export PYTHONPATH="${ROOT_DIR}"
+
 color_print "Runing autopep8"
-if autopep8 -d --exit-code ${python_files}; then
+if autopep8 -a -d --exit-code --max-line-length=79 ${python_files}; then
     echo "autopep8 pass"
 else
     echo >&2 "autopep8 check fail"
