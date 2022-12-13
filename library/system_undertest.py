@@ -1,7 +1,7 @@
 from library.custom_type import *
 
 
-class system_undertest():
+class SystemUnderTest():
     def __init__(self, console_ip: ConsoleIp = None,
                  ssh_ip: SshIp = None, bmc_ip: SshIp = None) -> None:
         self._console_ip = console_ip
@@ -15,7 +15,6 @@ class system_undertest():
         self._nvm = None
         self._cpu_cpld = None
         self._mb_cpld = None
-        pass
 
 
 if __name__ == '__main__':

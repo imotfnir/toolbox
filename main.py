@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import library.connection as cc
-import time
 
 
 PROMPT = "root@ubuntu:~#"
@@ -10,8 +9,8 @@ console = cc.Console(
     password='ufispace',
     port='5101')
 
-console.send_command("\r\n")
 
+console.send_command("\r\n")
 console.wait_for_pattern("ubuntu login:")
 console.send_command("root")
 console.wait_for_pattern("Password:")
