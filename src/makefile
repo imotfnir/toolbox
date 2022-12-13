@@ -10,7 +10,7 @@ LD = $(CROSS_COMPILE)ld
 AR = $(CROSS_COMPILE)ar
 RM = rm -f
 SHELL = /bin/sh
-TOOLS_NAME = pcie_tools
+PCIE_TOOLS = pcie_tools
 
 # Directory
 ifndef repo_dir
@@ -37,7 +37,7 @@ endif
 ifndef out_objs_dir
 	out_objs_dir = $(build_dir)objs/
 endif
-pcie_tools_dir = $(repo_dir)$(TOOLS_NAME)/
+pcie_tools_dir = $(repo_dir)$(PCIE_TOOLS)/
 
 VPATH = $(src_dir) $(build_dir) $(include_dir)
 vpath %.c $(library_dir)
@@ -46,21 +46,20 @@ vpath %.o $(out_objs_dir)
 vpath %.h $(include_dir)
 
 # Files
-target = $(TOOLS_NAME)
+
 srcs_file = $(wildcard $(src_dir)*.c)
 libs_file = $(wildcard $(library_dir)*.c)
-objs_file += $(addprefix $(out_objs_dir),$(notdir $(subst .c,.o,$(srcs_file))))
 objs_file += $(addprefix $(out_objs_dir),$(notdir $(subst .c,.o,$(libs_file))))
 incs_file = $(wildcard $(incs_dir)*.h)
 # Flags
 CFLAGS = -g -O3 --save-temp -Wall
 incs_dir = $(include_dir)
-marco = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) TOOLS_NAME=$(TOOLS_NAME) IS_TRACE=$(IS_TRACE)
+marco = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) IS_TRACE=$(IS_TRACE)
 incs_param = $(foreach d, $(incs_dir), -I$d)
 marco_param = $(foreach d, $(marco), -D$d)
 
 # Build rule
-all: $(build_dir) $(out_objs_dir) $(target)
+all: $(build_dir) $(out_objs_dir) pcie_tools io_tools
 
 rebuild: clean all
 
@@ -73,7 +72,10 @@ $(build_dir):
 $(out_objs_dir):
 	mkdir -p $@
 
-$(target): $(objs_file) $(TOOLS_NAME).c
+pcie_tools: $(objs_file) pcie_tools.c
+	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)$@
+
+io_tools: $(objs_file) io_tools.c
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)$@
 
 $(out_objs_dir)io_lib.o: io_lib.c debug_lib.o debug_lib.h
