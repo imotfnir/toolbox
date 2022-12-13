@@ -6,10 +6,10 @@ else
     readonly __STRESS_LIB_SH=1
 fi
 
-# shellcheck source-path=src
-source "${SOURCE_DIR}/std_lib.sh"
-# shellcheck source-path=src
-source "${SOURCE_DIR}/error_handling_lib.sh"
+# shellcheck source-path=include
+source "${INCLUDE_DIR}/std_lib.sh"
+# shellcheck source-path=include
+source "${INCLUDE_DIR}/error_handling_lib.sh"
 
 is_argument_valid() {
     if [ "${CYCLE}" -lt "0" ]; then

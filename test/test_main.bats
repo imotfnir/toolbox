@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 bats_require_minimum_version 1.5.0
 
-load "${SOURCE_DIR}/stress_lib.sh"
+load "${INCLUDE_DIR}/stress_lib.sh"
 
 DEBUG=6
 RUN_COMMAND="./ssd_stress_tool.sh"

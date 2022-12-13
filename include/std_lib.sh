@@ -6,8 +6,8 @@ else
     readonly __STD_LIB_SH=1
 fi
 
-# shellcheck source-path=src
-source "${SOURCE_DIR}/error_handling_lib.sh"
+# shellcheck source-path=include
+source "${INCLUDE_DIR}/error_handling_lib.sh"
 
 get_cpu_model() {
     local model
