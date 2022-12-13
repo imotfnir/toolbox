@@ -1,3 +1,4 @@
+"""System module."""
 import logging
 import ipaddress
 
@@ -6,7 +7,6 @@ class Ipv4:
     def __init__(self, ip: str, port: int) -> None:
         self.ip = ip
         self.port = port
-        return
 
     @property
     def ip(self) -> str:
@@ -14,8 +14,7 @@ class Ipv4:
 
     @ip.setter
     def ip(self, ip: str) -> None:
-        self._ip = ipaddress.ip_address(ip).__str__()
-        return
+        self._ip = str(ipaddress.ip_address(ip))
 
     @property
     def port(self) -> int:
@@ -23,42 +22,37 @@ class Ipv4:
 
     @port.setter
     def port(self, port: int) -> None:
-        if (port < 0):
+        if port < 0:
             logging.warning("port number only can be 0~65535")
             raise ValueError("port number only can be 0~65535")
-        if (port > 65535):
+        if port > 65535:
             logging.warning("port number only can be 0~65535")
             raise ValueError("port number only can be 0~65535")
         self._port = port
-        return
 
 
 class ConsoleIp(Ipv4):
     @Ipv4.port.setter
     def port(self, port: int) -> None:
-        if (port < 5101):
+        if port < 5101:
             logging.warning("port number only can be 5101~5116")
             raise ValueError("port number only can be 5101~5116")
-        if (port > 5116):
+        if port > 5116:
             logging.warning("port number only can be 5101~5116")
             raise ValueError("port number only can be 5101~5116")
         self._port = port
-        return
 
 
 class SshIp(Ipv4):
     def __init__(self, ip: str) -> None:
-        self.ip = ip
-        self.port = 22
-        return
+        super().__init__(ip=ip, port=22)
 
     @Ipv4.port.setter
     def port(self, port: int) -> None:
-        if (port != 22):
+        if port != 22:
             raise ValueError("port number only can be 22")
         logging.warning("port number only can be 22")
         self._port = 22
-        return
 
 
 class Connection:
@@ -66,7 +60,6 @@ class Connection:
         self._ipv4 = ipv4
         self._username = username
         self._password = password
-        pass
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 import pexpect
 import time
-from library.custom_type import Ipv4
+from autotestlib.custom_type import Ipv4
 
 
 class Console:

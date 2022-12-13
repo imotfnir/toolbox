@@ -1,5 +1,5 @@
 import pytest
-from library.power_switch import *
+from autotestlib.power_switch import *
 
 
 console = ConsoleIp(ip="192.168.162.2", port=5116)

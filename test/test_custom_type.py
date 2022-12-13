@@ -1,5 +1,5 @@
 import pytest
-from library.custom_type import *
+from autotestlib.custom_type import *
 
 
 ipv4_obj = Ipv4(ip='192.168.162.2', port=5102)

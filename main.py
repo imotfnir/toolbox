@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import library.connection as cc
+import autotestlib.connection as cc
 
 
 PROMPT = "root@ubuntu:~#"

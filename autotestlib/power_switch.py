@@ -1,4 +1,4 @@
-from library.custom_type import *
+from autotestlib.custom_type import *
 
 
 class PowerSwitch():
@@ -16,7 +16,6 @@ class PowerSwitch():
     @console.setter
     def console(self, console: ConsoleIp) -> None:
         self._console = console
-        return
 
     @property
     def port(self) -> int:
@@ -24,12 +23,11 @@ class PowerSwitch():
 
     @port.setter
     def port(self, port: int) -> None:
-        if (port < 1):
+        if port < 1:
             raise ValueError("Power switch port number only can be 1,2,3,4")
-        if (port > 4):
+        if port > 4:
             raise ValueError("Power switch port number only can be 1,2,3,4")
         self._port = port
-        return
 
     @property
     def poweroff_cmd(self) -> str:

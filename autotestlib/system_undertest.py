@@ -1,4 +1,4 @@
-from library.custom_type import *
+from autotestlib.custom_type import *
 
 
 class SystemUnderTest():
