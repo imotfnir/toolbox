@@ -10,7 +10,6 @@
 void show_help();
 void show_version();
 unsigned long djb_hash(char *str);
-bool is_input_arguments_valid(int num_of_args, char *args[]);
 
 void show_help() {
     // ToDo
@@ -40,36 +39,6 @@ bool is_flag_supported(char *flag) {
     return true;
 }
 
-bool is_input_arguments_valid(int num_of_args, char *args[]) {
-    bool is_mode_setted = false;
-
-    for(size_t i = 0; i < num_of_args; i++) {
-        if((strcasecmp("-io", args[i]) == 0) || (strcasecmp("-mmio", args[i]) == 0) || (strcasecmp("-pci", args[i]) == 0)) {
-            if(is_mode_setted) {
-                debug_print(DEBUG_WARN, "Read write mode duplicated\n");
-                return false;
-            }
-            is_mode_setted = true;
-        }
-
-        if((strcasecmp("-w", args[i]) == 0) || (strcasecmp("--width", args[i]) == 0)) {
-            switch(atoi(args[i + 1])) {
-            case io_width_8:
-            case io_width_16:
-            case io_width_32:
-            case io_width_64:
-                break;
-            default:
-                debug_print(DEBUG_WARN, "io width unsupported\n");
-                return false;
-                break;
-            }
-        }
-    }
-
-    return true;
-}
-
 int main(int argc, char *argv[]) {
     rw_mode mode = io;
     io_width width = io_width_8;
@@ -83,17 +52,12 @@ int main(int argc, char *argv[]) {
         TRACE_PRINT("argv[%d] %-11s hash:0x%-16lX ", i, argv[i], djb_hash(argv[i]));
     }
 
-    // if(!is_input_arguments_valid(argc, argv)) {
-    //     debug_print(DEBUG_ERROR, "Invalid input arguments\n");
-    //     return 1;
-    // }
-
     for(size_t i = 1; i < argc; i++) {
         val = strtoul(argv[i], &convert_checker, 0);
         if(*convert_checker == '\0') { /* argv[i] convert to digit success */
             addr = val;
             debug_print(DEBUG_INFO, "argv[%d] %-8s: 0x%x\n", i, "Address", addr);
-            // continue;
+            continue;
         }
 
         if(!is_flag_supported(argv[i])) {
