@@ -14,6 +14,14 @@ typedef enum {
     io_width_64 = 8,
 } io_width;
 
+typedef enum {
+    io,
+    mmio,
+    pci,
+    cpucpld,
+    mbcpld
+} rw_mode;
+
 uint8_t io_read8(uint16_t address);
 uint16_t io_read16(uint16_t address);
 uint32_t io_read32(uint16_t address);
