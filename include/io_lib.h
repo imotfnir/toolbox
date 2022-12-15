@@ -2,6 +2,7 @@
 #define _IO_LIB_H_
 
 #include <fcntl.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <sys/io.h>
 #include <sys/stat.h>
@@ -14,13 +15,7 @@ typedef enum {
     io_width_64 = 8,
 } io_width;
 
-typedef enum {
-    io,
-    mmio,
-    pci,
-    cpucpld,
-    mbcpld
-} rw_mode;
+typedef enum { io, mmio, pci, cpucpld, mbcpld } rw_mode;
 
 typedef struct {
     char *key;
@@ -32,6 +27,8 @@ typedef struct {
     uint64_t data;
     rw_mode mode;
     io_width width;
+    bool is_address_setted;
+    bool is_data_setted;
 } rw_config;
 
 uint8_t io_read8(uint16_t address);

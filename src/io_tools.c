@@ -56,10 +56,12 @@ bool set_digit_args_to_config(rw_config *cfg, int val) {
     }
     if(digit_args_count == 0) {
         cfg->address = val;
+        cfg->is_address_setted = true;
         debug_print(DEBUG_DEBUG, "Address = 0x%x\n", cfg->address);
     }
     if(digit_args_count == 1) {
         cfg->data = val;
+        cfg->is_data_setted = true;
         debug_print(DEBUG_DEBUG, "Address = 0x%x\n", cfg->data);
     }
 
@@ -119,6 +121,8 @@ int main(int argc, char *argv[]) {
     cfg->data = 0x0;
     cfg->mode = io;
     cfg->width = io_width_8;
+    cfg->is_address_setted = false;
+    cfg->is_data_setted = false;
 
     debug_print(DEBUG_INFO, "Your have enter %d arguments\n", argc);
     for(size_t i = 0; i < argc; i++) {
@@ -156,6 +160,11 @@ int main(int argc, char *argv[]) {
            || (strcasecmp("-pci", argv[i]) == 0) || (strcasecmp("-cc", argv[i]) == 0)
            || (strcasecmp("-mc", argv[i]) == 0)) {
             if(!set_mode_to_config(cfg, argv[i])) return 1;
+        }
+
+        if(!cfg->is_address_setted) {
+            debug_print(DEBUG_ERROR, "Address can not empty\n");
+            return 1;
         }
     }
     return 0;
