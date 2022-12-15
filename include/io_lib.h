@@ -22,6 +22,18 @@ typedef enum {
     mbcpld
 } rw_mode;
 
+typedef struct {
+    char *key;
+    rw_mode value;
+} mode_dict;
+
+typedef struct {
+    daddr_t address;
+    uint64_t data;
+    rw_mode mode;
+    io_width width;
+} rw_config;
+
 uint8_t io_read8(uint16_t address);
 uint16_t io_read16(uint16_t address);
 uint32_t io_read32(uint16_t address);

@@ -7,11 +7,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char *flag_list[] = { "-io", "-mmio", "-pci", "-cc", "-mb" };
-
 void show_help();
 void show_version();
 unsigned long djb_hash(char *str);
+bool is_flag_supported(char *flag);
+
+const char *flag_list[] = { "-h", "--help", "-v", "--version", "-w", "--width", "-io", "-mmio", "-pci", "-cc", "-mc" };
 
 void show_help() {
     // ToDo
@@ -37,11 +38,35 @@ unsigned long djb_hash(char *str) {
 }
 
 bool is_flag_supported(char *flag) {
-    for(size_t i = 0; i < 5; i++) {
+    const int len = sizeof(flag_list) / sizeof(flag_list[0]);
+    for(size_t i = 0; i < len; i++) {
         if(strcasecmp(flag_list[i], flag) == 0)
             return true;
     }
     return false;
+}
+
+bool set_mode(rw_mode *mode, char *flag) {
+    static bool is_mode_setted = false;
+
+    if(is_mode_setted) {
+        debug_print(DEBUG_ERROR, "Mode duplicated\n");
+        return false;
+    }
+
+    if(strcasecmp("-io", flag) == 0)
+        *mode = io;
+    if(strcasecmp("-mmio", flag) == 0)
+        *mode = mmio;
+    if(strcasecmp("-pci", flag) == 0)
+        *mode = pci;
+    if(strcasecmp("-cc", flag) == 0)
+        *mode = cpucpld;
+    if(strcasecmp("-mc", flag) == 0)
+        *mode = mbcpld;
+
+    is_mode_setted = true;
+    return true;
 }
 
 int main(int argc, char *argv[]) {
