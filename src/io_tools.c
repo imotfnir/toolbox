@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char *flag_list[] = { "-io", "-mmio", "-pci", "-cc", "-mb" };
+
 void show_help();
 void show_version();
 unsigned long djb_hash(char *str);
@@ -35,8 +37,11 @@ unsigned long djb_hash(char *str) {
 }
 
 bool is_flag_supported(char *flag) {
-    // ToDo
-    return true;
+    for(size_t i = 0; i < 5; i++) {
+        if(strcasecmp(flag_list[i], flag) == 0)
+            return true;
+    }
+    return false;
 }
 
 int main(int argc, char *argv[]) {
@@ -61,7 +66,7 @@ int main(int argc, char *argv[]) {
         }
 
         if(!is_flag_supported(argv[i])) {
-            debug_print(DEBUG_ERROR, "argv[%d] flag not support %-8s", i, argv[i]);
+            debug_print(DEBUG_ERROR, "argv[%d] flag: '%s' not support ", i, argv[i]);
             return 1;
         }
 
