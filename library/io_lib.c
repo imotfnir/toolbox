@@ -14,6 +14,10 @@
 static uint64_t _io_read_worker(uint16_t address, io_width width);
 static uint64_t _io_write_worker(uint16_t address, io_width width, uint64_t value);
 static uint64_t _mmio_read_worker(uint64_t address, io_width width);
+static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t value);
+// static uint64_t _pci_read_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width);
+// static uint64_t
+// _pci_write_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width, uint64_t value);
 
 // function definition
 static uint64_t _io_read_worker(uint16_t address, io_width width) {
@@ -108,6 +112,35 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
     return *((uint64_t *)map_base);
 }
 
+static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t value) {
+    int fd;
+    void *map_base;
+
+    if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) FATAL;
+
+    if((map_base = mmap(0, width, PROT_READ, MAP_SHARED, fd, address)) == MAP_FAILED) FATAL;
+    TRACE_PRINT("mmap at address %p", map_base);
+
+    switch(width) {
+    case io_width_8:
+        *(uint8_t *)map_base = value;
+        break;
+    case io_width_16:
+        *(uint16_t *)map_base = value;
+        break;
+    case io_width_32:
+        *(uint32_t *)map_base = value;
+        break;
+    case io_width_64:
+    default:
+        debug_print(DEBUG_ERROR, "io width unsupport\n");
+        break;
+    }
+
+    close(fd);
+    return value;
+}
+
 uint8_t io_read8(uint16_t address) {
     return (uint8_t)_io_read_worker(address, io_width_8);
 }
@@ -156,6 +189,22 @@ uint64_t mmio_read64(uint64_t address) {
     return (uint64_t)_mmio_read_worker(address, io_width_64);
 }
 
+uint8_t mmio_write8(uint64_t address, uint8_t value) {
+    return _mmio_write_worker(address, io_width_8, value);
+}
+
+uint16_t mmio_write16(uint64_t address, uint16_t value) {
+    return _mmio_write_worker(address, io_width_16, value);
+}
+
+uint32_t mmio_write32(uint64_t address, uint32_t value) {
+    return _mmio_write_worker(address, io_width_32, value);
+}
+
+uint32_t mmio_write64(uint64_t address, uint64_t value) {
+    return _mmio_write_worker(address, io_width_64, value);
+}
+
 uint8_t pci_read8(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
     char *csr_file = malloc(50);
     FILE *fp;
@@ -189,4 +238,30 @@ uint8_t pci_read8(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
     fclose(fp);
 
     return value;
+}
+
+void rw_worker(rw_config *cfg) {
+    switch(cfg->mode) {
+    case io:
+        // if(cfg->is_data_setted) {
+        //     _io_write_worker(cfg->address, cfg->width, cfg->data);
+        //     return;
+        // }
+        // _io_read_worker(cfg->address, cfg->width);
+        return;
+    case mmio:
+        // if(cfg->is_data_setted) {
+        //     _mmio_write_worker(cfg->address, cfg->width, cfg->data);
+        //     return;
+        // }
+        // _mmio_read_worker(cfg->address, cfg->width);
+        return;
+    case pci:
+        return;
+
+    default:
+        break;
+    }
+
+    return;
 }

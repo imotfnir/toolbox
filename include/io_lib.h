@@ -23,13 +23,27 @@ typedef struct {
 } mode_dict;
 
 typedef struct {
+    uint8_t bus;
+    uint8_t dev;
+    uint8_t fun;
+    off_t off;
+} bdf;
+
+typedef struct rw_config rw_config;
+typedef void (*rw_init)(rw_config *cfg);
+typedef void (*rw_print)(rw_config *cfg);
+
+struct rw_config {
     daddr_t address;
+    bdf bdf;
     uint64_t data;
     rw_mode mode;
     io_width width;
     bool is_address_setted;
     bool is_data_setted;
-} rw_config;
+    rw_init init;
+    rw_print print;
+};
 
 uint8_t io_read8(uint16_t address);
 uint16_t io_read16(uint16_t address);
@@ -43,6 +57,21 @@ uint64_t io_write64(uint16_t address, uint64_t value);
 uint8_t mmio_read8(uint64_t address);
 uint16_t mmio_read16(uint64_t address);
 uint32_t mmio_read32(uint64_t address);
+uint64_t mmio_read64(uint64_t address);
+uint8_t mmio_write8(uint64_t address, uint8_t value);
+uint16_t mmio_write16(uint64_t address, uint16_t value);
+uint32_t mmio_write32(uint64_t address, uint32_t value);
+uint32_t mmio_write64(uint64_t address, uint64_t value);
+
 uint8_t pci_read8(uint8_t bus, uint8_t dev, uint8_t fun, off_t off);
+uint16_t pci_read16(uint8_t bus, uint8_t dev, uint8_t fun, off_t off);
+uint32_t pci_read32(uint8_t bus, uint8_t dev, uint8_t fun, off_t off);
+uint64_t pci_read64(uint8_t bus, uint8_t dev, uint8_t fun, off_t off);
+uint8_t pci_write8(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, uint8_t value);
+uint16_t pci_write16(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, uint16_t value);
+uint32_t pci_write32(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, uint32_t value);
+uint64_t pci_write64(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, uint64_t value);
+
+void rw_worker(rw_config *cfg);
 
 #endif //_IO_LIB_H_
