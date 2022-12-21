@@ -2,6 +2,7 @@
 #include <io_lib.h>
 
 #include <ctype.h>
+#include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,9 +114,18 @@ bool set_mode_to_config(rw_config *cfg, char *flag) {
 }
 
 int main(int argc, char *argv[]) {
+    int opt;
     rw_config *cfg = malloc(sizeof(rw_config));
+    bool is_mode_setted = false;
     char *convert_checker = NULL;
-    unsigned long val;
+
+    static struct option long_opt[] = { { "help", no_argument, NULL, 'h' },
+                                        { "version", no_argument, NULL, 'v' },
+                                        { "width", required_argument, NULL, 'w' },
+                                        { "io", no_argument, 0, io },
+                                        { "mmio", no_argument, 0, mmio },
+                                        { "pci", no_argument, 0, pci },
+                                        { 0, 0, 0, 0 } };
 
     cfg->address = 0x0;
     cfg->data = 0x0;
@@ -129,6 +139,49 @@ int main(int argc, char *argv[]) {
         TRACE_PRINT("argv[%d] %-11s hash:0x%-16lX ", i, argv[i], djb_hash(argv[i]));
     }
 
+    while((opt = getopt_long(argc, argv, "hvw:", long_opt, NULL)) != -1) {
+        switch(opt) {
+        case 'h':
+            show_help();
+            return 0;
+        case 'v':
+            show_version();
+            return 0;
+        case 'w':
+            cfg->width = strtoul(optarg, &convert_checker, 0);
+            if(*convert_checker != '\0') { /* optarg convert to digit success */
+                debug_print(DEBUG_ERROR, "%s not a number\n", optarg);
+                exit(EXIT_FAILURE);
+            }
+            debug_print(DEBUG_INFO, "Width: %lu\n", cfg->width);
+            break;
+        case io:
+        case mmio:
+        case pci:
+            if(is_mode_setted) {
+                debug_print(DEBUG_ERROR, "Mode duplicated\n");
+                exit(EXIT_FAILURE);
+            }
+            debug_print(DEBUG_INFO, "Mode: %d\n", opt);
+            cfg->mode = opt;
+            is_mode_setted = true;
+            break;
+        case ':':
+            break;
+        case '?':
+            break;
+        default:
+            break;
+        }
+    }
+
+    if(optind < argc) {
+        printf("non-option ARGV-elements: ");
+        while(optind < argc) { debug_print(DEBUG_INFO, "%s ", argv[optind++]); }
+        printf("\n");
+    }
+
+#if 0
     for(size_t i = 1; i < argc; i++) {
         val = strtoul(argv[i], &convert_checker, 0);
         if(*convert_checker == '\0') { /* argv[i] convert to digit success */
@@ -167,5 +220,6 @@ int main(int argc, char *argv[]) {
             return 1;
         }
     }
-    return 0;
+#endif
+    exit(EXIT_SUCCESS);
 }
