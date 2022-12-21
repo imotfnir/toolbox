@@ -32,6 +32,8 @@ typedef struct {
 typedef struct rw_config rw_config;
 typedef void (*rw_init)(rw_config *cfg);
 typedef void (*rw_print)(rw_config *cfg);
+void rw_config_init(rw_config *cfg);
+void rw_config_print(rw_config *cfg);
 
 struct rw_config {
     daddr_t address;

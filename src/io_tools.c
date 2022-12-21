@@ -40,15 +40,6 @@ unsigned long djb_hash(char *str) {
     return hash;
 }
 
-bool is_flag_supported(char *flag) {
-    const int len = sizeof(flag_list) / sizeof(flag_list[0]);
-    for(size_t i = 0; i < len; i++) {
-        if(strcasecmp(flag_list[i], flag) == 0) return true;
-    }
-    debug_print(DEBUG_ERROR, "Argument %s not supported\n", flag);
-    return false;
-}
-
 bool set_digit_args_to_config(rw_config *cfg, int val) {
     static size_t digit_args_count = 0;
     if(digit_args_count >= 2) {
@@ -67,49 +58,6 @@ bool set_digit_args_to_config(rw_config *cfg, int val) {
     }
 
     digit_args_count++;
-    return true;
-}
-
-bool set_width_to_config(rw_config *cfg, char *flag) {
-    int val;
-    char *success;
-
-    val = strtoul(flag, &success, 0);
-    if(!*success == '\0') {
-        debug_print(DEBUG_DEBUG, "%s not a digit\n", flag);
-        return false;
-    }
-    switch(val) {
-    case io_width_8:
-    case io_width_16:
-    case io_width_32:
-        cfg->width = val;
-        break;
-    case io_width_64:
-    default:
-        debug_print(DEBUG_DEBUG, "Width not support\n");
-        break;
-    }
-    debug_print(DEBUG_INFO, "Width = %d\n", cfg->width);
-    return true;
-}
-
-bool set_mode_to_config(rw_config *cfg, char *flag) {
-    static bool is_mode_setted = false;
-
-    if(is_mode_setted) {
-        debug_print(DEBUG_ERROR, "Mode duplicated\n");
-        return false;
-    }
-
-    if(strcasecmp("-io", flag) == 0) cfg->mode = io;
-    if(strcasecmp("-mmio", flag) == 0) cfg->mode = mmio;
-    if(strcasecmp("-pci", flag) == 0) cfg->mode = pci;
-    if(strcasecmp("-cc", flag) == 0) cfg->mode = cpucpld;
-    if(strcasecmp("-mc", flag) == 0) cfg->mode = mbcpld;
-
-    is_mode_setted = true;
-    debug_print(DEBUG_INFO, "Mode = %d, %s\n", cfg->mode, flag);
     return true;
 }
 

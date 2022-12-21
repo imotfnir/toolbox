@@ -15,9 +15,25 @@ static uint64_t _io_read_worker(uint16_t address, io_width width);
 static uint64_t _io_write_worker(uint16_t address, io_width width, uint64_t value);
 static uint64_t _mmio_read_worker(uint64_t address, io_width width);
 static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t value);
-// static uint64_t _pci_read_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width);
-// static uint64_t
-// _pci_write_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width, uint64_t value);
+static uint64_t _pci_read_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width);
+static uint64_t
+_pci_write_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width, uint64_t value);
+
+void rw_config_init(rw_config *cfg) {
+    return;
+}
+
+void rw_config_print(rw_config *cfg) {
+    debug_print(DEBUG_DEBUG, "cfg->address %-10d", cfg->address);
+    debug_print(DEBUG_DEBUG, "cfg->bdf.bus %-10d", cfg->bdf.bus);
+    debug_print(DEBUG_DEBUG, "cfg->bdf.dev %-10d", cfg->bdf.dev);
+    debug_print(DEBUG_DEBUG, "cfg->bdf.fun %-10d", cfg->bdf.fun);
+    debug_print(DEBUG_DEBUG, "cfg->bdf.off %-10d", cfg->bdf.off);
+    debug_print(DEBUG_DEBUG, "cfg->data %-10ul", cfg->data);
+    debug_print(DEBUG_DEBUG, "cfg->mode %-10d", cfg->mode);
+    debug_print(DEBUG_DEBUG, "cfg->width %-10d", cfg->width);
+    return;
+}
 
 // function definition
 static uint64_t _io_read_worker(uint16_t address, io_width width) {
@@ -141,6 +157,80 @@ static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t va
     return value;
 }
 
+static uint64_t _pci_read_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width) {
+    char *csr_file = malloc(50);
+    FILE *fp;
+    uint64_t value;
+
+    if(dev >= 32) {
+        debug_print(DEBUG_ERROR, "device number out of range = %d >= 32\n", dev);
+        return -1;
+    }
+    if(fun >= 8) {
+        debug_print(DEBUG_ERROR, "function number out of range = %d >= 8\n", fun);
+        return -1;
+    }
+    if(off >= 0x1000) {
+        debug_print(DEBUG_ERROR, "offset out of range = %d >= 4096\n", off);
+        return -1;
+    }
+
+    sprintf(csr_file, "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config", 0x0, bus, dev, fun);
+
+    fp = fopen(csr_file, "rb");
+    if(fp == NULL) {
+        perror("Error while opening the file.\n");
+        FATAL;
+    }
+
+    fseek(fp, off, SEEK_SET);
+
+    value = fgetc(fp);
+
+    fclose(fp);
+
+    return value;
+}
+
+static uint64_t _pci_write_worker(uint8_t bus,
+                                  uint8_t dev,
+                                  uint8_t fun,
+                                  off_t off,
+                                  io_width width,
+                                  uint64_t value) {
+    char *csr_file = malloc(50);
+    FILE *fp;
+
+    if(dev >= 32) {
+        debug_print(DEBUG_ERROR, "device number out of range = %d >= 32\n", dev);
+        return -1;
+    }
+    if(fun >= 8) {
+        debug_print(DEBUG_ERROR, "function number out of range = %d >= 8\n", fun);
+        return -1;
+    }
+    if(off >= 0x1000) {
+        debug_print(DEBUG_ERROR, "offset out of range = %d >= 4096\n", off);
+        return -1;
+    }
+
+    sprintf(csr_file, "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config", 0x0, bus, dev, fun);
+
+    fp = fopen(csr_file, "wb");
+    if(fp == NULL) {
+        perror("Error while opening the file.\n");
+        FATAL;
+    }
+
+    fseek(fp, off, SEEK_SET);
+
+    fputc(value, fp);
+
+    fclose(fp);
+
+    return value;
+}
+
 uint8_t io_read8(uint16_t address) {
     return (uint8_t)_io_read_worker(address, io_width_8);
 }
@@ -206,38 +296,15 @@ uint32_t mmio_write64(uint64_t address, uint64_t value) {
 }
 
 uint8_t pci_read8(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
-    char *csr_file = malloc(50);
-    FILE *fp;
-    uint8_t value;
+    return (uint8_t)_pci_read_worker(bus, dev, fun, off, io_width_8);
+}
 
-    if(dev >= 32) {
-        debug_print(DEBUG_ERROR, "device number out of range = %d >= 32\n", dev);
-        return -1;
-    }
-    if(fun >= 8) {
-        debug_print(DEBUG_ERROR, "function number out of range = %d >= 8\n", fun);
-        return -1;
-    }
-    if(off >= 0x1000) {
-        debug_print(DEBUG_ERROR, "offset out of range = %d >= 4096\n", off);
-        return -1;
-    }
+uint16_t pci_read16(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
+    return (uint16_t)_pci_read_worker(bus, dev, fun, off, io_width_16);
+}
 
-    sprintf(csr_file, "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config", 0x0, bus, dev, fun);
-
-    fp = fopen(csr_file, "rb");
-    if(fp == NULL) {
-        perror("Error while opening the file.\n");
-        FATAL;
-    }
-
-    fseek(fp, off, SEEK_SET);
-
-    value = (uint8_t)fgetc(fp);
-
-    fclose(fp);
-
-    return value;
+uint32_t pci_read32(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
+    return (uint32_t)_pci_read_worker(bus, dev, fun, off, io_width_32);
 }
 
 void rw_worker(rw_config *cfg) {
