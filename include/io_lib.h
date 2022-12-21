@@ -30,9 +30,9 @@ typedef struct {
 } bdf;
 
 typedef struct rw_config rw_config;
-typedef void (*rw_init)(rw_config *cfg);
+typedef bool (*rw_init)(rw_config *cfg, char *data_set[]);
 typedef void (*rw_print)(rw_config *cfg);
-void rw_config_init(rw_config *cfg);
+bool rw_config_init(rw_config *cfg, char *data_set[]);
 void rw_config_print(rw_config *cfg);
 
 struct rw_config {

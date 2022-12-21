@@ -19,19 +19,80 @@ static uint64_t _pci_read_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t of
 static uint64_t
 _pci_write_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width, uint64_t value);
 
-void rw_config_init(rw_config *cfg) {
-    return;
+bool rw_config_init(rw_config *cfg, char *data_set[]) {
+    size_t count = 0;
+    uint64_t digit_set[5];
+    char *endptr;
+
+    debug_print(DEBUG_DEBUG, "Non-option argv: ");
+    while(data_set[count] != NULL) {
+        debug_print(DEBUG_DEBUG, "%s ", data_set[count]);
+        count++;
+    }
+    debug_print(DEBUG_DEBUG, "\n");
+    debug_print(DEBUG_DEBUG, "Non-option argc: %d\n", count);
+
+    for(size_t i = 0; i < count; i++) {
+        digit_set[i] = strtoul(data_set[i], &endptr, 0);
+        if(*endptr != '\0') {
+            debug_print(DEBUG_ERROR, "%s is not a number\n", endptr);
+            return false;
+        }
+    }
+
+    //ToDo check width 1 2 4 8
+
+    if(cfg->mode == pci) {
+        if((count != 4) && (count != 5)) {
+            debug_print(DEBUG_ERROR, "Arguments invalid, non-opt argc = 4 ro 5\n");
+            return false;
+        }
+        cfg->bdf.bus = digit_set[0];
+        cfg->bdf.dev = digit_set[1];
+        cfg->bdf.fun = digit_set[2];
+        cfg->bdf.off = digit_set[3];
+        cfg->is_address_setted = true;
+        if(count == 4) {
+            /* pci read */
+            cfg->is_data_setted = false;
+            return true;
+        }
+        /* pci write */
+        cfg->is_data_setted = true;
+        cfg->data = digit_set[4];
+        return true;
+    }
+
+    /* io, mmio, cpld */
+    if((count != 1) && (count != 2)) {
+        debug_print(DEBUG_ERROR, "Arguments invalid, non-opt argc = 1 or 2\n");
+        return false;
+    }
+    cfg->address = digit_set[0];
+    cfg->is_address_setted = true;
+    if(count == 1) {
+        /* read */
+        cfg->is_data_setted = false;
+        return true;
+    }
+    /* write */
+    cfg->is_data_setted = true;
+    cfg->data = digit_set[1];
+    return true;
 }
 
 void rw_config_print(rw_config *cfg) {
-    debug_print(DEBUG_DEBUG, "cfg->address %-10d", cfg->address);
-    debug_print(DEBUG_DEBUG, "cfg->bdf.bus %-10d", cfg->bdf.bus);
-    debug_print(DEBUG_DEBUG, "cfg->bdf.dev %-10d", cfg->bdf.dev);
-    debug_print(DEBUG_DEBUG, "cfg->bdf.fun %-10d", cfg->bdf.fun);
-    debug_print(DEBUG_DEBUG, "cfg->bdf.off %-10d", cfg->bdf.off);
-    debug_print(DEBUG_DEBUG, "cfg->data %-10ul", cfg->data);
-    debug_print(DEBUG_DEBUG, "cfg->mode %-10d", cfg->mode);
-    debug_print(DEBUG_DEBUG, "cfg->width %-10d", cfg->width);
+    debug_print(DEBUG_DEBUG, "Show rw_config member:\n");
+    debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "address", cfg->address);
+    debug_print(DEBUG_DEBUG, "%-12s %s\n", "addr_set?", cfg->is_address_setted ? "true" : "false");
+    debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "bdf.bus", cfg->bdf.bus);
+    debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "bdf.dev", cfg->bdf.dev);
+    debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "bdf.fun", cfg->bdf.fun);
+    debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "bdf.off", cfg->bdf.off);
+    debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "data", cfg->data);
+    debug_print(DEBUG_DEBUG, "%-12s %s\n", "data_set?", cfg->is_data_setted ? "true" : "false");
+    debug_print(DEBUG_DEBUG, "%-12s %d\n", "mode", cfg->mode);
+    debug_print(DEBUG_DEBUG, "%-12s %d\n", "width", cfg->width);
     return;
 }
 

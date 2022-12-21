@@ -81,6 +81,8 @@ int main(int argc, char *argv[]) {
     cfg->width = io_width_8;
     cfg->is_address_setted = false;
     cfg->is_data_setted = false;
+    cfg->init = rw_config_init;
+    cfg->print = rw_config_print;
 
     debug_print(DEBUG_INFO, "Your have enter %d arguments\n", argc);
     for(size_t i = 0; i < argc; i++) {
@@ -123,51 +125,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if(optind < argc) {
-        printf("non-option ARGV-elements: ");
-        while(optind < argc) { debug_print(DEBUG_INFO, "%s ", argv[optind++]); }
-        printf("\n");
-    }
+    if(!cfg->init(cfg, argv + optind)) exit(EXIT_FAILURE);
+    cfg->print(cfg);
 
-#if 0
-    for(size_t i = 1; i < argc; i++) {
-        val = strtoul(argv[i], &convert_checker, 0);
-        if(*convert_checker == '\0') { /* argv[i] convert to digit success */
-            if(!set_digit_args_to_config(cfg, val)) return 1;
-            continue;
-        }
-
-        if(!is_flag_supported(argv[i])) return 1;
-
-        if((strcasecmp("-h", argv[i]) == 0) || (strcasecmp("--help", argv[i]) == 0)) {
-            show_help();
-            return 0;
-        }
-
-        if((strcasecmp("-v", argv[i]) == 0) || (strcasecmp("--version", argv[i]) == 0)) {
-            show_version();
-            return 0;
-        }
-
-        if((strcasecmp("-w", argv[i]) == 0) || (strcasecmp("--width", argv[i]) == 0)) {
-            if(++i >= argc) {
-                debug_print(DEBUG_ERROR, "Width can not empty\n");
-                return 1;
-            }
-            if(!set_width_to_config(cfg, argv[i])) return 1;
-        }
-
-        if((strcasecmp("-io", argv[i]) == 0) || (strcasecmp("-mmio", argv[i]) == 0)
-           || (strcasecmp("-pci", argv[i]) == 0) || (strcasecmp("-cc", argv[i]) == 0)
-           || (strcasecmp("-mc", argv[i]) == 0)) {
-            if(!set_mode_to_config(cfg, argv[i])) return 1;
-        }
-
-        if(!cfg->is_address_setted) {
-            debug_print(DEBUG_ERROR, "Address can not empty\n");
-            return 1;
-        }
-    }
-#endif
     exit(EXIT_SUCCESS);
 }

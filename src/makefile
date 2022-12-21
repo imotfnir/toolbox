@@ -78,7 +78,7 @@ pcie_tools: $(objs_file) pcie_tools.c
 io_tools: $(objs_file) io_tools.c
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)$@
 
-$(out_objs_dir)io_lib.o: io_lib.c debug_lib.o debug_lib.h
+$(out_objs_dir)io_lib.o: io_lib.c debug_lib.o
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) -c $< -o $@
 
 $(out_objs_dir)debug_lib.o: debug_lib.c debug_lib.h

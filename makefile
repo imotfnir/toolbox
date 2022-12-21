@@ -20,8 +20,9 @@ export INSTALL_DIR = /usr/local/bin/
 vpath pcie_tools $(build_dir)
 vpath io_tools $(build_dir)
 vpath %.c $(src_dir)
+vpath %.o $(build_dir)
 
-all: cp_execute
+all: pcie_tools io_tools
 
 install: all
 	$(CP) $(INSTALL_DIR)pcie_tools
@@ -37,13 +38,11 @@ clean:
 
 pcie_tools: $(build_dir) $(out_objs_dir) pcie_tools.c
 	$(MAKE) -C $(src_dir) $@
+	$(CP) $(build_dir)$@ $(repo_dir)$@
 
 io_tools: $(build_dir) $(out_objs_dir) io_tools.c
 	$(MAKE) -C $(src_dir) $@
-
-cp_execute: pcie_tools io_tools
-	$(CP) $(build_dir)io_tools $(repo_dir)io_tools
-	$(CP) $(build_dir)pcie_tools $(repo_dir)pcie_tools
+	$(CP) $(build_dir)$@ $(repo_dir)$@
 
 $(build_dir):
 	mkdir -p $@
