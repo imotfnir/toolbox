@@ -25,6 +25,7 @@ export test_dir = $(repo_dir)test/
 export tools_dir = $(repo_dir)tools/
 export build_dir = $(repo_dir)build/
 export objs_dir = $(build_dir)objs/
+export deps_dir = $(build_dir)deps/
 export INSTALL_DIR = /usr/local/bin/
 
 # Vpath
@@ -41,8 +42,11 @@ incs_dir = $(include_dir)
 marco = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) IS_TRACE=$(IS_TRACE)
 incs_param = $(foreach d, $(incs_dir), -I$d)
 marco_param = $(foreach d, $(marco), -D$d)
-OBJS = $(objs_dir)io_lib.o $(objs_dir)debug_lib.o
 
+# Files
+LIBS = $(wildcard $(library_dir)*.c)
+OBJS = $(addprefix $(objs_dir),$(notdir $(LIBS:.c=.o)))
+DEPS = $(addprefix $(deps_dir),$(notdir $(LIBS:.c=.d)))
 
 all: $(objs_dir) pcie_tools io_tools
 
@@ -59,26 +63,27 @@ clean:
 	$(RM) pcie_tools io_tools
 
 pcie_tools: pcie_tools.c $(OBJS)
-	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)$@
-	$(CP) $(build_dir)$@ $(repo_dir)$@
-
 io_tools: io_tools.c $(OBJS)
+pcie_tools io_tools:
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)$@
 	$(CP) $(build_dir)$@ $(repo_dir)$@
 
 $(objs_dir)io_lib.o: io_lib.c io_lib.h $(objs_dir)debug_lib.o
-	$(CC) $(CFLAGS) $(incs_param) $(marco_param) -c $< -o $@
-
 $(objs_dir)debug_lib.o: debug_lib.c debug_lib.h
+$(objs_dir)debug_lib.o $(objs_dir)io_lib.o:
 	$(CC) $(CFLAGS) $(incs_param) $(marco_param) -c $< -o $@
 
-$(objs_dir):
+$(objs_dir): $(build_dir)
+$(deps_dir): $(build_dir)
+$(build_dir):
+$(build_dir) $(objs_dir) $(deps_dir):
 	$(MKDIR) $@
 
+%.o: $(objs_dir)
+
+%.d: $(deps_dir)
+
 debug:
-	@echo $(VPATH)
-
-
-
+	@echo $(OBJS)
 
 .PHONY: all rebuild clean uninstall install test debug
