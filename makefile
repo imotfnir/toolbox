@@ -17,73 +17,69 @@ PCIE_TOOLS = pcie_tools
 IO_TOOLS = io_tools
 
 # Directory
-export repo_dir := $(shell pwd)/
-export include_dir = $(repo_dir)include/
-export src_dir = $(repo_dir)src/
-export library_dir = $(repo_dir)library/
-export test_dir = $(repo_dir)test/
-export tools_dir = $(repo_dir)tools/
-export build_dir = $(repo_dir)build/
-export objs_dir = $(build_dir)objs/
-export deps_dir = $(build_dir)deps/
-export INSTALL_DIR = /usr/local/bin/
+export repo_dir := $(PWD)
+export include_dir = $(repo_dir)/include
+export src_dir = $(repo_dir)/src
+export library_dir = $(repo_dir)/library
+export test_dir = $(repo_dir)/test
+export tools_dir = $(repo_dir)/tools
+export build_dir = $(repo_dir)/build
+export install_dir = /usr/local/bin
 
 # Vpath
-vpath pcie_tools $(build_dir)
-vpath io_tools $(build_dir)
-vpath %.o $(objs_dir)
 vpath %.c $(src_dir) $(library_dir)
 vpath %.h $(include_dir)
-VPATH = $(objs_dir)
+VPATH = $(build_dir)
 
 # Flags
 CFLAGS = -g -O3 -Wall #--save-temp
-incs_dir = $(include_dir)
-marco = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) IS_TRACE=$(IS_TRACE)
-incs_param = $(foreach d, $(incs_dir), -I$d)
-marco_param = $(foreach d, $(marco), -D$d)
+INCS = $(include_dir)
+MARCO = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) IS_TRACE=$(IS_TRACE)
+INCFLAG = $(foreach d, $(INCS)/, -I$d)
+MARCOFLAG = $(foreach d, $(MARCO), -D$d)
 
 # Files
-LIBS = $(wildcard $(library_dir)*.c)
-OBJS = $(addprefix $(objs_dir),$(notdir $(LIBS:.c=.o)))
-DEPS = $(addprefix $(deps_dir),$(notdir $(LIBS:.c=.d)))
+LIB_FILES = $(wildcard $(library_dir)/*.c)
+LIBS = $(notdir $(LIB_FILES))
+OBJS = $(LIBS:.c=.o)
+DEPS = $(LIBS:.c=.d)
+OBJ_FILES = $(addprefix $(build_dir)/, $(OBJS))
+DEP_FILES = $(addprefix $(build_dir)/, $(DEPS))
 
-all: $(objs_dir) pcie_tools io_tools
+all: $(build_dir) pcie_tools io_tools
 
 install: all
-	$(CP) $(INSTALL_DIR)pcie_tools
+	$(CP) $(install_dir)/pcie_tools
 
 uninstall:
-	$(RM) $(INSTALL_DIR)pcie_tools
+	$(RM) $(install_dir)/pcie_tools
 
 rebuild: clean all
 
 clean:
-	$(RM) -r $(build_dir)
+	$(RM) -r $(build_dir)/
 	$(RM) pcie_tools io_tools
 
-pcie_tools: pcie_tools.c $(OBJS)
-io_tools: io_tools.c $(OBJS)
+pcie_tools: pcie_tools.c $(OBJ_FILES)
+io_tools: io_tools.c $(OBJ_FILES)
 pcie_tools io_tools:
-	$(CC) $(CFLAGS) $(incs_param) $(marco_param) $^ -o $(build_dir)$@
-	$(CP) $(build_dir)$@ $(repo_dir)$@
+	$(CC) $(CFLAGS) $(INCFLAG) $(MARCOFLAG) $(filter-out %.h, $^) -o $(build_dir)/$@
+	$(CP) $(build_dir)/$@ $(repo_dir)/$@
 
-$(objs_dir)io_lib.o: io_lib.c io_lib.h $(objs_dir)debug_lib.o
-$(objs_dir)debug_lib.o: debug_lib.c debug_lib.h
-$(objs_dir)debug_lib.o $(objs_dir)io_lib.o:
-	$(CC) $(CFLAGS) $(incs_param) $(marco_param) -c $< -o $@
+$(build_dir)/io_lib.o: io_lib.c io_lib.h $(build_dir)/debug_lib.o
+$(build_dir)/debug_lib.o: debug_lib.c debug_lib.h
+$(build_dir)/debug_lib.o $(build_dir)/io_lib.o:
+	$(CC) $(CFLAGS) $(INCFLAG) $(MARCOFLAG) -c $< -o $@
 
-$(objs_dir): $(build_dir)
-$(deps_dir): $(build_dir)
 $(build_dir):
-$(build_dir) $(objs_dir) $(deps_dir):
 	$(MKDIR) $@
 
-%.o: $(objs_dir)
-
-%.d: $(deps_dir)
-
 debug:
-	@echo $(OBJS)
+	@echo LIB_FILES = $(LIB_FILES)
+	@echo OBJ_FILES = $(OBJ_FILES)
+	@echo DEP_FILES = $(DEP_FILES)
+	@echo LIBS = $(LIBS)
+	@echo OBJS = $(OBJS)
+	@echo DEPS = $(DEPS)
 
 .PHONY: all rebuild clean uninstall install test debug
