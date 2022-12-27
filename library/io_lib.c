@@ -40,7 +40,7 @@ bool rw_config_init(rw_config *cfg, char *data_set[]) {
         }
     }
 
-    //ToDo check width 1 2 4 8
+    // ToDo check width 1 2 4 8
 
     if(cfg->mode == pci) {
         if((count != 4) && (count != 5)) {
@@ -98,7 +98,7 @@ void rw_config_print(rw_config *cfg) {
 
 // function definition
 static uint64_t _io_read_worker(uint16_t address, io_width width) {
-    uint64_t value;
+    uint64_t value = 0 ;
 
     if((address & (width - 1)) != 0) {
         debug_print(DEBUG_ERROR, "io width is not aligned\n");
@@ -371,25 +371,29 @@ uint32_t pci_read32(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
 void rw_worker(rw_config *cfg) {
     switch(cfg->mode) {
     case io:
-        // if(cfg->is_data_setted) {
-        //     _io_write_worker(cfg->address, cfg->width, cfg->data);
-        //     return;
-        // }
-        // _io_read_worker(cfg->address, cfg->width);
+        if(cfg->is_data_setted) {
+            _io_write_worker(cfg->address, cfg->width, cfg->data);
+            return;
+        }
+        _io_read_worker(cfg->address, cfg->width);
         return;
     case mmio:
-        // if(cfg->is_data_setted) {
-        //     _mmio_write_worker(cfg->address, cfg->width, cfg->data);
-        //     return;
-        // }
-        // _mmio_read_worker(cfg->address, cfg->width);
+        if(cfg->is_data_setted) {
+            _mmio_write_worker(cfg->address, cfg->width, cfg->data);
+            return;
+        }
+        _mmio_read_worker(cfg->address, cfg->width);
         return;
     case pci:
+        if(cfg->is_data_setted) {
+            _pci_write_worker(
+                cfg->bdf.bus, cfg->bdf.dev, cfg->bdf.fun, cfg->bdf.off, cfg->width, cfg->data);
+            return;
+        }
+        _pci_read_worker(cfg->bdf.bus, cfg->bdf.dev, cfg->bdf.fun, cfg->bdf.off, cfg->width);
         return;
-
     default:
         break;
     }
-
     return;
 }

@@ -128,5 +128,7 @@ int main(int argc, char *argv[]) {
     if(!cfg->init(cfg, argv + optind)) exit(EXIT_FAILURE);
     cfg->print(cfg);
 
+    rw_worker(cfg);
+
     exit(EXIT_SUCCESS);
 }

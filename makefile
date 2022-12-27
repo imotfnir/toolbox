@@ -67,7 +67,7 @@ $(build_dir)/%.o:
 
 $(build_dir)/%.d: %.c
 	$(MKDIR) $(build_dir)
-	$(CC) $(INCFLAG) -MM $^ -MF $@ -MT '$(patsubst %.d,%.o,$@) $@'
+	$(CC) $(INCFLAG) -MM $< -MF $@ -MT '$(patsubst %.d,%.o,$@) $@'
 
 $(build_dir):
 	$(MKDIR) $@
