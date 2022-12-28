@@ -1,3 +1,4 @@
+# Test file and 3rd party tools
 localtest
 cscope.*
 tag*
@@ -7,10 +8,13 @@ tag*
 __pycache__/
 *cache/
 
+# Temp file for building C
 *.o
 *.s
 *.i
 *.pyc
 /build/
 
-pcie_tools/pcie_tools
+# Executable file
+pcie_tools
+io_tools
