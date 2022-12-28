@@ -32,6 +32,7 @@ bool rw_config_init(rw_config *cfg, char *data_set[]) {
     debug_print(DEBUG_DEBUG, "\n");
     debug_print(DEBUG_DEBUG, "Non-option argc: %d\n", count);
 
+    // check non-option is digit, if not digit return
     for(size_t i = 0; i < count; i++) {
         digit_set[i] = strtoul(data_set[i], &endptr, 0);
         if(*endptr != '\0') {
@@ -40,7 +41,21 @@ bool rw_config_init(rw_config *cfg, char *data_set[]) {
         }
     }
 
-    // ToDo check width 1 2 4 8
+    switch(cfg->width) {
+    case io_width_8:
+    case io_width_16:
+    case io_width_32:
+        break;
+    case io_width_64:
+    default:
+        debug_print(DEBUG_DEBUG, "io width unsupported\n");
+        return false;
+    }
+
+    if(cfg->data % cfg->width != 0) {
+        debug_print(DEBUG_ERROR, "width not aligned\n");
+        return false;
+    }
 
     if(cfg->mode == pci) {
         if((count != 4) && (count != 5)) {
@@ -98,7 +113,7 @@ void rw_config_print(rw_config *cfg) {
 
 // function definition
 static uint64_t _io_read_worker(uint16_t address, io_width width) {
-    uint64_t value = 0 ;
+    uint64_t value = 0;
 
     if((address & (width - 1)) != 0) {
         debug_print(DEBUG_ERROR, "io width is not aligned\n");
