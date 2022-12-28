@@ -8,7 +8,7 @@ PATCH := 5
 SEM_VER := v$(MAJOR).$(MINOR).$(PATCH)
 VERSION := \"$(SEM_VER)\"
 TOOL_NAME = hmrfpo_enable
-OUTPUT_BIN = $(TOOL_NAME)_$(SEM_VER).bin
+OUTPUT_BIN = $(TOOL_NAME)
 TOOL_OBJS = PciRwLibrary.o HeciCore.o lpc_hal.o debug_lib.o $(TOOL_NAME).o
 ####################################################################
 # Tools and Flags
@@ -39,6 +39,6 @@ $(OUTPUT_BIN): $(TOOL_OBJS)
 
 clean:
 	rm -fr *.o *.i *.s
-	rm -fr $(TOOL_NAME)_v*
+	rm -fr $(TOOL_NAME)
 
 .PHONY: clean
