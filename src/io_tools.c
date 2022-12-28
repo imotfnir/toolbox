@@ -16,9 +16,6 @@ bool set_digit_args_to_config(rw_config *cfg, int val);
 bool set_width_to_config(rw_config *cfg, char *flag);
 bool set_mode_to_config(rw_config *cfg, char *flag);
 
-const char *flag_list[]
-    = { "-h", "--help", "-v", "--version", "-w", "--width", "-io", "-mmio", "-pci", "-cc", "-mc" };
-
 void show_help() {
     // ToDo
     printf("Here is the help\n");
@@ -38,27 +35,6 @@ unsigned long djb_hash(char *str) {
     while((c = *str++)) { hash = ((hash << 5) + hash) + c; /* hash * 33 + c */ }
 
     return hash;
-}
-
-bool set_digit_args_to_config(rw_config *cfg, int val) {
-    static size_t digit_args_count = 0;
-    if(digit_args_count >= 2) {
-        debug_print(DEBUG_ERROR, "Too many data\n");
-        return false;
-    }
-    if(digit_args_count == 0) {
-        cfg->address = val;
-        cfg->is_address_setted = true;
-        debug_print(DEBUG_DEBUG, "Address = 0x%x\n", cfg->address);
-    }
-    if(digit_args_count == 1) {
-        cfg->data = val;
-        cfg->is_data_setted = true;
-        debug_print(DEBUG_DEBUG, "Address = 0x%x\n", cfg->data);
-    }
-
-    digit_args_count++;
-    return true;
 }
 
 int main(int argc, char *argv[]) {
