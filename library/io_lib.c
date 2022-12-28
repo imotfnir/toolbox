@@ -196,6 +196,7 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
     void *map_base;
 
     if((fd = open("/dev/mem", O_RDONLY | O_SYNC)) < 0) FATAL;
+    TRACE_PRINT("/dev/mem open in fd=%n\n", fd);
 
     if((map_base = mmap(0, width, PROT_READ, MAP_SHARED, fd, address)) == MAP_FAILED) FATAL;
     TRACE_PRINT("mmap at address %p", map_base);
@@ -210,7 +211,7 @@ static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t va
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) FATAL;
 
-    if((map_base = mmap(0, width, PROT_READ, MAP_SHARED, fd, address)) == MAP_FAILED) FATAL;
+    if((map_base = mmap(0, width, PROT_WRITE, MAP_SHARED, fd, address)) == MAP_FAILED) FATAL;
     TRACE_PRINT("mmap at address %p", map_base);
 
     switch(width) {
