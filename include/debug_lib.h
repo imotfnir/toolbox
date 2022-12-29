@@ -35,7 +35,7 @@
     do {                                                                                                                \
         if(IS_TRACE) {                                                                                                  \
             debug_print(DEBUG_TRACE, format, __VA_ARGS__);                                                              \
-            debug_print(DEBUG_TRACE, "# Trace at func (%s), line (%d) in file (%s), \n", __func__, __LINE__, __FILE__); \
+            debug_print(DEBUG_TRACE, "\t# Trace at func (%s), line (%d) in file (%s), \n", __func__, __LINE__, __FILE__); \
         }                                                                                                               \
     } while(0)
 
