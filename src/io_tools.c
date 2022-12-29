@@ -157,5 +157,5 @@ int main(int argc, char *argv[]) {
 
     printf(cfg->format, cfg->data);
 
-    return 1;
+    return 0;
 }
