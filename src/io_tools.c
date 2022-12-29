@@ -43,14 +43,7 @@ int main(int argc, char *argv[]) {
     bool is_mode_setted = false;
     char *convert_checker = NULL;
 
-    static struct option long_opt[] = { { "help", no_argument, NULL, 'h' },
-                                        { "version", no_argument, NULL, 'v' },
-                                        { "width", required_argument, NULL, 'w' },
-                                        { "io", no_argument, 0, io },
-                                        { "mmio", no_argument, 0, mmio },
-                                        { "pci", no_argument, 0, pci },
-                                        { 0, 0, 0, 0 } };
-
+    // rw_config default value
     cfg->address = 0x0;
     cfg->data = 0x0;
     cfg->mode = io;
@@ -59,13 +52,24 @@ int main(int argc, char *argv[]) {
     cfg->is_data_setted = false;
     cfg->init = rw_config_init;
     cfg->print = rw_config_print;
+    cfg->format = "0x%x\n";
 
     debug_print(DEBUG_INFO, "Your have enter %d arguments\n", argc);
     for(size_t i = 0; i < argc; i++) {
         TRACE_PRINT("argv[%d] %-11s hash:0x%-16lX ", i, argv[i], djb_hash(argv[i]));
     }
+    // All supported long option
+    static struct option long_opt[] = {
+        {"help",     no_argument,       NULL, 'h' },
+        { "version", no_argument,       NULL, 'v' },
+        { "width",   required_argument, NULL, 'w' },
+        { "io",      no_argument,       0,    io  },
+        { "mmio",    no_argument,       0,    mmio},
+        { "pci",     no_argument,       0,    pci },
+        { "format",  required_argument, NULL, 'f' },
+    };
 
-    while((opt = getopt_long(argc, argv, "hvw:", long_opt, NULL)) != -1) {
+    while((opt = getopt_long(argc, argv, "hvw:f:", long_opt, NULL)) != -1) {
         switch(opt) {
         case 'h':
             show_help();
@@ -92,6 +96,9 @@ int main(int argc, char *argv[]) {
             cfg->mode = opt;
             is_mode_setted = true;
             break;
+        case 'f':
+            cfg->format = optarg;
+            break;
         case ':':
             break;
         case '?':
@@ -105,6 +112,8 @@ int main(int argc, char *argv[]) {
     cfg->print(cfg);
 
     rw_worker(cfg);
+
+    printf(cfg->format, cfg->data);
 
     exit(EXIT_SUCCESS);
 }

@@ -134,4 +134,5 @@ TabWidth:        4
 UseCRLF:         false
 UseTab:          Never
 SeparateDefinitionBlocks: Always
+AlignArrayOfStructures: Left
 ...

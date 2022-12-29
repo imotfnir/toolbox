@@ -108,6 +108,7 @@ void rw_config_print(rw_config *cfg) {
     debug_print(DEBUG_DEBUG, "%-12s %s\n", "data_set?", cfg->is_data_setted ? "true" : "false");
     debug_print(DEBUG_DEBUG, "%-12s %d\n", "mode", cfg->mode);
     debug_print(DEBUG_DEBUG, "%-12s %d\n", "width", cfg->width);
+    debug_print(DEBUG_DEBUG, "%-12s %s\n", "output format", cfg->format);
     return;
 }
 
@@ -388,25 +389,26 @@ void rw_worker(rw_config *cfg) {
     switch(cfg->mode) {
     case io:
         if(cfg->is_data_setted) {
-            _io_write_worker(cfg->address, cfg->width, cfg->data);
+            cfg->data = _io_write_worker(cfg->address, cfg->width, cfg->data);
             return;
         }
-        _io_read_worker(cfg->address, cfg->width);
+        cfg->data = _io_read_worker(cfg->address, cfg->width);
         return;
     case mmio:
         if(cfg->is_data_setted) {
-            _mmio_write_worker(cfg->address, cfg->width, cfg->data);
+            cfg->data = _mmio_write_worker(cfg->address, cfg->width, cfg->data);
             return;
         }
-        _mmio_read_worker(cfg->address, cfg->width);
+        cfg->data = _mmio_read_worker(cfg->address, cfg->width);
         return;
     case pci:
         if(cfg->is_data_setted) {
-            _pci_write_worker(
+            cfg->data = _pci_write_worker(
                 cfg->bdf.bus, cfg->bdf.dev, cfg->bdf.fun, cfg->bdf.off, cfg->width, cfg->data);
             return;
         }
-        _pci_read_worker(cfg->bdf.bus, cfg->bdf.dev, cfg->bdf.fun, cfg->bdf.off, cfg->width);
+        cfg->data
+            = _pci_read_worker(cfg->bdf.bus, cfg->bdf.dev, cfg->bdf.fun, cfg->bdf.off, cfg->width);
         return;
     default:
         break;

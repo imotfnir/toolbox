@@ -45,6 +45,7 @@ struct rw_config {
     bool is_data_setted;
     rw_init init;
     rw_print print;
+    char *format;
 };
 
 uint8_t io_read8(uint16_t address);
