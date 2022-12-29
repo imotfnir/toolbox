@@ -66,8 +66,7 @@ void show_help() {
 }
 
 void show_version() {
-    // ToDo
-    printf("Here is the version\n");
+    printf("toolbox version v%d.%d.%d\n", MAJOR, MINOR, PATCH);
     return;
 }
 
@@ -85,6 +84,11 @@ int main(int argc, char *argv[]) {
     rw_config *cfg = malloc(sizeof(rw_config));
     bool is_mode_setted = false;
     char *convert_checker = NULL;
+
+    if(argc <= 1) {
+        show_version();
+        return 0;
+    }
 
     // rw_config default value
     cfg->address = 0x0;
