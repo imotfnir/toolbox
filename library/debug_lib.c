@@ -9,13 +9,10 @@ void debug_print(uint8_t debug_level, char *format, ...) {
     va_list marker;
 
     va_start(marker, format);
-    if(DEBUG_LEVEL <= debug_level) {
-        return;
-    }
-    if(debug_level <= DEBUG_WARN) { /*if error, output to stderr*/
-        vfprintf(stderr, format, marker);
-        return;
-    }
-    vprintf(format, marker);
+
+    if(DEBUG_LEVEL <= debug_level) { return; }
+    vfprintf(stderr, format, marker); /* redirect all debug and error message to stderr */
+
     va_end(marker);
+    return;
 }
