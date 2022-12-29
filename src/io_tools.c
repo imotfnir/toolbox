@@ -17,8 +17,51 @@ bool set_width_to_config(rw_config *cfg, char *flag);
 bool set_mode_to_config(rw_config *cfg, char *flag);
 
 void show_help() {
-    // ToDo
-    printf("Here is the help\n");
+    printf("USAGE:\n"
+           "\tio_tools address <value> [-h|-v] [--io|--mmio|--pci] [-w 1|2|4|8] [-f format]\n\n"
+           "OPTIONS:\n"
+           "\t-h, --help\n"
+           "\t\tPrints the usage for this tools and exit\n"
+           "\n"
+           "\t-v, --version\n"
+           "\t\tPrints version for this toolbox and exit\n"
+           "\n"
+           "\t-w, --width <io_width>\n"
+           "\t\tSet io access width, width only can be 1, 2, 4, 8\n"
+           "\t\tDefault width is 1\n"
+           "\n"
+           "\t--io, --mmio, --pci\n"
+           "\t\tSet io access mode, if not specified, default is --io\n"
+           "\t\t--io IO address type\n"
+           "\t\t--mmio Memory-Mapped IO address type\n"
+           "\t\t--pci PCIe configuration space registers\n"
+           "\n"
+           "\t-f, --format\n"
+           "\t\tSet the output format for register value, default is \"0x%%x\\n\" \n"
+           "\n"
+           "EXAMPLE:\n"
+           "\tRead IO 0x600 1 byte\n"
+           "\t\t./io_tools -w 1 --io 0x600\n"
+           "\t\t./io_tools 1536\n"
+           "\n"
+           "\tWrite IO 0x6ff 1 byte\n"
+           "\t\t./io_tools 0x6ff 0x80\n"
+           "\n"
+           "\tRead PCIe device 90:05.0 offset 0x10 2 byte\n"
+           "\t\t./io_tools 0x90 0x5 0x0 0x10 --width 2 --pci\n"
+           "\n"
+           "\tYou can change the output format by yourself\n"
+           "\t\t./io_tools 0x606 : 0x43\n"
+           "\t\t./io_tools 0x606 -f \"%%x\" : 43\n"
+           "\t\t./io_tools 0x606 -f \"%%d\" : 67\n"
+           "\t\t./io_tools 0x606 -f \"%%o\" : 103\n"
+           "\n"
+           "OTHER:\n"
+           "\t\tIf value SET, that is write command\n"
+           "\t\tIf value NOT set, that is read command\n"
+           "\n"
+
+    );
     return;
 }
 
@@ -81,7 +124,7 @@ int main(int argc, char *argv[]) {
             cfg->width = strtoul(optarg, &convert_checker, 0);
             if(*convert_checker != '\0') { /* optarg convert to digit success */
                 debug_print(DEBUG_ERROR, "%s not a number\n", optarg);
-                exit(EXIT_FAILURE);
+                return 1;
             }
             debug_print(DEBUG_INFO, "Width: %lu\n", cfg->width);
             break;
@@ -90,7 +133,7 @@ int main(int argc, char *argv[]) {
         case pci:
             if(is_mode_setted) {
                 debug_print(DEBUG_ERROR, "Mode duplicated\n");
-                exit(EXIT_FAILURE);
+                return 1;
             }
             debug_print(DEBUG_INFO, "Mode: %d\n", opt);
             cfg->mode = opt;
@@ -108,12 +151,12 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if(!cfg->init(cfg, argv + optind)) exit(EXIT_FAILURE);
+    if(!cfg->init(cfg, argv + optind)) return 1;
     cfg->print(cfg);
 
     rw_worker(cfg);
 
     printf(cfg->format, cfg->data);
 
-    exit(EXIT_SUCCESS);
+    return 1;
 }
