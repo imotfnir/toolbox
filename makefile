@@ -1,19 +1,25 @@
 # Environment Variable
-export MAKE = make
-export RM = rm -f
-export CP = cp
-export MKDIR = mkdir -p
-export CC = $(CROSS_COMPILE)gcc
-export LD = $(CROSS_COMPILE)ld
-export AR = $(CROSS_COMPILE)ar
-export SHELL = /bin/sh
-DEBUG_LEVEL = 7
-IS_TRACE = true
-MAJOR = 0
-MINOR = 0
-PATCH = 1
-SEM_VER = $(MAJOR).$(MINOR).$(PATCH)
-TOOLS = pcie_tools io_tools
+export MAKE := make
+export RM := rm -f
+export CP := cp
+export MKDIR := mkdir -p
+export CC := $(CROSS_COMPILE)gcc
+export LD := $(CROSS_COMPILE)ld
+export AR := $(CROSS_COMPILE)ar
+export SHELL := /bin/sh
+MAJOR := 0
+MINOR := 0
+PATCH := 2
+SEM_VER := $(MAJOR).$(MINOR).$(PATCH)
+TOOLS := pcie_tools io_tools
+
+ifeq "$(PATCH)" "0"
+	DEBUG_LEVEL := 3
+	IS_TRACE := false
+else
+	DEBUG_LEVEL := 7
+	IS_TRACE := true
+endif
 
 # Directory
 export repo_dir := $(PWD)
