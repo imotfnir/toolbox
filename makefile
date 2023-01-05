@@ -9,7 +9,7 @@ export AR := $(CROSS_COMPILE)ar
 export SHELL := /bin/sh
 MAJOR := 0
 MINOR := 1
-PATCH := 0
+PATCH := 1
 SEM_VER := $(MAJOR).$(MINOR).$(PATCH)
 TOOLS := pcie_tools io_tools
 
