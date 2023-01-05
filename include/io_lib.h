@@ -39,7 +39,7 @@ bool rw_config_init(rw_config *cfg, char *data_set[]);
 void rw_config_print(rw_config *cfg);
 
 struct rw_config {
-    daddr_t address;
+    uint64_t address;
     bdf bdf;
     uint64_t data;
     rw_mode mode;

@@ -202,6 +202,7 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
         debug_print(DEBUG_ERROR, "io width is not aligned\n");
         return -1;
     }
+    TRACE_PRINT("address 0x%llx", address);
 
     if((fd = open("/dev/mem", O_RDONLY | O_SYNC)) < 0) FATAL;
     TRACE_PRINT("/dev/mem open in fd = %d", fd);
@@ -209,10 +210,9 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
     if((map_base = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, (address & ~PAGE_MASK)))
        == MAP_FAILED)
         FATAL;
-    TRACE_PRINT("map_base at address %p", map_base);
 
     map_address = map_base + (address & PAGE_MASK);
-    TRACE_PRINT("map_address at address %p", map_address);
+    TRACE_PRINT("map_base %p, map_address %p", map_base, map_address);
 
     switch(width) {
     case io_width_8:
@@ -245,6 +245,7 @@ static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t va
         debug_print(DEBUG_ERROR, "io width is not aligned\n");
         return -1;
     }
+    TRACE_PRINT("address 0x%llx", address);
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) FATAL;
     TRACE_PRINT("/dev/mem open in fd = %d", fd);
@@ -252,10 +253,9 @@ static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t va
     if((map_base = mmap(NULL, PAGE_SIZE, PROT_WRITE, MAP_SHARED, fd, (address & ~PAGE_MASK)))
        == MAP_FAILED)
         FATAL;
-    TRACE_PRINT("map_base at address %p", map_base);
 
     map_address = map_base + (address & PAGE_MASK);
-    TRACE_PRINT("map_address at address %p", map_address);
+    TRACE_PRINT("map_base %p, map_address %p", map_base, map_address);
 
     switch(width) {
     case io_width_8:
