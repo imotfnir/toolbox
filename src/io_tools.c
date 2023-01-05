@@ -34,7 +34,7 @@ void show_help() {
            "        --mmio Memory-Mapped IO address type\n"
            "        --pci PCIe configuration space registers\n"
            "    -f, --format <format>\n"
-           "        Set the output format for register value, default is \"0x%%x\\n\" \n"
+           "        Set the output format for register value, default is \"0x%%llx\\n\" \n"
            "        Format string is define by libc, \"man 3 printf\" for more information\n"
            "\n"
            "EXAMPLE:\n"
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     cfg->is_data_setted = false;
     cfg->init = rw_config_init;
     cfg->print = rw_config_print;
-    cfg->format = "0x%x\n";
+    cfg->format = "0x%llx\n";
 
     debug_print(DEBUG_INFO, "Your have enter %d arguments\n", argc);
     for(size_t i = 0; i < argc; i++) {

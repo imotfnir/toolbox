@@ -45,8 +45,8 @@ bool rw_config_init(rw_config *cfg, char *data_set[]) {
     case io_width_8:
     case io_width_16:
     case io_width_32:
-        break;
     case io_width_64:
+        break;
     default:
         debug_print(DEBUG_DEBUG, "io width unsupported\n");
         return false;
@@ -194,38 +194,82 @@ static uint64_t _io_write_worker(uint16_t address, io_width width, uint64_t valu
 
 static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
     int fd;
-    void *map_base;
+    void *map_base = NULL;
+    void *map_address = NULL;
+    uint64_t result = 0UL;
+
+    if((address & (width - 1)) != 0) {
+        debug_print(DEBUG_ERROR, "io width is not aligned\n");
+        return -1;
+    }
 
     if((fd = open("/dev/mem", O_RDONLY | O_SYNC)) < 0) FATAL;
-    TRACE_PRINT("/dev/mem open in fd=%n\n", fd);
+    TRACE_PRINT("/dev/mem open in fd = %d", fd);
 
-    if((map_base = mmap(0, width, PROT_READ, MAP_SHARED, fd, address)) == MAP_FAILED) FATAL;
-    TRACE_PRINT("mmap at address %p", map_base);
+    if((map_base = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, (address & ~PAGE_MASK)))
+       == MAP_FAILED)
+        FATAL;
+    TRACE_PRINT("map_base at address %p", map_base);
+
+    map_address = map_base + (address & PAGE_MASK);
+    TRACE_PRINT("map_address at address %p", map_address);
+
+    switch(width) {
+    case io_width_8:
+        result = (*(uint8_t *)map_address);
+        break;
+    case io_width_16:
+        result = (*(uint16_t *)map_address);
+        break;
+    case io_width_32:
+        result = (*(uint32_t *)map_address);
+        break;
+    case io_width_64:
+        result = (*(uint64_t *)map_address);
+        break;
+    default:
+        debug_print(DEBUG_ERROR, "io width unsupport\n");
+        break;
+    }
 
     close(fd);
-    return *((uint64_t *)map_base);
+    return result;
 }
 
 static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t value) {
     int fd;
-    void *map_base;
+    void *map_base = NULL;
+    void *map_address = NULL;
+
+    if((address & (width - 1)) != 0) {
+        debug_print(DEBUG_ERROR, "io width is not aligned\n");
+        return -1;
+    }
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) FATAL;
+    TRACE_PRINT("/dev/mem open in fd = %d", fd);
 
-    if((map_base = mmap(0, width, PROT_WRITE, MAP_SHARED, fd, address)) == MAP_FAILED) FATAL;
-    TRACE_PRINT("mmap at address %p", map_base);
+    if((map_base = mmap(NULL, PAGE_SIZE, PROT_WRITE, MAP_SHARED, fd, (address & ~PAGE_MASK)))
+       == MAP_FAILED)
+        FATAL;
+    TRACE_PRINT("map_base at address %p", map_base);
+
+    map_address = map_base + (address & PAGE_MASK);
+    TRACE_PRINT("map_address at address %p", map_address);
 
     switch(width) {
     case io_width_8:
-        *(uint8_t *)map_base = value;
+        *(uint8_t *)map_address = value;
         break;
     case io_width_16:
-        *(uint16_t *)map_base = value;
+        *(uint16_t *)map_address = value;
         break;
     case io_width_32:
-        *(uint32_t *)map_base = value;
+        *(uint32_t *)map_address = value;
         break;
     case io_width_64:
+        *(uint64_t *)map_address = value;
+        break;
     default:
         debug_print(DEBUG_ERROR, "io width unsupport\n");
         break;

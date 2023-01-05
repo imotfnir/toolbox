@@ -8,6 +8,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define PAGE_SIZE 4096UL
+#define PAGE_MASK (PAGE_SIZE - 1)
+
 typedef enum {
     io_width_8 = 1,
     io_width_16 = 2,
