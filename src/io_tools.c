@@ -18,7 +18,8 @@ bool set_mode_to_config(rw_config *cfg, char *flag);
 
 void show_help() {
     printf("USAGE:\n"
-           "    io_tools <address> [<value>] [-h|-v] [--io|--mmio|--pci] [-w 1|2|4|8] [-f <format>]\n"
+           "    io_tools <address> [<value>] [-h|-v] [--io|--mmio|--pci] [-w "
+           "1|2|4|8] [-f <format>]\n"
            "\n"
            "OPTIONS:\n"
            "    -h, --help\n"
@@ -34,8 +35,10 @@ void show_help() {
            "        --mmio Memory-Mapped IO address type\n"
            "        --pci PCIe configuration space registers\n"
            "    -f, --format <format>\n"
-           "        Set the output format for register value, default is \"0x%%llx\\n\" \n"
-           "        Format string is define by libc, \"man 3 printf\" for more information\n"
+           "        Set the output format for register value, default is "
+           "\"0x%%llx\\n\" \n"
+           "        Format string is define by libc, \"man 3 printf\" for "
+           "more information\n"
            "\n"
            "EXAMPLE:\n"
            "    Read IO 0x600 1 byte\n"
@@ -69,7 +72,9 @@ unsigned long djb_hash(char *str) {
     unsigned long hash = 5381;
     int c;
 
-    while((c = *str++)) { hash = ((hash << 5) + hash) + c; /* hash * 33 + c */ }
+    while((c = *str++)) {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
 
     return hash;
 }
@@ -98,7 +103,8 @@ int main(int argc, char *argv[]) {
 
     debug_print(DEBUG_INFO, "Your have enter %d arguments\n", argc);
     for(size_t i = 0; i < argc; i++) {
-        TRACE_PRINT("argv[%d] %-11s hash:0x%-16lX ", i, argv[i], djb_hash(argv[i]));
+        TRACE_PRINT(
+            "argv[%d] %-11s hash:0x%-16lX ", i, argv[i], djb_hash(argv[i]));
     }
     // All supported long option
     static struct option long_opt[] = {
@@ -121,7 +127,8 @@ int main(int argc, char *argv[]) {
             return 0;
         case 'w':
             cfg->width = strtoul(optarg, &convert_checker, 0);
-            if(*convert_checker != '\0') { /* optarg convert to digit success */
+            if(*convert_checker
+               != '\0') { /* optarg convert to digit success */
                 debug_print(DEBUG_ERROR, "%s not a number\n", optarg);
                 return 1;
             }

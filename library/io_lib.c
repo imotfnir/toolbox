@@ -12,12 +12,22 @@
 
 // static function declaration
 static uint64_t _io_read_worker(uint16_t address, io_width width);
-static uint64_t _io_write_worker(uint16_t address, io_width width, uint64_t value);
-static uint64_t _mmio_read_worker(uint64_t address, io_width width);
-static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t value);
-static uint64_t _pci_read_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width);
 static uint64_t
-_pci_write_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width, uint64_t value);
+_io_write_worker(uint16_t address, io_width width, uint64_t value);
+static uint64_t _mmio_read_worker(uint64_t address, io_width width);
+static uint64_t
+_mmio_write_worker(uint64_t address, io_width width, uint64_t value);
+static uint64_t _pci_read_worker(uint8_t bus,
+                                 uint8_t dev,
+                                 uint8_t fun,
+                                 off_t off,
+                                 io_width width);
+static uint64_t _pci_write_worker(uint8_t bus,
+                                  uint8_t dev,
+                                  uint8_t fun,
+                                  off_t off,
+                                  io_width width,
+                                  uint64_t value);
 
 bool rw_config_init(rw_config *cfg, char *data_set[]) {
     size_t count = 0;
@@ -59,7 +69,8 @@ bool rw_config_init(rw_config *cfg, char *data_set[]) {
 
     if(cfg->mode == pci) {
         if((count != 4) && (count != 5)) {
-            debug_print(DEBUG_ERROR, "Arguments invalid, non-opt argc = 4 ro 5\n");
+            debug_print(DEBUG_ERROR,
+                        "Arguments invalid, non-opt argc = 4 ro 5\n");
             return false;
         }
         cfg->bdf.bus = digit_set[0];
@@ -99,13 +110,19 @@ bool rw_config_init(rw_config *cfg, char *data_set[]) {
 void rw_config_print(rw_config *cfg) {
     debug_print(DEBUG_DEBUG, "Show rw_config member:\n");
     debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "address", cfg->address);
-    debug_print(DEBUG_DEBUG, "%-12s %s\n", "addr_set?", cfg->is_address_setted ? "true" : "false");
+    debug_print(DEBUG_DEBUG,
+                "%-12s %s\n",
+                "addr_set?",
+                cfg->is_address_setted ? "true" : "false");
     debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "bdf.bus", cfg->bdf.bus);
     debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "bdf.dev", cfg->bdf.dev);
     debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "bdf.fun", cfg->bdf.fun);
     debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "bdf.off", cfg->bdf.off);
     debug_print(DEBUG_DEBUG, "%-12s 0x%02x\n", "data", cfg->data);
-    debug_print(DEBUG_DEBUG, "%-12s %s\n", "data_set?", cfg->is_data_setted ? "true" : "false");
+    debug_print(DEBUG_DEBUG,
+                "%-12s %s\n",
+                "data_set?",
+                cfg->is_data_setted ? "true" : "false");
     debug_print(DEBUG_DEBUG, "%-12s %d\n", "mode", cfg->mode);
     debug_print(DEBUG_DEBUG, "%-12s %d\n", "width", cfg->width);
     debug_print(DEBUG_DEBUG, "%-12s %s\n", "output format", cfg->format);
@@ -153,7 +170,8 @@ static uint64_t _io_read_worker(uint16_t address, io_width width) {
     return value;
 }
 
-static uint64_t _io_write_worker(uint16_t address, io_width width, uint64_t value) {
+static uint64_t
+_io_write_worker(uint16_t address, io_width width, uint64_t value) {
     if((address & (width - 1)) != 0) {
         debug_print(DEBUG_ERROR, "io width is not aligned\n");
         return -1;
@@ -207,7 +225,12 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
     if((fd = open("/dev/mem", O_RDONLY | O_SYNC)) < 0) FATAL;
     TRACE_PRINT("/dev/mem open in fd = %d", fd);
 
-    if((map_base = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, (address & ~PAGE_MASK)))
+    if((map_base = mmap(NULL,
+                        PAGE_SIZE,
+                        PROT_READ,
+                        MAP_SHARED,
+                        fd,
+                        (address & ~PAGE_MASK)))
        == MAP_FAILED)
         FATAL;
 
@@ -236,7 +259,8 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
     return result;
 }
 
-static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t value) {
+static uint64_t
+_mmio_write_worker(uint64_t address, io_width width, uint64_t value) {
     int fd;
     void *map_base = NULL;
     void *map_address = NULL;
@@ -250,7 +274,12 @@ static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t va
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) FATAL;
     TRACE_PRINT("/dev/mem open in fd = %d", fd);
 
-    if((map_base = mmap(NULL, PAGE_SIZE, PROT_WRITE, MAP_SHARED, fd, (address & ~PAGE_MASK)))
+    if((map_base = mmap(NULL,
+                        PAGE_SIZE,
+                        PROT_WRITE,
+                        MAP_SHARED,
+                        fd,
+                        (address & ~PAGE_MASK)))
        == MAP_FAILED)
         FATAL;
 
@@ -279,17 +308,23 @@ static uint64_t _mmio_write_worker(uint64_t address, io_width width, uint64_t va
     return value;
 }
 
-static uint64_t _pci_read_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t off, io_width width) {
+static uint64_t _pci_read_worker(uint8_t bus,
+                                 uint8_t dev,
+                                 uint8_t fun,
+                                 off_t off,
+                                 io_width width) {
     char *csr_file = malloc(50);
     FILE *fp;
     uint64_t value;
 
     if(dev >= 32) {
-        debug_print(DEBUG_ERROR, "device number out of range = %d >= 32\n", dev);
+        debug_print(
+            DEBUG_ERROR, "device number out of range = %d >= 32\n", dev);
         return -1;
     }
     if(fun >= 8) {
-        debug_print(DEBUG_ERROR, "function number out of range = %d >= 8\n", fun);
+        debug_print(
+            DEBUG_ERROR, "function number out of range = %d >= 8\n", fun);
         return -1;
     }
     if(off >= 0x1000) {
@@ -297,7 +332,12 @@ static uint64_t _pci_read_worker(uint8_t bus, uint8_t dev, uint8_t fun, off_t of
         return -1;
     }
 
-    sprintf(csr_file, "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config", 0x0, bus, dev, fun);
+    sprintf(csr_file,
+            "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config",
+            0x0,
+            bus,
+            dev,
+            fun);
 
     fp = fopen(csr_file, "rb");
     if(fp == NULL) {
@@ -324,11 +364,13 @@ static uint64_t _pci_write_worker(uint8_t bus,
     FILE *fp;
 
     if(dev >= 32) {
-        debug_print(DEBUG_ERROR, "device number out of range = %d >= 32\n", dev);
+        debug_print(
+            DEBUG_ERROR, "device number out of range = %d >= 32\n", dev);
         return -1;
     }
     if(fun >= 8) {
-        debug_print(DEBUG_ERROR, "function number out of range = %d >= 8\n", fun);
+        debug_print(
+            DEBUG_ERROR, "function number out of range = %d >= 8\n", fun);
         return -1;
     }
     if(off >= 0x1000) {
@@ -336,7 +378,12 @@ static uint64_t _pci_write_worker(uint8_t bus,
         return -1;
     }
 
-    sprintf(csr_file, "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config", 0x0, bus, dev, fun);
+    sprintf(csr_file,
+            "/sys/bus/pci/devices/%04x:%02x:%02x.%01x/config",
+            0x0,
+            bus,
+            dev,
+            fun);
 
     fp = fopen(csr_file, "wb");
     if(fp == NULL) {
@@ -440,19 +487,27 @@ void rw_worker(rw_config *cfg) {
         return;
     case mmio:
         if(cfg->is_data_setted) {
-            cfg->data = _mmio_write_worker(cfg->address, cfg->width, cfg->data);
+            cfg->data
+                = _mmio_write_worker(cfg->address, cfg->width, cfg->data);
             return;
         }
         cfg->data = _mmio_read_worker(cfg->address, cfg->width);
         return;
     case pci:
         if(cfg->is_data_setted) {
-            cfg->data = _pci_write_worker(
-                cfg->bdf.bus, cfg->bdf.dev, cfg->bdf.fun, cfg->bdf.off, cfg->width, cfg->data);
+            cfg->data = _pci_write_worker(cfg->bdf.bus,
+                                          cfg->bdf.dev,
+                                          cfg->bdf.fun,
+                                          cfg->bdf.off,
+                                          cfg->width,
+                                          cfg->data);
             return;
         }
-        cfg->data
-            = _pci_read_worker(cfg->bdf.bus, cfg->bdf.dev, cfg->bdf.fun, cfg->bdf.off, cfg->width);
+        cfg->data = _pci_read_worker(cfg->bdf.bus,
+                                     cfg->bdf.dev,
+                                     cfg->bdf.fun,
+                                     cfg->bdf.off,
+                                     cfg->width);
         return;
     default:
         break;

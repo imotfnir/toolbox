@@ -11,7 +11,9 @@ void debug_print(uint8_t debug_level, char *format, ...) {
     va_start(marker, format);
 
     if(DEBUG_LEVEL <= debug_level) { return; }
-    vfprintf(stderr, format, marker); /* redirect all debug and error message to stderr */
+    vfprintf(stderr,
+             format,
+             marker); /* redirect all debug and error message to stderr */
 
     va_end(marker);
     return;

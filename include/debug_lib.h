@@ -20,23 +20,37 @@
 // Marco Function
 #define STR_VALUE(arg) #arg
 
-#define FATAL                                                                                                 \
-    do {                                                                                                      \
-        fprintf(stderr, "Error at line %d, file %s (%d) [%s]\n", __LINE__, __FILE__, errno, strerror(errno)); \
-        exit(1);                                                                                              \
+#define FATAL                                                                 \
+    do {                                                                      \
+        fprintf(stderr,                                                       \
+                "Error at line %d, file %s (%d) [%s]\n",                      \
+                __LINE__,                                                     \
+                __FILE__,                                                     \
+                errno,                                                        \
+                strerror(errno));                                             \
+        exit(1);                                                              \
     } while(0)
 
-#define ERROR                                                                                                 \
-    do {                                                                                                      \
-        fprintf(stderr, "Error at line %d, file %s (%d) [%s]\n", __LINE__, __FILE__, errno, strerror(errno)); \
+#define ERROR                                                                 \
+    do {                                                                      \
+        fprintf(stderr,                                                       \
+                "Error at line %d, file %s (%d) [%s]\n",                      \
+                __LINE__,                                                     \
+                __FILE__,                                                     \
+                errno,                                                        \
+                strerror(errno));                                             \
     } while(0)
 
-#define TRACE_PRINT(format, ...)                                                                                        \
-    do {                                                                                                                \
-        if(IS_TRACE) {                                                                                                  \
-            debug_print(DEBUG_TRACE, format, __VA_ARGS__);                                                              \
-            debug_print(DEBUG_TRACE, "\t# Trace at func (%s), line (%d) in file (%s), \n", __func__, __LINE__, __FILE__); \
-        }                                                                                                               \
+#define TRACE_PRINT(format, ...)                                              \
+    do {                                                                      \
+        if(IS_TRACE) {                                                        \
+            debug_print(DEBUG_TRACE, format, __VA_ARGS__);                    \
+            debug_print(DEBUG_TRACE,                                          \
+                        "\t# Trace at func (%s), line (%d) in file (%s), \n", \
+                        __func__,                                             \
+                        __LINE__,                                             \
+                        __FILE__);                                            \
+        }                                                                     \
     } while(0)
 
 // Function declaration
