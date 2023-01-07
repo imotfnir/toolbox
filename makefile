@@ -11,7 +11,7 @@ MAJOR := 0
 MINOR := 1
 PATCH := 1
 SEM_VER := $(MAJOR).$(MINOR).$(PATCH)
-TOOLS := pcie_tools io_tools
+TOOLS := pcie_tools io_tools ioget
 
 ifeq "$(PATCH)" "0"
 	DEBUG_LEVEL := 3
