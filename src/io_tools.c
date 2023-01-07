@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     char *convert_checker = NULL;
 
     if(argc <= 1) {
-        show_version();
+        show_help();
         return 0;
     }
 

@@ -15,8 +15,7 @@ unsigned long djb_hash(char *str);
 
 void show_help() {
     printf("USAGE:\n"
-           "    io_tools <address> [<value>] [-h|-v] [--io|--mmio|--pci] [-w "
-           "1|2|4|8] [-f <format>]\n"
+           "    io_tools <address> [<value>] [-h|-v] [-w 1|2|4|8] [-f <format>]\n"
            "\n"
            "OPTIONS:\n"
            "    -h, --help\n"
@@ -41,10 +40,6 @@ void show_help() {
            "        ./ioget 0x606 -f \"%%x\" : 43\n"
            "        ./ioget 0x606 -f \"%%d\" : 67\n"
            "        ./ioget 0x606 -f \"%%o\" : 103\n"
-           "\n"
-           "OTHER:\n"
-           "    If value SET, that is write command\n"
-           "    If value NOT set, that is read command\n"
            "\n"
 
     );
@@ -74,7 +69,7 @@ int main(int argc, char *argv[]) {
     char *convert_checker = NULL;
 
     if(argc <= 1) {
-        show_version();
+        show_help();
         return 0;
     }
 
