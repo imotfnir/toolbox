@@ -224,7 +224,6 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
 
     if((fd = open("/dev/mem", O_RDONLY | O_SYNC)) < 0) FATAL;
     TRACE_PRINT("/dev/mem open in fd = %d", fd);
-
     if((map_base = mmap(NULL,
                         PAGE_SIZE,
                         PROT_READ,
@@ -233,10 +232,8 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
                         (address & ~PAGE_MASK)))
        == MAP_FAILED)
         FATAL;
-
     map_address = map_base + (address & PAGE_MASK);
     TRACE_PRINT("map_base %p, map_address %p", map_base, map_address);
-
     switch(width) {
     case io_width_8:
         result = (*(volatile uint8_t *)map_address);
@@ -273,7 +270,6 @@ _mmio_write_worker(uint64_t address, io_width width, uint64_t value) {
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) < 0) FATAL;
     TRACE_PRINT("/dev/mem open in fd = %d", fd);
-
     if((map_base = mmap(NULL,
                         PAGE_SIZE,
                         PROT_WRITE,
@@ -282,10 +278,8 @@ _mmio_write_worker(uint64_t address, io_width width, uint64_t value) {
                         (address & ~PAGE_MASK)))
        == MAP_FAILED)
         FATAL;
-
     map_address = map_base + (address & PAGE_MASK);
     TRACE_PRINT("map_base %p, map_address %p", map_base, map_address);
-
     switch(width) {
     case io_width_8:
         *(volatile uint8_t *)map_address = value;
@@ -338,19 +332,25 @@ static uint64_t _pci_read_worker(uint8_t bus,
             bus,
             dev,
             fun);
-
     fp = fopen(csr_file, "rb");
     if(fp == NULL) {
         perror("Error while opening the file.\n");
         FATAL;
     }
-
     fseek(fp, off, SEEK_SET);
-
-    value = fgetc(fp);
+    switch(width) {
+    case io_width_8:
+    case io_width_16:
+    case io_width_32:
+    case io_width_64:
+        fread(&value, width, 1, fp);
+        break;
+    default:
+        debug_print(DEBUG_ERROR, "io width unsupport\n");
+        break;
+    }
 
     fclose(fp);
-
     return value;
 }
 
@@ -384,19 +384,25 @@ static uint64_t _pci_write_worker(uint8_t bus,
             bus,
             dev,
             fun);
-
-    fp = fopen(csr_file, "wb");
+    fp = fopen(csr_file, "rb+");
     if(fp == NULL) {
         perror("Error while opening the file.\n");
         FATAL;
     }
-
     fseek(fp, off, SEEK_SET);
-
-    fputc(value, fp);
+    switch(width) {
+    case io_width_8:
+    case io_width_16:
+    case io_width_32:
+    case io_width_64:
+        fwrite(&value, width, 1, fp);
+        break;
+    default:
+        debug_print(DEBUG_ERROR, "io width unsupport\n");
+        break;
+    }
 
     fclose(fp);
-
     return value;
 }
 
