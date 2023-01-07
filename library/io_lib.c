@@ -334,6 +334,7 @@ static uint64_t _pci_read_worker(uint8_t bus,
             fun);
     fp = fopen(csr_file, "rb");
     if(fp == NULL) {
+        debug_print(DEBUG_ERROR, "Fail to open %s\n", csr_file);
         perror("Error while opening the file.\n");
         FATAL;
     }

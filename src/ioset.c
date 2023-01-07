@@ -65,8 +65,10 @@ unsigned long djb_hash(char *str) {
 bool is_604_writable(rw_config cfg) {
     if(cfg.address != 0x604) return true;
     // 0x604 bit[7] is bios chip select
-    if((io_read8(R_CPLD_CTRL1) & R_CPLD_CTRL1) == (cfg.data & R_CPLD_CTRL1))
+    if((io_read8(R_CPLD_CTRL1) & B_BIOS_CHIP_SEL)
+       == (cfg.data & B_BIOS_CHIP_SEL))
         return true;
+    // ToDo ME bdf
     if((pci_read8(0x0, 0x16, 0x0, R_HECI_FIRMWARE_STATE) & B_HECI_FIRMWARE_CS)
        == V_HECI_RECOVERY)
         return true;
@@ -153,6 +155,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    return 0;
     rw_worker(cfg);
 
     return 0;
