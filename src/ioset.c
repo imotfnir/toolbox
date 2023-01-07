@@ -9,9 +9,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define R_CPLD_CTRL1          0x604
+#define B_BIOS_CHIP_SEL       0x80
+#define R_HECI_FIRMWARE_STATE 0x40
+#define B_HECI_FIRMWARE_CS    0xF
+#define V_HECI_RECOVERY       0x2
+
 void show_help();
 void show_version();
 unsigned long djb_hash(char *str);
+bool is_604_writable(rw_config cfg);
 
 void show_help() {
     printf(
@@ -53,6 +60,17 @@ unsigned long djb_hash(char *str) {
     }
 
     return hash;
+}
+
+bool is_604_writable(rw_config cfg) {
+    if(cfg.address != 0x604) return true;
+    // 0x604 bit[7] is bios chip select
+    if((io_read8(R_CPLD_CTRL1) & R_CPLD_CTRL1) == (cfg.data & R_CPLD_CTRL1))
+        return true;
+    if((pci_read8(0x0, 0x16, 0x0, R_HECI_FIRMWARE_STATE) & B_HECI_FIRMWARE_CS)
+       == V_HECI_RECOVERY)
+        return true;
+    return false;
 }
 
 int main(int argc, char *argv[]) {
@@ -126,6 +144,9 @@ int main(int argc, char *argv[]) {
 
     if(!cfg->init(cfg, argv + optind)) return 1;
     cfg->print(cfg);
+
+    // Return fail if switch bios chip select before hmrfpo
+    if(!is_604_writable(*cfg)) return 1;
 
     rw_worker(cfg);
 
