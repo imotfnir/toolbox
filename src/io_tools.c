@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 void show_help();
 void show_version();
@@ -32,7 +33,7 @@ void show_help() {
            "        --pci PCIe configuration space registers\n"
            "    -f, --format <format>\n"
            "        Set the output format for register value, default is "
-           "\"0x%%llx\\n\" \n"
+           "\"0x%%PRIxMAX\\n\" \n"
            "        Format string is define by libc, \"man 3 printf\" for "
            "more information\n"
            "\n"
@@ -95,7 +96,7 @@ int main(int argc, char *argv[]) {
     cfg->is_data_setted = false;
     cfg->init = rw_config_init;
     cfg->print = rw_config_print;
-    cfg->format = "0x%llx\n";
+    cfg->format = "0x%"PRIxMAX"\n";
 
     debug_print(DEBUG_INFO, "Your have enter %d arguments\n", argc);
     for(size_t i = 0; i < argc; i++) {
