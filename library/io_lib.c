@@ -479,6 +479,12 @@ uint32_t pci_read32(uint8_t bus, uint8_t dev, uint8_t fun, off_t off) {
 void rw_worker(rw_config *cfg) {
     switch(cfg->mode) {
     case io:
+        if(cfg->address > 0xFFFF) {
+            debug_print(DEBUG_ERROR,
+                        "Invalid address, address of low-level IO can not "
+                        "over 0xFFFF");
+            return;
+        }
         if(cfg->is_data_setted) {
             cfg->data = _io_write_worker(cfg->address, cfg->width, cfg->data);
             return;
