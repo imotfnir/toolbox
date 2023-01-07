@@ -7,6 +7,8 @@ export CC := $(CROSS_COMPILE)gcc
 export LD := $(CROSS_COMPILE)ld
 export AR := $(CROSS_COMPILE)ar
 export SHELL := /bin/sh
+export LN := ln -s
+export SUDO := sudo
 MAJOR := 0
 MINOR := 1
 PATCH := 1
@@ -55,11 +57,15 @@ all: $(build_dir) $(TOOLS)
 
 rebuild: clean all
 
-install: all
-	$(CP) $(install_dir)/pcie_tools
+install: all uninstall
+	$(SUDO) $(LN) $(repo_dir)/pcie_tools $(install_dir)
+	$(SUDO) $(LN) $(repo_dir)/io_tools $(install_dir)
+	$(SUDO) $(LN) $(repo_dir)/ioget $(install_dir)
 
 uninstall:
-	$(RM) $(install_dir)/pcie_tools
+	$(SUDO) $(RM) $(install_dir)/pcie_tools
+	$(SUDO) $(RM) $(install_dir)/io_tools
+	$(SUDO) $(RM) $(install_dir)/ioget
 
 clean:
 	$(RM) -r $(build_dir)/
