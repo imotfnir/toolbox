@@ -343,7 +343,10 @@ static uint64_t _pci_read_worker(uint8_t bus,
     case io_width_16:
     case io_width_32:
     case io_width_64:
-        fread(&value, width, 1, fp);
+        if(fread(&value, width, 1, fp) != 1) {
+            debug_print(DEBUG_ERROR, "pci read fail\n");
+            FATAL;
+        }
         break;
     default:
         debug_print(DEBUG_ERROR, "io width unsupport\n");
@@ -395,7 +398,10 @@ static uint64_t _pci_write_worker(uint8_t bus,
     case io_width_16:
     case io_width_32:
     case io_width_64:
-        fwrite(&value, width, 1, fp);
+        if(fwrite(&value, width, 1, fp) != 1) {
+            debug_print(DEBUG_ERROR, "pci write fail\n");
+            FATAL;
+        }
         break;
     default:
         debug_print(DEBUG_ERROR, "io width unsupport\n");
