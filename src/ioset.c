@@ -17,7 +17,7 @@ void show_help() {
     printf(
 
         "USAGE:\n"
-        "    io_tools <address> [<value>] [-h|-v] [-w 1|2|4|8] [-f <format>]\n"
+        "    io_tools <address> [<value>] [-h|-v] [-w 1|2|4|8]\n"
         "\n"
         "OPTIONS:\n"
         "    -h, --help\n"
@@ -27,21 +27,11 @@ void show_help() {
         "    -w, --width <io_width>\n"
         "        Set io access width, width only can be 1, 2, 4, 8\n"
         "        Default width is 1\n"
-        "    -f, --format <format>\n"
-        "        Set the output format for register value, default is "
-        "\"0x%%llx\\n\" \n"
-        "        Format string is define by libc, \"man 3 printf\" for "
-        "more information\n"
         "\n"
         "EXAMPLE:\n"
-        "    Read IO 0x600 1 byte\n"
-        "        ./ioget -w 1 0x600\n"
-        "        ./ioget 1536\n"
-        "    You can change the output format by yourself\n"
-        "        ./ioget 0x606 : 0x43\n"
-        "        ./ioget 0x606 -f \"%%x\" : 43\n"
-        "        ./ioget 0x606 -f \"%%d\" : 67\n"
-        "        ./ioget 0x606 -f \"%%o\" : 103\n"
+        "    Write IO 0x600 1 byte\n"
+        "        ./ioset -w 1 0x600 0x2\n"
+        "        ./ioset 0x600 0x1\n"
         "\n"
 
     );
@@ -50,7 +40,7 @@ void show_help() {
 
 void show_version() {
     printf("toolbox version v%d.%d.%d\n", MAJOR, MINOR, PATCH);
-    printf("ioget version v%d.%d.%d\n", 1, 5, 0);
+    printf("ioset version v%d.%d.%d\n", 1, 5, 0);
     return;
 }
 
@@ -96,7 +86,6 @@ int main(int argc, char *argv[]) {
         {"help",     no_argument,       NULL, 'h'},
         { "version", no_argument,       NULL, 'v'},
         { "width",   required_argument, NULL, 'w'},
-        { "format",  required_argument, NULL, 'f'},
     };
 
     while((opt = getopt_long(argc, argv, "hvw:f:", long_opt, NULL)) != -1) {
@@ -116,9 +105,6 @@ int main(int argc, char *argv[]) {
             }
             debug_print(DEBUG_INFO, "Width: %lu\n", cfg->width);
             break;
-        case 'f':
-            cfg->format = optarg;
-            break;
         case ':':
             break;
         case '?':
@@ -129,12 +115,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Invalid Non-option args
-    if(argc - optind > 1) {
+    if(argc - optind > 2) {
         debug_print(DEBUG_INFO, "Too many input argument\n");
         return 1;
     }
-    if(argc - optind < 1) {
-        debug_print(DEBUG_INFO, "Please enter address\n");
+    if(argc - optind < 2) {
+        debug_print(DEBUG_INFO, "Please enter address and value\n");
         return 1;
     }
 
@@ -142,8 +128,6 @@ int main(int argc, char *argv[]) {
     cfg->print(cfg);
 
     rw_worker(cfg);
-
-    printf(cfg->format, cfg->data);
 
     return 0;
 }

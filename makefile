@@ -13,7 +13,7 @@ MAJOR := 0
 MINOR := 1
 PATCH := 1
 SEM_VER := $(MAJOR).$(MINOR).$(PATCH)
-TOOLS := pcie_tools io_tools ioget
+TOOLS := pcie_tools io_tools ioget ioset
 
 ifeq "$(PATCH)" "0"
 	DEBUG_LEVEL := 3
@@ -61,11 +61,13 @@ install: all uninstall
 	$(SUDO) $(LN) $(repo_dir)/pcie_tools $(install_dir)
 	$(SUDO) $(LN) $(repo_dir)/io_tools $(install_dir)
 	$(SUDO) $(LN) $(repo_dir)/ioget $(install_dir)
+	$(SUDO) $(LN) $(repo_dir)/ioset $(install_dir)
 
 uninstall:
 	$(SUDO) $(RM) $(install_dir)/pcie_tools
 	$(SUDO) $(RM) $(install_dir)/io_tools
 	$(SUDO) $(RM) $(install_dir)/ioget
+	$(SUDO) $(RM) $(install_dir)/ioset
 
 clean:
 	$(RM) -r $(build_dir)/
