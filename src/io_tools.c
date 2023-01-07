@@ -11,10 +11,6 @@
 void show_help();
 void show_version();
 unsigned long djb_hash(char *str);
-bool is_flag_supported(char *flag);
-bool set_digit_args_to_config(rw_config *cfg, int val);
-bool set_width_to_config(rw_config *cfg, char *flag);
-bool set_mode_to_config(rw_config *cfg, char *flag);
 
 void show_help() {
     printf("USAGE:\n"
