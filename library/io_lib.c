@@ -131,7 +131,7 @@ void rw_config_print(rw_config *cfg) {
 
 // function definition
 static uint64_t _io_read_worker(uint16_t address, io_width width) {
-    uint64_t value = 0;
+    volatile uint64_t value = 0;
 
     if((address & (width - 1)) != 0) {
         debug_print(DEBUG_ERROR, "io width is not aligned\n");
@@ -213,7 +213,7 @@ _io_write_worker(uint16_t address, io_width width, uint64_t value) {
 static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
     int fd;
     void *map_base = NULL;
-    void *map_address = NULL;
+    volatile void *map_address = NULL;
     uint64_t result = 0UL;
 
     if((address & (width - 1)) != 0) {
@@ -239,16 +239,16 @@ static uint64_t _mmio_read_worker(uint64_t address, io_width width) {
 
     switch(width) {
     case io_width_8:
-        result = (*(uint8_t *)map_address);
+        result = (*(volatile uint8_t *)map_address);
         break;
     case io_width_16:
-        result = (*(uint16_t *)map_address);
+        result = (*(volatile uint16_t *)map_address);
         break;
     case io_width_32:
-        result = (*(uint32_t *)map_address);
+        result = (*(volatile uint32_t *)map_address);
         break;
     case io_width_64:
-        result = (*(uint64_t *)map_address);
+        result = (*(volatile uint64_t *)map_address);
         break;
     default:
         debug_print(DEBUG_ERROR, "io width unsupport\n");
@@ -263,7 +263,7 @@ static uint64_t
 _mmio_write_worker(uint64_t address, io_width width, uint64_t value) {
     int fd;
     void *map_base = NULL;
-    void *map_address = NULL;
+    volatile void *map_address = NULL;
 
     if((address & (width - 1)) != 0) {
         debug_print(DEBUG_ERROR, "io width is not aligned\n");
@@ -288,16 +288,16 @@ _mmio_write_worker(uint64_t address, io_width width, uint64_t value) {
 
     switch(width) {
     case io_width_8:
-        *(uint8_t *)map_address = value;
+        *(volatile uint8_t *)map_address = value;
         break;
     case io_width_16:
-        *(uint16_t *)map_address = value;
+        *(volatile uint16_t *)map_address = value;
         break;
     case io_width_32:
-        *(uint32_t *)map_address = value;
+        *(volatile uint32_t *)map_address = value;
         break;
     case io_width_64:
-        *(uint64_t *)map_address = value;
+        *(volatile uint64_t *)map_address = value;
         break;
     default:
         debug_print(DEBUG_ERROR, "io width unsupport\n");
