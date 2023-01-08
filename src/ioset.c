@@ -1,3 +1,4 @@
+#include <register.h>
 #include <debug_lib.h>
 #include <io_lib.h>
 
@@ -8,12 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define R_CPLD_CTRL1          0x604
-#define B_BIOS_CHIP_SEL       0x80
-#define R_HECI_FIRMWARE_STATE 0x40
-#define B_HECI_FIRMWARE_CS    0xF
-#define V_HECI_RECOVERY       0x2
 
 void show_help();
 void show_version();
