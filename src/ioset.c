@@ -42,7 +42,7 @@ void show_help() {
 
 void show_version() {
     printf("toolbox version v%d.%d.%d\n", MAJOR, MINOR, PATCH);
-    printf("ioset version v%d.%d.%d\n", 1, 5, 0);
+    printf("ioset version v%d.%d.%d\n", IOGETSET_MAJOR, IOGETSET_MINOR, IOGETSET_PATCH);
     return;
 }
 
