@@ -5,6 +5,7 @@
 
 cpu_codename get_cpu_codename() {
     // LPC controller VID DID
+    // ToDo change to mechanism for getting codename, use CPU ID or something
     switch(pci_read32(0x0, 0x1F, 0x0, 0x0)) {
     case 0x8C548086:
         return broadwelld;
