@@ -1,19 +1,19 @@
 #ifndef _PROJECT_LIB_H_
 #define _PROJECT_LIB_H_
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef struct semver semver;
 
-typedef enum { broadwelld, skyladed, denverton, icelaked } cpu_codename;
+typedef enum { broadwelld, skylaked, denverton, icelaked } cpu_codename;
 
 typedef enum { emux } project_sku;
 
 struct {
-    uint32 major;
-    uint32 minor;
-    uint32 patch;
+    uint32_t major;
+    uint32_t minor;
+    uint32_t patch;
 } semver;
 
 cpu_codename get_cpu_codename();
