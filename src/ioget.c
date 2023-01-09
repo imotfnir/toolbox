@@ -31,6 +31,8 @@ void show_help() {
         "        Set the output format for register value, default is "
         "\"0x%%llx\\n\" \n"
         "        Format string is define by libc, \"man 3 printf\" for "
+        "    -o, --only-value"
+        "        Show output value only"
         "more information\n"
         "\n"
         "EXAMPLE:\n"
@@ -50,7 +52,10 @@ void show_help() {
 
 void show_version() {
     printf("toolbox version v%d.%d.%d\n", MAJOR, MINOR, PATCH);
-    printf("ioget version v%d.%d.%d\n", IOGETSET_MAJOR, IOGETSET_MINOR, IOGETSET_PATCH);
+    printf("ioget version v%d.%d.%d\n",
+           IOGETSET_MAJOR,
+           IOGETSET_MINOR,
+           IOGETSET_PATCH);
     return;
 }
 
@@ -69,6 +74,7 @@ int main(int argc, char *argv[]) {
     int opt;
     rw_config *cfg = malloc(sizeof(rw_config));
     char *convert_checker = NULL;
+    bool is_only_value = false;
 
     if(argc <= 1) {
         show_help();
@@ -93,13 +99,14 @@ int main(int argc, char *argv[]) {
     }
     // All supported long option
     static struct option long_opt[] = {
-        {"help",     no_argument,       NULL, 'h'},
-        { "version", no_argument,       NULL, 'v'},
-        { "width",   required_argument, NULL, 'w'},
-        { "format",  required_argument, NULL, 'f'},
+        {"help",        no_argument,       NULL, 'h'},
+        { "version",    no_argument,       NULL, 'v'},
+        { "width",      required_argument, NULL, 'w'},
+        { "format",     required_argument, NULL, 'f'},
+        { "only-value", no_argument,       NULL, 'o'},
     };
 
-    while((opt = getopt_long(argc, argv, "hvw:f:", long_opt, NULL)) != -1) {
+    while((opt = getopt_long(argc, argv, "hvw:f:o", long_opt, NULL)) != -1) {
         switch(opt) {
         case 'h':
             show_help();
@@ -118,6 +125,9 @@ int main(int argc, char *argv[]) {
             break;
         case 'f':
             cfg->format = optarg;
+            break;
+        case 'o':
+            is_only_value = true;
             break;
         case ':':
             break;
@@ -143,6 +153,7 @@ int main(int argc, char *argv[]) {
 
     rw_worker(cfg);
 
+    if(!is_only_value) printf("The value of address 0x%"PRIx64" is ", cfg->address);
     printf(cfg->format, cfg->data);
 
     return 0;

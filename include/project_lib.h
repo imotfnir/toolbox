@@ -10,11 +10,11 @@ typedef enum { broadwelld, skylaked, denverton, icelaked } cpu_codename;
 
 typedef enum { emux } project_sku;
 
-struct {
+struct semver {
     uint32_t major;
     uint32_t minor;
     uint32_t patch;
-} semver;
+};
 
 cpu_codename get_cpu_codename();
 
