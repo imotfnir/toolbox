@@ -137,11 +137,10 @@ int main(int argc, char *argv[]) {
     if(!is_allow_switch_chip_select(*cfg)) {
         debug_print(DEBUG_FATAL,
                     "Changing IO_0x604[7] is prohibited because of ME is not "
-                    "in recovery mode");
+                    "in recovery mode\n");
         return 1;
     }
 
-    return 0;
     rw_worker(cfg);
 
     return 0;
