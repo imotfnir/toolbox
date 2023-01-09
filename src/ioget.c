@@ -31,9 +31,9 @@ void show_help() {
         "        Set the output format for register value, default is "
         "\"0x%%llx\\n\" \n"
         "        Format string is define by libc, \"man 3 printf\" for "
-        "    -o, --only-value"
-        "        Show output value only"
         "more information\n"
+        "    -o, --only-value\n"
+        "        Show output value only\n"
         "\n"
         "EXAMPLE:\n"
         "    Read IO 0x600 1 byte\n"
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
         { "only-value", no_argument,       NULL, 'o'},
     };
 
-    while((opt = getopt_long(argc, argv, "hvw:f:o", long_opt, NULL)) != -1) {
+    while((opt = getopt_long(argc, argv, "hvw:f:", long_opt, NULL)) != -1) {
         switch(opt) {
         case 'h':
             show_help();

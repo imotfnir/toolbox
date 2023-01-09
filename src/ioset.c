@@ -1,6 +1,7 @@
-#include <register.h>
 #include <debug_lib.h>
 #include <io_lib.h>
+#include <project_lib.h>
+#include <register.h>
 
 #include <ctype.h>
 #include <getopt.h>
@@ -42,7 +43,10 @@ void show_help() {
 
 void show_version() {
     printf("toolbox version v%d.%d.%d\n", MAJOR, MINOR, PATCH);
-    printf("ioset version v%d.%d.%d\n", IOGETSET_MAJOR, IOGETSET_MINOR, IOGETSET_PATCH);
+    printf("ioset version v%d.%d.%d\n",
+           IOGETSET_MAJOR,
+           IOGETSET_MINOR,
+           IOGETSET_PATCH);
     return;
 }
 
@@ -55,19 +59,6 @@ unsigned long djb_hash(char *str) {
     }
 
     return hash;
-}
-
-bool is_604_writable(rw_config cfg) {
-    if(cfg.address != 0x604) return true;
-    // 0x604 bit[7] is bios chip select
-    if((io_read8(R_CPLD_CTRL1) & B_BIOS_CHIP_SEL)
-       == (cfg.data & B_BIOS_CHIP_SEL))
-        return true;
-    // ToDo ME bdf
-    if((pci_read8(0x0, 0x16, 0x0, R_HECI_FIRMWARE_STATE) & B_HECI_FIRMWARE_CS)
-       == V_HECI_RECOVERY)
-        return true;
-    return false;
 }
 
 int main(int argc, char *argv[]) {
@@ -103,7 +94,7 @@ int main(int argc, char *argv[]) {
         { "width",   required_argument, NULL, 'w'},
     };
 
-    while((opt = getopt_long(argc, argv, "hvw:f:", long_opt, NULL)) != -1) {
+    while((opt = getopt_long(argc, argv, "hvw:", long_opt, NULL)) != -1) {
         switch(opt) {
         case 'h':
             show_help();
@@ -143,7 +134,7 @@ int main(int argc, char *argv[]) {
     cfg->print(cfg);
 
     // Return fail if switch bios chip select before hmrfpo
-    if(!is_604_writable(*cfg)) {
+    if(!is_allow_switch_chip_select(*cfg)) {
         debug_print(DEBUG_FATAL,
                     "Changing IO_0x604[7] is prohibited because of ME is not "
                     "in recovery mode");
