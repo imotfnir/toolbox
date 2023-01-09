@@ -1,3 +1,5 @@
+include token.mak
+
 # Environment Variable
 export MAKE := make
 export RM := rm -f
@@ -9,19 +11,6 @@ export AR := $(CROSS_COMPILE)ar
 export SHELL := /bin/sh
 export LN := ln -s
 export SUDO := sudo
-MAJOR := 0
-MINOR := 1
-PATCH := 1
-SEM_VER := $(MAJOR).$(MINOR).$(PATCH)
-TOOLS := pcie_tools io_tools ioget ioset
-
-ifeq "$(PATCH)" "0"
-	DEBUG_LEVEL := 3
-	IS_TRACE := false
-else
-	DEBUG_LEVEL := 7
-	IS_TRACE := true
-endif
 
 # Directory
 export repo_dir := $(PWD)
@@ -36,12 +25,10 @@ export install_dir = /usr/local/bin
 # Vpath
 vpath %.c $(src_dir) $(library_dir)
 vpath %.h $(include_dir)
-VPATH = $(build_dir)
 
 # Flags
 CFLAGS = -g -O3 -Wall #--save-temp
 INCS = $(include_dir)
-MARCO = DEBUG_LEVEL=$(DEBUG_LEVEL) MAJOR=$(MAJOR) MINOR=$(MINOR) PATCH=$(PATCH) IS_TRACE=$(IS_TRACE)
 INCFLAG = $(foreach d, $(INCS)/, -I$d)
 MARCOFLAG = $(foreach d, $(MARCO), -D$d)
 
@@ -50,8 +37,6 @@ LIB_FILES = $(wildcard $(library_dir)/*.c)
 LIBS = $(notdir $(LIB_FILES))
 OBJ_FILES = $(LIBS:%.c=$(build_dir)/%.o)
 DEP_FILES = $(LIBS:%.c=$(build_dir)/%.d) $(TOOLS:%=$(build_dir)/%.d)
-
-# include other makefile
 
 all: $(build_dir) $(TOOLS)
 
@@ -87,13 +72,16 @@ $(build_dir):
 	$(MKDIR) $@
 
 debug:
+	@echo $(MINOR)
 	@echo LIB_FILES = $(LIB_FILES)
 	@echo OBJ_FILES = $(OBJ_FILES)
 	@echo DEP_FILES = $(DEP_FILES)
 	@echo LIBS = $(LIBS)
 	@echo OBJS = $(OBJS)
 	@echo DEPS = $(DEPS)
+	@echo $(TOKEN)
 
 .PHONY: all rebuild clean uninstall install test debug
 
+# include other makefile
 -include $(DEP_FILES)
