@@ -140,11 +140,11 @@ int main(int argc, char *argv[]) {
 
     // Invalid Non-option args
     if(argc - optind > 1) {
-        debug_print(DEBUG_INFO, "Too many input argument\n");
+        debug_print(DEBUG_ERROR, "Too many input argument\n");
         return 1;
     }
     if(argc - optind < 1) {
-        debug_print(DEBUG_INFO, "Please enter address\n");
+        debug_print(DEBUG_ERROR, "Please enter address\n");
         return 1;
     }
 
