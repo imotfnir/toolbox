@@ -28,7 +28,7 @@ vpath %.c $(src_dir) $(library_dir)
 vpath %.h $(include_dir)
 
 # Flags
-CFLAGS = -g -O3 -Wall #--save-temp
+CFLAGS = -g -O3 -Wall #--save-temp -P
 INCS = $(include_dir)
 INCFLAG = $(foreach d, $(INCS)/, -I$d)
 MARCOFLAG = $(foreach d, $(MARCO), -D$d)
@@ -59,6 +59,7 @@ uninstall:
 clean:
 	$(RM) -r $(build_dir)/
 	$(RM) $(TOOLS)
+	$(RM) $(test_dir)/test_io_lib
 
 $(TOOLS): %: $(build_dir)/%.o $(OBJ_FILES)
 	$(CC) $^ -o $@
@@ -74,11 +75,12 @@ $(build_dir):
 	$(MKDIR) $@
 
 # Build check unit test
-test:
+test: all $(test_dir)/test_io_lib
+	$(test_dir)/test_io_lib
+
+$(test_dir)/test_io_lib: $(test_dir)/test_io_lib.check
 	$(CHECKMK) $(test_dir)/test_io_lib.check > $(test_dir)/test_io_lib.c
-	$(CC) $(CFLAGS) $(INCFLAG) $(MARCOFLAG) -lcheck $(test_dir)/test_io_lib.c -o $(test_dir)/test_io_lib
-
-
+	$(CC) $(CFLAGS) $(INCFLAG) $(MARCOFLAG) -lcheck $(library_dir)/io_lib.c $(library_dir)/debug_lib.c $(test_dir)/test_io_lib.c -o $(test_dir)/test_io_lib
 
 
 debug:
