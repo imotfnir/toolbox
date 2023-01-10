@@ -8,9 +8,15 @@ ROOT_DIR=$(
 )
 SOURCE_DIR="${ROOT_DIR}/src"
 TEST_DIR="${ROOT_DIR}/test"
+LIBRARY_DIR="${ROOT_DIR}/library"
+INCLUDE_DIR="${ROOT_DIR}/include"
+TOOLS_DIR="${ROOT_DIR}/tools"
 export ROOT_DIR
 export SOURCE_DIR
 export TEST_DIR
+export LIBRARY_DIR
+export INCLUDE_DIR
+export TOOLS_DIR
 
 # Global Variable
 TEST_MEMORY_READ="false"
@@ -22,10 +28,10 @@ CYCLE="10"
 IS_CYCLE_FOREVER="false"
 TEST_MODE="stress"
 
-# shellcheck source-path=src
-source "${SOURCE_DIR}/error_handling_lib.sh"
-# shellcheck source-path=src
-source "${SOURCE_DIR}/stress_lib.sh"
+# shellcheck source-path=include
+source "${INCLUDE_DIR}/error_handling_lib.sh"
+# shellcheck source-path=include
+source "${INCLUDE_DIR}/stress_lib.sh"
 
 #TODO: trap EXIT, run show_error before exit
 trap 'show_error $?' EXIT

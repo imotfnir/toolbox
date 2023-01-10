@@ -2,12 +2,19 @@ variables:
   TEST_FILE: "./.githooks/pre-commit"
 
 stages:
-  - test
+  - shell_test
+  - python_test
 
-unit_test:
-  stage: test
+shell_test:
+  stage: shell_test
   tags:
     - bash
   script:
-    - mkdir localtest
-    - ${TEST_FILE}
+    - shfmt -d -i 4 $(find . -name "*.sh" -not -path "./.githooks/*")
+
+python_test:
+  stage: python_test
+  tags:
+    - python
+  script:
+    - pytest .

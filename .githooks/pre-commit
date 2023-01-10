@@ -2,36 +2,66 @@
 echo "Runing $(basename "${0}")"
 
 ROOT_DIR=$(
-    cd $(dirname ${0})
+    cd "$(dirname "${0}")" || return
     cd ..
-    echo ${PWD}
+    echo "${PWD}"
 )
 SOURCE_DIR="${ROOT_DIR}/src"
 TEST_DIR="${ROOT_DIR}/test"
 TOOLS_DIR="${ROOT_DIR}/tools"
+INCLUDE_DIR="${ROOT_DIR}/include"
+LIBRARY_DIR="${ROOT_DIR}/library"
+
 export ROOT_DIR
 export SOURCE_DIR
 export TEST_DIR
 export TOOLS_DIR
+export INCLUDE_DIR
+export LIBRARY_DIR
 
-echo "Checking code style"
-if ! shfmt -d -i 4 $(find ${ROOT_DIR} -name "*.bats" -o -name "*.sh"); then
-    echo "Check code style fail, please format your code by shfmt with 4 space indent"
+shell_files=$(find "${ROOT_DIR}" -name "*.sh" -not -path "./.githooks/*")
+shell_test_files=$(find "${ROOT_DIR}" -name "*.bats" -not -path "./.githooks/*")
+python_files=$(find "${ROOT_DIR}" -name "*.py" -not -path "./.githooks/*")
+
+color_print() {
+    printf "\e[1;35m"
+    echo "${*}"
+    printf "\e[0m"
+}
+
+color_print "Checking *.sh *.bats code style"
+if shfmt -d -i 4 ${shell_files} ${shell_test_files}; then
+    echo "shfmt pass"
+else
+    echo >&2 "Check code style fail, please format your code by shfmt with 4 space indent"
     exit 1
 fi
 
-echo "Runing unit test"
-for item in $(find ${TEST_DIR} -name "*.bats"); do
+color_print "Runing *.sh unit test"
+for item in ${shell_test_files}; do
     eval "bats -x --print-output-on-failure ${item}" || exit 1
 done
 
-echo "Runing shellcheck"
-if shellcheck --shell=bash $(find ${ROOT_DIR} -name "*.sh"); then
+color_print "Runing shellcheck"
+if shellcheck --shell=bash ${shell_files}; then
     echo "Shellcheck pass"
 else
     echo >&2 "Shellcheck failed, please review your code again"
     exit 1
 fi
+
+export PYTHONPATH="${ROOT_DIR}"
+
+color_print "Runing autopep8"
+if autopep8 -a -d --exit-code --max-line-length=79 ${python_files}; then
+    echo "autopep8 pass"
+else
+    echo >&2 "autopep8 check fail"
+    exit 1
+fi
+
+# ToDo: run mypy before commit
+# ToDo: run pytest before commit
 
 # Check non ascii code file
 if git rev-parse --verify HEAD >/dev/null 2>&1; then

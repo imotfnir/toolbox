@@ -1,0 +1,97 @@
+include token.mak
+
+# Environment Variable
+export MAKE := make
+export RM := rm -f
+export CP := cp
+export MKDIR := mkdir -p
+export CC := $(CROSS_COMPILE)gcc
+export LD := $(CROSS_COMPILE)ld
+export AR := $(CROSS_COMPILE)ar
+export SHELL := /bin/sh
+export LN := ln -s
+export SUDO := sudo
+export CHECKMK := checkmk
+
+# Directory
+export repo_dir := $(PWD)
+export include_dir = $(repo_dir)/include
+export src_dir = $(repo_dir)/src
+export library_dir = $(repo_dir)/library
+export test_dir = $(repo_dir)/test
+export tools_dir = $(repo_dir)/tools
+export build_dir = $(repo_dir)/build
+export install_dir = /usr/local/bin
+
+# Vpath
+vpath %.c $(src_dir) $(library_dir)
+vpath %.h $(include_dir)
+
+# Flags
+CFLAGS = -g -O3 -Wall #--save-temp
+INCS = $(include_dir)
+INCFLAG = $(foreach d, $(INCS)/, -I$d)
+MARCOFLAG = $(foreach d, $(MARCO), -D$d)
+
+# Files
+LIB_FILES = $(wildcard $(library_dir)/*.c)
+LIBS = $(notdir $(LIB_FILES))
+OBJ_FILES = $(LIBS:%.c=$(build_dir)/%.o)
+DEP_FILES = $(LIBS:%.c=$(build_dir)/%.d) $(TOOLS:%=$(build_dir)/%.d)
+
+# Build Tools
+all: $(build_dir) $(TOOLS)
+
+rebuild: clean all
+
+install: all uninstall
+	$(SUDO) $(LN) $(repo_dir)/pcie_tools $(install_dir)
+	$(SUDO) $(LN) $(repo_dir)/io_tools $(install_dir)
+	$(SUDO) $(LN) $(repo_dir)/ioget $(install_dir)
+	$(SUDO) $(LN) $(repo_dir)/ioset $(install_dir)
+
+uninstall:
+	$(SUDO) $(RM) $(install_dir)/pcie_tools
+	$(SUDO) $(RM) $(install_dir)/io_tools
+	$(SUDO) $(RM) $(install_dir)/ioget
+	$(SUDO) $(RM) $(install_dir)/ioset
+
+clean:
+	$(RM) -r $(build_dir)/
+	$(RM) $(TOOLS)
+
+$(TOOLS): %: $(build_dir)/%.o $(OBJ_FILES)
+	$(CC) $^ -o $@
+
+$(build_dir)/%.o:
+	$(CC) $(CFLAGS) $(INCFLAG) $(MARCOFLAG) -c $< -o $@
+
+$(build_dir)/%.d: %.c
+	$(MKDIR) $(build_dir)
+	$(CC) $(INCFLAG) -MM $< -MF $@ -MT '$(patsubst %.d,%.o,$@) $@'
+
+$(build_dir):
+	$(MKDIR) $@
+
+# Build check unit test
+test:
+	$(CHECKMK) $(test_dir)/test_io_lib.check > $(test_dir)/test_io_lib.c
+	$(CC) $(CFLAGS) $(INCFLAG) $(MARCOFLAG) -lcheck $(test_dir)/test_io_lib.c -o $(test_dir)/test_io_lib
+
+
+
+
+debug:
+	@echo $(MINOR)
+	@echo LIB_FILES = $(LIB_FILES)
+	@echo OBJ_FILES = $(OBJ_FILES)
+	@echo DEP_FILES = $(DEP_FILES)
+	@echo LIBS = $(LIBS)
+	@echo OBJS = $(OBJS)
+	@echo DEPS = $(DEPS)
+	@echo $(TOKEN)
+
+.PHONY: all rebuild clean uninstall install test debug
+
+# include other makefile
+-include $(DEP_FILES)

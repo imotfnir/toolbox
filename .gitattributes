@@ -1,9 +1,24 @@
 * -text
 
 *.* text eol=lf
+*.md5 text eol=lf
+*.sha1 text eol=lf
+*.sha256 text eol=lf
+*.sha512 text eol=lf
 
 *.bin binary
 *.BIN binary
+*.efi binary
+*.EFI binary
+*.rom binary
+*.ROM binary
+*.gz binary
+spsInfo* binary
+106bVCmd binary
+1062xfwdl binary
+celo64e* binary
+eeupdate64e* binary
+
 
 *.bin binary diff=hex
 *.BIN binary diff=hex

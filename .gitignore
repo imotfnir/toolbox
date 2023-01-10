@@ -1,4 +1,28 @@
+# Test file and 3rd party tools
 localtest
 cscope.*
 tag*
 .tag*
+.trunk/
+.vscode/
+__pycache__/
+*cache/
+
+# Temp file for building C
+*.o
+*.s
+*.i
+*.pyc
+/build/
+
+# Executable file
+pcie_tools
+io_tools
+ioget
+ioset
+
+# Unit Test build file
+test/*
+!test/*.check
+!test/*.bats
+!test/*.py

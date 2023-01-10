@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+
+if [ -n "${__STRESS_LIB_SH+_}" ]; then
+    return
+else
+    readonly __STRESS_LIB_SH=1
+fi
+
+# shellcheck source-path=include
+source "${INCLUDE_DIR}/std_lib.sh"
+# shellcheck source-path=include
+source "${INCLUDE_DIR}/error_handling_lib.sh"
+
+is_argument_valid() {
+    if [ "${CYCLE}" -lt "0" ]; then
+        debug_print 2 "Test cycle can not less than 0"
+        return 1
+    fi
+
+    if [ "${TEST_MODE}" = "stress" ]; then
+        return 0
+    fi
+
+    ${TEST_MEMORY_READ} && return 0
+    ${TEST_MEMORY_WRITE} && return 0
+    ${TEST_STORAGE_READ} && return 0
+    ${TEST_STORAGE_WRITE} && return 0
+    ${TEST_CPU_READ} && return 0
+    debug_print 2 "Please specify at least one type of test"
+    return 1
+}
+
+init_and_check_current_environment() {
+    local cpu_model
+    local product_name
+    local log_file
+
+    #TODO: product name
+    #TODO: ssd fw, sn etc
+    cpu_model=$(get_cpu_model)
+    product_name=$(dmidecode -t 1 | grep "Product Name" | awk -F " " '{printf $3}')
+    log_file="ssd_stress_test_${product_name}_${cpu_model}_$(date "+%Y%m%d_+%H%M%S").log"
+
+    #  shellcheck disable=SC2034
+    CPU_MODEL="${cpu_model}"
+    #  shellcheck disable=SC2034
+    LOG_FILE="${log_file}"
+    return 0
+}
+
+_test_exception() {
+    local exit_code="${1}"
+    local original_dir="${2}"
+
+    if [ "${exit_code}" = 1 ]; then
+        command rm -rf "${TEST_DIR:?}/*"
+        debug_print 1 "Fail to run stress test"
+    fi
+
+    cd "${original_dir}" || return 1
+}
+
+_fio_test() {
+    _single_test tool=fio "${@}"
+}
+
+_sysbench_test() {
+    _single_test tool=sysbench "${@}"
+}
+
+_dd_test() {
+    _single_test tool=dd "${@}"
+}
+
+_get_test_cmd() {
+    local tool="${1}"
+    local size="${2}"
+    local thread="${3}"
+    local type="${4}"
+
+    # TODO: check input size unit, check thread<=nproc
+
+    case "${tool}" in
+    fio)
+        echo "fio -directory=${TEST_DIR} -direct=1 -iodepth=128 -thread -rw=${type} -filesize=${size} -ioengine=libaio -bs=4k -numjobs=${thread} -refill_buffers -group_reporting -name=fio_test"
+        ;;
+    sysbench)
+        echo "sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type} prepare && sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type} run && sysbench fileio --threads=${thread} --file-total-size=${size} --file-io-mode=sync --file-test-mode=${type} cleanup"
+        ;;
+    dd)
+        case "${type}" in
+        read)
+            echo "dd if=/dev/random of=${TEST_DIR}/tempfile bs=4K count=${size} conv=fdatasync,notrunc"
+            ;;
+        write)
+            echo "dd if=${TEST_DIR}/tempfile of=/dev/null bs=4K count=${size}"
+            ;;
+        esac
+        ;;
+    esac
+
+    return 0
+}
+##############################
+# Do a single stress test
+# GLOBALS:
+#    none
+# ARGUMENTS:
+#    tool: which tool you what to use, fio, sysbench or dd
+#    size: test file size
+#    thread: test thread
+#    type: read or write
+#    Message
+# OUTPUTS:
+#    none
+# RETURN:
+#    none
+##############################
+_single_test() {
+    local tool="${1}"
+    local size="${2}"
+    local thread="${3}"
+    local type="${4}"
+    local cmd
+    local current_dir
+    local "${@}"
+
+    current_dir="${PWD}"
+
+    trap '_test_exception $? ${current_dir}' RETURN
+    popup_message "${*}"
+    debug_print 3 "${FUNCNAME[*]} ${*}"
+    if [ -z "${cmd+_}" ]; then
+        cmd=$(_get_test_cmd "${tool}" "${size}" "${thread}" "${type}")
+        debug_print 4 "${cmd}"
+    fi
+    eval "${cmd}" || return 1
+
+    trap - RETURN
+    return 0
+}
+
+stress_test() {
+    local size_list
+    local tool_list
+
+    IFS=" " read -r -a size_list <<<"1G 10G 100G"
+    IFS=" " read -r -a tool_list <<<"fio sysbench dd"
+
+    for tool in "${tool_list[@]}"; do
+        for size in "${size_list[@]}"; do
+            _single_test "${tool}" "${size}" $(($(nproc) - 1)) "read"
+            _single_test "${tool}" "${size}" $(($(nproc) - 1)) "write"
+        done
+    done
+    echo "stress test"
+    return 0
+}
+
+performance_test() {
+    #TODO:
+    echo "performance test"
+    return 0
+}
+
+run_test() {
+    debug_print 3 "${FUNCNAME[0]} ${*}"
+    if "${IS_CYCLE_FOREVER}"; then
+        while true; do
+            eval "${TEST_MODE}_test"
+        done
+        return 0
+    fi
+
+    local _
+    for _ in $(seq 1 "${CYCLE}"); do
+        eval "${TEST_MODE}_test"
+    done
+
+    return 0
+}

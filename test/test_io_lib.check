@@ -1,0 +1,5 @@
+#include <debug_lib.h>
+#include <io_lib.h>
+
+#test init
+    fail_unless(3 + 2 == 5);
