@@ -20,3 +20,9 @@ pcie_tools
 io_tools
 ioget
 ioset
+
+# Unit Test build file
+test/*
+!test/*.check
+!test/*.bats
+!test/*.py

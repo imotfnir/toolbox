@@ -11,6 +11,7 @@ export AR := $(CROSS_COMPILE)ar
 export SHELL := /bin/sh
 export LN := ln -s
 export SUDO := sudo
+export CHECKMK := checkmk
 
 # Directory
 export repo_dir := $(PWD)
@@ -38,6 +39,7 @@ LIBS = $(notdir $(LIB_FILES))
 OBJ_FILES = $(LIBS:%.c=$(build_dir)/%.o)
 DEP_FILES = $(LIBS:%.c=$(build_dir)/%.d) $(TOOLS:%=$(build_dir)/%.d)
 
+# Build Tools
 all: $(build_dir) $(TOOLS)
 
 rebuild: clean all
@@ -70,6 +72,14 @@ $(build_dir)/%.d: %.c
 
 $(build_dir):
 	$(MKDIR) $@
+
+# Build check unit test
+test:
+	$(CHECKMK) $(test_dir)/test_io_lib.check > $(test_dir)/test_io_lib.c
+	$(CC) $(CFLAGS) $(INCFLAG) $(MARCOFLAG) -lcheck $(test_dir)/test_io_lib.c -o $(test_dir)/test_io_lib
+
+
+
 
 debug:
 	@echo $(MINOR)
