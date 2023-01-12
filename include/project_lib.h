@@ -46,7 +46,7 @@ struct cpu_cpld {
 
 cpu_codename get_cpu_codename();
 bool is_me_recovery();
-bool is_allow_switch_chip_select(rw_config cfg);
+bool is_need_to_block(rw_config cfg);
 project_sku get_project_sku();
 
 #endif //_PROJECT_LIB_H_

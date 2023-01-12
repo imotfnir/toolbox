@@ -31,12 +31,13 @@ bool is_me_recovery() {
         me_dev_num = 0x16;
         break;
     case icelaked:
-        me_dev_num = 0x24;
+        me_dev_num = 0x18;
         break;
     default:
         break;
     }
 
+    debug_print(DEBUG_DEBUG, "me_dev_num = 0x%x\n", me_dev_num);
     if((pci_read8(0x0, me_dev_num, 0x0, R_HECI_FIRMWARE_STATE)
         & B_HECI_FIRMWARE_CS)
        == V_HECI_RECOVERY)
@@ -45,11 +46,12 @@ bool is_me_recovery() {
     return false;
 }
 
-bool is_allow_switch_chip_select(rw_config cfg) {
-    if(cfg.address != R_CPLD_CTRL1) return true;
+bool is_need_to_block(rw_config cfg) {
+    if(cfg.address != R_CPLD_CTRL1) { return false; }
     if((io_read8(R_CPLD_CTRL1) & B_BIOS_CHIP_SEL)
-       == (cfg.data & B_BIOS_CHIP_SEL))
-        return true;
-    if(is_me_recovery()) return true;
-    return false;
+       == (cfg.data & B_BIOS_CHIP_SEL)) {
+        return false;
+    }
+    if(is_me_recovery()) { return false; }
+    return true;
 }
