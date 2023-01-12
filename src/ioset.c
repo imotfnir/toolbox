@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     cfg->print(cfg);
 
     // Return fail if switch bios chip select before hmrfpo
-    if(!is_allow_switch_chip_select(*cfg)) {
+    if(is_need_to_block(*cfg)) {
         debug_print(DEBUG_FATAL,
                     "Changing IO_0x604[7] is prohibited because of ME is not "
                     "in recovery mode\n");

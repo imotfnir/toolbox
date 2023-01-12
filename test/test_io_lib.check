@@ -1,0 +1,20 @@
+#include <debug_lib.h>
+#include <io_lib.h>
+
+#include <inttypes.h>
+
+#test init
+rw_config *cfg = malloc(sizeof(rw_config));
+char *arr[] = { "0x600", "0x24" };
+cfg->address = 0x0;
+cfg->data = 0x0;
+cfg->mode = io;
+cfg->width = io_width_8;
+cfg->is_address_setted = false;
+cfg->is_data_setted = false;
+cfg->init = rw_config_init;
+cfg->print = rw_config_print;
+cfg->format = "0x%" PRIxMAX "\n";
+
+cfg->init(cfg, arr);
+fail_unless(cfg->is_address_setted == true);
