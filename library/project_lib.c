@@ -55,3 +55,49 @@ bool is_need_to_block(rw_config cfg) {
     if(is_me_recovery()) { return false; }
     return true;
 }
+
+void cpu_cpld_traversaler(cpu_cpld *self) {
+    uint8_t value = 0;
+
+    value = io_read8(0x600);
+    self->revision.major = value & 0b11000000;
+    self->revision.minor = value & 0b00111111;
+    self->revision.patch = io_read8(0x6e0);
+
+    value = io_read8(0x606);
+    self->board_id = *(board_id *)&value;
+
+    self->caterr = io_read8(0x607);
+    self->wtd_timeout = io_read8(0x608);
+    self->thermal_trip = io_read8(0x609);
+    self->mem_event = io_read8(0x60A);
+    self->boot_0x79_wa = io_read8(0x60D);
+
+    self->traversal = cpu_cpld_traversaler;
+    self->print = cpu_cpld_printer;
+
+    return;
+}
+
+void cpu_cpld_printer(cpu_cpld *self) {
+    debug_print(
+        DEBUG_DEBUG, "self->revision.major = %d\n", self->revision.major);
+    debug_print(
+        DEBUG_DEBUG, "self->revision.minor = %d\n", self->revision.minor);
+    debug_print(
+        DEBUG_DEBUG, "self->revision.patch = %d\n", self->revision.patch);
+    debug_print(
+        DEBUG_DEBUG, "self->board_id.sku_id = %d\n", self->board_id.sku_id);
+    debug_print(DEBUG_DEBUG,
+                "self->board_id.hardware_revision = %d\n",
+                self->board_id.hardware_revision);
+    debug_print(
+        DEBUG_DEBUG, "self->board_id.build_id = %d\n", self->board_id.build_id);
+    debug_print(DEBUG_DEBUG, "self->caterr = %d\n", self->caterr);
+    debug_print(DEBUG_DEBUG, "self->wtd_timeout = %d\n", self->wtd_timeout);
+    debug_print(DEBUG_DEBUG, "self->thermal_trip = %d\n", self->thermal_trip);
+    debug_print(DEBUG_DEBUG, "self->mem_event = %d\n", self->mem_event);
+    debug_print(DEBUG_DEBUG, "self->boot_0x79_wa = %d\n", self->boot_0x79_wa);
+    debug_print(DEBUG_DEBUG, "self->traversal = %s\n", self->traversal);
+    debug_print(DEBUG_DEBUG, "self->print = %s\n", self->print);
+}

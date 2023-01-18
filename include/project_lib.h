@@ -7,7 +7,7 @@
 typedef struct semver semver;
 typedef struct board_id board_id;
 typedef struct cpu_cpld cpu_cpld;
-typedef void (*cpu_cpld_init)(cpu_cpld *self);
+typedef void (*cpu_cpld_traversal)(cpu_cpld *self);
 typedef void (*cpu_cpld_print)(cpu_cpld *self);
 
 typedef enum { broadwelld, skylaked, denverton, icelaked } cpu_codename;
@@ -28,7 +28,7 @@ struct board_id {
     uint8_t sku_id : 4;
 };
 
-void cpu_cpld_initer(cpu_cpld *self);
+void cpu_cpld_traversaler(cpu_cpld *self);
 void cpu_cpld_printer(cpu_cpld *self);
 
 struct cpu_cpld {
@@ -40,7 +40,9 @@ struct cpu_cpld {
     uint8_t thermal_trip;
     uint8_t mem_event;
     uint8_t boot_0x79_wa;
-    cpu_cpld_init init;
+
+    uint8_t cpld_base;
+    cpu_cpld_traversal traversal;
     cpu_cpld_print print;
 };
 
