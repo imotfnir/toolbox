@@ -7,6 +7,7 @@ tag*
 .vscode/
 __pycache__/
 *cache/
+.COMMIT_EDITMSG*
 
 # Temp file for building C
 *.o
