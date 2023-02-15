@@ -7,7 +7,7 @@ typedef struct pci_cap pci_cap;
 typedef struct pci_ext_cap pci_ext_cap;
 
 struct pci_csr {
-    header header;
+    header *header;
     pci_cap *cap;
     pci_ext_cap *ext_cap;
 };
