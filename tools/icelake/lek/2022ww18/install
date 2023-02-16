@@ -1,0 +1,84 @@
+#!/bin/bash
+
+LINUX_DRIVER_FILE_NAME=iqvlinux.tar.gz
+LINUX_ROOT_TEMP=/tmp
+LINUX_TEMP_FOLDER="$LINUX_ROOT_TEMP"/iqvlinux
+USING_TEMPORARY=no
+
+#Check if CWD contains space, if yes we have to copy build script to temp dir as make is unable to work in directories with space
+#Both df and du reports size in 1024 bytes, or 512 bytes if POSIXLY_CORRECT is set
+if [[ "$PWD" == *" "* ]]
+then
+    USING_TEMPORARY=yes
+    echo "CWD contains space, copying sources to temporary folder"
+    TEMP_FREE_SPACE=`df -P "$LINUX_ROOT_TEMP" | tail -1 | awk '{print $4}'`
+    SPACE_REQUIRED=`du -s "$PWD" | awk '{print $1}'`
+    if [ "$TEMP_FREE_SPACE" -lt "$SPACE_REQUIRED" ]; then
+        echo "Insufficient free space on $LINUX_ROOT_TEMP. Available: $TEMP_FREE_SPACE. Required: $SPACE_REQUIRED"
+        return -1
+    fi
+    mkdir -p "$LINUX_TEMP_FOLDER"
+    cp -R * "$LINUX_TEMP_FOLDER"
+    LINUX_DRIVER_BUILD_DIR="$LINUX_TEMP_FOLDER"/iqvlinux/src/linux/driver
+    cd "$LINUX_TEMP_FOLDER"
+else
+    LINUX_DRIVER_BUILD_DIR="$PWD"/iqvlinux/src/linux/driver
+fi
+
+MODE=install
+if [ "$1" = "uninstall" ]
+then
+    MODE=uninstall
+elif [ "$1" != "" ]
+then
+    LINUX_DRIVER_FILE_NAME="$1"
+fi
+if [ -d iqvlinux ]
+then
+    rm -fr iqvlinux
+fi
+mkdir iqvlinux
+
+cp "$LINUX_DRIVER_FILE_NAME" ./iqvlinux
+cd ./iqvlinux
+LINUX_DRIVER_NAL_DIR="$PWD"
+
+printf "Extracting archive.."
+
+OUTPUT=`tar xvzf "$LINUX_DRIVER_FILE_NAME"`
+
+Status=$?
+
+if [ $Status -ne 0 ]
+then
+    printf "\033[31mError: $OUTPUT\033[0m\n"
+else
+    printf "\033[32mOK!\033[0m\n"
+fi
+
+# V=1 if you want verbose output
+if [ "$MODE" = "install" ]
+then
+    printf "Compiling the driver..."
+    OUTPUT=`make -f Makefile -C "$LINUX_DRIVER_BUILD_DIR" NALDIR="$LINUX_DRIVER_NAL_DIR" 2>&1`
+    Status=$?
+
+    if [ $Status -ne 0 ]
+    then
+        printf "\033[31mError: $OUTPUT\033[0m\n"
+    else
+        printf "\033[32mOK!\033[0m\n"
+    fi
+fi
+
+chmod +x "$LINUX_DRIVER_BUILD_DIR"/nalinstall
+if [ "$MODE" = "install" ]
+then
+    "$LINUX_DRIVER_BUILD_DIR"/nalinstall "$LINUX_DRIVER_BUILD_DIR"
+else
+    "$LINUX_DRIVER_BUILD_DIR"/nalinstall uninstall
+fi
+if [ "$USING_TEMPORARY" = "yes" ]
+then
+    rm -rf "$LINUX_TEMP_FOLDER"
+fi
