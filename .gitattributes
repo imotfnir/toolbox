@@ -20,6 +20,7 @@ spsManuf* binary
 celo64e* binary
 eeupdate64e* binary
 lanconf64e* binary
+nvmupdate* binary
 
 *.bin binary diff=hex
 *.BIN binary diff=hex
