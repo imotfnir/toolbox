@@ -50,8 +50,8 @@ class SshIp(Ipv4):
     @Ipv4.port.setter
     def port(self, port: int) -> None:
         if port != 22:
+            logging.warning("port number only can be 22")
             raise ValueError("port number only can be 22")
-        logging.warning("port number only can be 22")
         self._port = 22
 
 

@@ -1,23 +1,17 @@
 #!/usr/bin/env python
 import autotestlib.connection as cc
+import autotestlib.custom_type as Type
+import pexpect
 
 
 PROMPT = "root@ubuntu:~#"
 console = cc.Console(
-    ip='192.168.162.2',
+    ipv4=Type.Ipv4('192.168.162.2', 5101),
     username='administrator',
     password='ufispace',
-    port='5101')
-
-
-console.send_command("\r\n")
-console.wait_for_pattern("ubuntu login:")
-console.send_command("root")
-console.wait_for_pattern("Password:")
-console.send_command("ufispace")
-
-# console.wait_for_pattern(PROMPT)
-# console.send_command("dmidecode -s bios-version")
-# console.wait_for_pattern(PROMPT)
-# console.send_command("lscpu")
-# console.wait_for_pattern(PROMPT)
+)
+console.connect()
+x86 = console.get_ssh_ip()
+print(x86.ip)
+bmc = console.get_bmc_ip()
+print(bmc.ip)
