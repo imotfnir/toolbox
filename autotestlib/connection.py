@@ -3,13 +3,11 @@ import re
 import autotestlib.custom_type as Type
 
 
-class Console:
+class Session:
 
-    def __init__(self, ipv4: Type.Ipv4, username: str, password: str):
+    def __init__(self, connection: Type.Connection):
         self.delay: float = 0.2
-        self._ipv4 = ipv4
-        self._username = username
-        self._password = password
+        self._connection = connection
         self._prompt = "root@ubuntu:~#"
         self.process = None
 
@@ -20,13 +18,13 @@ class Console:
                                       '-o',
                                       'UserKnownHostsFile=/dev/null',
                                       '-l',
-                                      self._username,
-                                      self._ipv4.ip,
+                                      self._connection.username,
+                                      self._connection.ipv4.ip,
                                       '-p',
-                                      str(self._ipv4.port)])
+                                      str(self._connection.ipv4.port)])
         match self.process.expect(["(?i)password:", pexpect.EOF, pexpect.TIMEOUT]):
             case 0:
-                self.process.sendline("ufispace")
+                self.process.sendline(self._connection.password)
                 print('Terminal server Enter password')
                 self._is_connect_success()
             case 1:

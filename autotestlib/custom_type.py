@@ -57,9 +57,9 @@ class SshIp(Ipv4):
 
 class Connection:
     def __init__(self, ipv4: Ipv4, username: str, password: str) -> None:
-        self._ipv4 = ipv4
-        self._username = username
-        self._password = password
+        self.ipv4 = ipv4
+        self.username = username
+        self.password = password
 
 
 if __name__ == "__main__":
