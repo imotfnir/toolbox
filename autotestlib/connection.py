@@ -1,6 +1,9 @@
+import autotestlib.custom_type as Type
+from autotestlib.base import print_err
+
+import paramiko
 import pexpect
 import re
-import autotestlib.custom_type as Type
 import abc
 
 
@@ -29,7 +32,26 @@ class Terminal(Session):
 
 
 class X86(Terminal):
-    pass
+    def connect(self) -> None:
+        try:
+            self.process = paramiko.SSHClient()
+            self.process.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.process.connect(
+                self.account.ipv4.ip,
+                self.account.ipv4.port,
+                self.account.username,
+                self.account.password)
+        except Exception:
+            print_err("X86 ssh connect fail")
+            raise
+
+    def lspci(self) -> str:
+        try:
+            _, stdout, _ = self.process.exec_command("lspci")
+            return str(stdout.read(), encoding='UTF-8')
+        except Exception:
+            print_err("lspci fail")
+            raise
 
 
 class Bmc(Terminal):
@@ -43,32 +65,37 @@ class Console(Session):
         self._prompt = "root@ubuntu:~#"
 
     def connect(self) -> None:
-        self.process = pexpect.spawn('ssh',
-                                     ['-o',
-                                      'StrictHostKeyChecking=no',
-                                      '-o',
-                                      'UserKnownHostsFile=/dev/null',
-                                      '-l',
-                                      self.account.username,
-                                      self.account.ipv4.ip,
-                                      '-p',
-                                      str(self.account.ipv4.port)])
+        try:
+            self.process = pexpect.spawn('ssh',
+                                         ['-o',
+                                          'StrictHostKeyChecking=no',
+                                          '-o',
+                                          'UserKnownHostsFile=/dev/null',
+                                          '-l',
+                                          self.account.username,
+                                          self.account.ipv4.ip,
+                                          '-p',
+                                          str(self.account.ipv4.port)])
+        except Exception:
+            print_err("Terminal server login fail")
+            raise
+
         match self.process.expect(["(?i)password:", pexpect.EOF, pexpect.TIMEOUT]):
             case 0:
                 self.process.sendline(self.account.password)
                 print('Terminal server Enter password')
                 self._is_connect_success()
             case _:
-                print('Login failed')
+                print_err("Terminal server login timeout")
         return
 
     def _is_connect_success(self) -> bool:
         match self.process.expect(["Suspend Menu", pexpect.EOF, pexpect.TIMEOUT]):
             case 0:
-                print("Terminal server Login success")
+                print("Terminal server login success")
                 return True
             case _:
-                print('Login failed')
+                print_err("Terminal server login timeout")
                 return False
 
     def _flush_buffer(self) -> None:
