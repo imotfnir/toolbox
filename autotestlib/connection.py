@@ -10,6 +10,7 @@ import abc
 class Session():
     def __init__(self, account: Type.Account) -> None:
         self.account = account
+        self.timeout = 30
         self.process = None
 
     @property
@@ -19,6 +20,17 @@ class Session():
     @account.setter
     def account(self, account: Type.Account) -> None:
         self._account = account
+
+    @property
+    def timeout(self) -> float:
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, timeout: float) -> None:
+        if timeout < 0:
+            print_err("Timeout must >= 0")
+            raise ValueError("Timeout must >= 0")
+        self._timeout = timeout
 
     @abc.abstractmethod
     def connect(self) -> None:
@@ -40,7 +52,8 @@ class X86(Terminal):
                 self.account.ipv4.ip,
                 self.account.ipv4.port,
                 self.account.username,
-                self.account.password)
+                self.account.password,
+                timeout=self.timeout)
         except Exception:
             print_err("X86 ssh connect fail")
             raise
