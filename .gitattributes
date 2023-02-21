@@ -13,6 +13,7 @@
 *.rom binary
 *.ROM binary
 *.gz binary
+*.pdf binary
 spsInfo* binary
 spsManuf* binary
 106bVCmd binary
