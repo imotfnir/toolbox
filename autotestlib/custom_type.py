@@ -55,7 +55,7 @@ class SshIp(Ipv4):
         self._port = 22
 
 
-class Connection:
+class Account:
     def __init__(self, ipv4: Ipv4, username: str, password: str) -> None:
         self.ipv4 = ipv4
         self.username = username

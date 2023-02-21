@@ -1,15 +1,46 @@
 import pexpect
 import re
 import autotestlib.custom_type as Type
+import abc
 
 
-class Session:
-
-    def __init__(self, connection: Type.Connection):
-        self.delay: float = 0.2
-        self._connection = connection
-        self._prompt = "root@ubuntu:~#"
+class Session():
+    def __init__(self, account: Type.Account) -> None:
+        self.account = account
         self.process = None
+
+    @property
+    def account(self) -> Type.Account:
+        return self._account
+
+    @account.setter
+    def account(self, account: Type.Account) -> None:
+        self._account = account
+
+    @abc.abstractmethod
+    def connect(self) -> None:
+        pass
+
+
+class Terminal(Session):
+    @abc.abstractmethod
+    def connect(self) -> None:
+        pass
+
+
+class X86(Terminal):
+    pass
+
+
+class Bmc(Terminal):
+    pass
+
+
+class Console(Session):
+    def __init__(self, account: Type.Account) -> None:
+        super().__init__(account=account)
+        self.delay: float = 0.2
+        self._prompt = "root@ubuntu:~#"
 
     def connect(self) -> None:
         self.process = pexpect.spawn('ssh',
@@ -18,19 +49,15 @@ class Session:
                                       '-o',
                                       'UserKnownHostsFile=/dev/null',
                                       '-l',
-                                      self._connection.username,
-                                      self._connection.ipv4.ip,
+                                      self.account.username,
+                                      self.account.ipv4.ip,
                                       '-p',
-                                      str(self._connection.ipv4.port)])
+                                      str(self.account.ipv4.port)])
         match self.process.expect(["(?i)password:", pexpect.EOF, pexpect.TIMEOUT]):
             case 0:
-                self.process.sendline(self._connection.password)
+                self.process.sendline(self.account.password)
                 print('Terminal server Enter password')
                 self._is_connect_success()
-            case 1:
-                print('Login failed')
-            case 2:
-                print('Login failed')
             case _:
                 print('Login failed')
         return
