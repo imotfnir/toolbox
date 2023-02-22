@@ -1,4 +1,5 @@
-import autotestlib.custom_type as Type
+import autotestlib.type as Type
+import autotestlib.action as Action
 from autotestlib.base import print_err
 
 import paramiko
@@ -43,7 +44,7 @@ class Terminal(Session):
         pass
 
 
-class X86(Terminal):
+class X86Terminal(Terminal, Action.X86Action):
     def connect(self) -> None:
         try:
             self.process = paramiko.SSHClient()
@@ -67,7 +68,7 @@ class X86(Terminal):
             raise
 
 
-class Bmc(Terminal):
+class BmcTerminal(Terminal, Action.BmcAction):
     pass
 
 

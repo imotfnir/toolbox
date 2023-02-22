@@ -62,5 +62,56 @@ class Account:
         self.password = password
 
 
+class Semver:
+    def __init__(self) -> None:
+        self.major: int = None
+        self.minor: int = None
+        self.patch: int = None
+
+    @property
+    def major(self) -> int:
+        return self._major
+
+    @major.setter
+    def major(self, num: int) -> None:
+        if num < 0:
+            raise ValueError("Semver is non-negative integers")
+        self._major = num
+
+    @property
+    def minor(self) -> int:
+        return self._minor
+
+    @minor.setter
+    def minor(self, num: int) -> None:
+        if num < 0:
+            raise ValueError("Semver is non-negative integers")
+        self._minor = num
+
+    @property
+    def patch(self) -> int:
+        return self._patch
+
+    @patch.setter
+    def patch(self, num: int) -> None:
+        if num < 0:
+            raise ValueError("Semver is non-negative integers")
+        self._patch = num
+
+
+class BiosVersion:
+    def __init__(self, raw: str) -> None:
+        self.raw = raw
+        self.semver: Semver = None
+
+    @property
+    def semver(self) -> Semver:
+        return self._semver
+
+    @semver.setter
+    def semver(self, semver: Semver) -> None:
+        self._semver = semver
+
+
 if __name__ == "__main__":
     pass

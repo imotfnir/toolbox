@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import autotestlib.connection as cc
-import autotestlib.custom_type as Type
+import autotestlib.session as cc
+import autotestlib.type as Type
 
 import pexpect
 import paramiko
@@ -20,6 +20,6 @@ if __name__ == "__main__":
     ac2 = Type.Account(ipv4=Type.SshIp('192.168.165.164'),
                        username='root',
                        password='ufispace')
-    x86 = cc.X86(ac2)
+    x86 = cc.X86Terminal(ac2)
     x86.connect()
     print(x86.lspci())

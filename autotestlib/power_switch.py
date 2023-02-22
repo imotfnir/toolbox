@@ -1,4 +1,4 @@
-from autotestlib.custom_type import *
+from autotestlib.type import *
 
 
 class PowerSwitch():
