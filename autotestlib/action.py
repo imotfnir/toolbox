@@ -24,6 +24,10 @@ class X86Action:
     def get_os_version(self) -> str:
         pass
 
+    @abc.abstractmethod
+    def get_sku(self) -> str:
+        pass
+
 
 class IcelakeAction(X86Action):
     pass

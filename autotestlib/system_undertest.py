@@ -1,20 +1,90 @@
-from autotestlib.type import *
+import autotestlib.type as Type
+import autotestlib.session as Session
 
 
 class SystemUnderTest():
-    def __init__(self, console_ip: ConsoleIp = None,
-                 ssh_ip: SshIp = None, bmc_ip: SshIp = None) -> None:
-        self._console_ip = console_ip
-        self._ssh_ip = ssh_ip
-        self._bmc_ip = bmc_ip
-        self._platform = None
-        self._pcie_list = None
-        self._sku = None
-        self._ssd_list = None
-        self._bios = None
-        self._nvm = None
-        self._cpu_cpld = None
-        self._mb_cpld = None
+    def __init__(self, console_ip: Type.ConsoleIp) -> None:
+        self.console_ip: Type.ConsoleIp = console_ip
+        self.x86_ip: Type.SshIp = None
+        self.bmc_ip: Type.SshIp = None
+        self._onie_ip: Type.SshIp = None
+        self.console: Session.Console = None
+        self.x86: Session.X86Terminal = None
+        self.bmc: Session.BmcTerminal = None
+        self.config = None
+        self.platform = None
+        self.sku = None
+
+    @property
+    def console_ip(self) -> Type.ConsoleIp:
+        return self._console_ip
+
+    @console_ip.setter
+    def console_ip(self, ip: Type.ConsoleIp) -> None:
+        self._console_ip = ip
+
+    @property
+    def x86_ip(self) -> Type.SshIp:
+        return self._x86_ip
+
+    @x86_ip.setter
+    def x86_ip(self, ip: Type.SshIp) -> None:
+        self._x86_ip = ip
+
+    @property
+    def bmc_ip(self) -> Type.SshIp:
+        return self._bmc_ip
+
+    @bmc_ip.setter
+    def bmc_ip(self, ip: Type.SshIp) -> None:
+        self._bmc_ip = ip
+
+    def __str__(self) -> str:
+        var = f"Console: {self.console_ip}\n"
+        var += f"x86: {self.x86_ip}\n"
+        var += f"bmc: {self.bmc_ip}"
+        return var
+
+    def connect_console(self) -> None:
+        account = Type.Account(
+            Type.ConsoleIp(
+                self._console_ip.ip,
+                self._console_ip.port),
+            "administrator",
+            "ufispace")
+        self.console = Session.Console(account)
+        self.console.connect()
+
+    def connect_x86(self) -> None:
+        account = Type.Account(
+            Type.SshIp(self.x86_ip.ip),
+            "root",
+            "ufispace")
+        self.x86 = Session.X86Terminal(account)
+        self.x86.connect()
+
+    def connext_bmc(self) -> Session.BmcTerminal:
+        account = Type.Account(
+            Type.SshIp(self.bmc_ip.ip),
+            "sysadmin",
+            "superuser")
+        self.bmc = Session.BmcTerminal(account)
+        self.bmc.connect()
+
+    def update_x86_ip(self) -> None:
+        self.x86_ip = self.console.get_ssh_ip()
+
+    def update_bmc_ip(self) -> None:
+        self.bmc_ip = self.console.get_bmc_ip()
+
+    def update(self) -> None:
+        self.update_x86_ip()
+        self.update_bmc_ip()
+
+    def connect_all(self) -> None:
+        self.connect_console()
+        self.connect_x86()
+        self.connext_bmc()
 
 
 if __name__ == '__main__':

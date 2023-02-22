@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import autotestlib.session as cc
 import autotestlib.type as Type
+import autotestlib.system_undertest as Sut
 
 import pexpect
 import paramiko
@@ -17,10 +18,17 @@ if __name__ == "__main__":
     # bmc = console.get_bmc_ip()
     # print(bmc.ip)
 
-    ac2 = Type.Account(ipv4=Type.SshIp('192.168.165.164'),
-                       username='root',
-                       password='ufispace')
-    x86 = cc.X86Terminal(ac2)
-    x86.connect()
-    print(x86.lspci())
-    print(x86.get_bios_version().raw)
+    # ac2 = Type.Account(ipv4=Type.SshIp('192.168.165.164'),
+    #                    username='root',
+    #                    password='ufispace')
+    # x86 = cc.X86Terminal(ac2)
+    # x86.connect()
+    # print(x86.lspci())
+    # print(x86.get_bios_version().raw)
+
+    cip: Type.ConsoleIp = Type.ConsoleIp(ip="192.168.162.2", port=5101)
+    dut = Sut.SystemUnderTest(cip)
+    print(dut)
+    dut.connect_console()
+    dut.update()
+    print(dut)

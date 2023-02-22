@@ -33,6 +33,11 @@ class Session():
             raise ValueError("Timeout must >= 0")
         self._timeout = timeout
 
+    def get_status(self) -> str:
+        if self.connect is None:
+            return "Disconnect"
+        return "Connected"
+
     @abc.abstractmethod
     def connect(self) -> None:
         pass

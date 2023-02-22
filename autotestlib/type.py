@@ -30,6 +30,9 @@ class Ipv4:
             raise ValueError("port number only can be 0~65535")
         self._port = port
 
+    def __str__(self) -> str:
+        return f"{self.ip}: {self.port}"
+
 
 class ConsoleIp(Ipv4):
     @Ipv4.port.setter
@@ -60,6 +63,10 @@ class Account:
         self.ipv4 = ipv4
         self.username = username
         self.password = password
+
+
+class DutConfig:
+    pass
 
 
 class Semver:
