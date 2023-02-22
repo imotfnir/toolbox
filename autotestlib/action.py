@@ -39,7 +39,3 @@ class OnieAction:
 
 class BmcAction:
     pass
-
-
-class Decoding:
-    pass

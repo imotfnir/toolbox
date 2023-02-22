@@ -1,5 +1,6 @@
 import autotestlib.type as Type
 import autotestlib.session as Session
+import autotestlib.base as Base
 
 
 class SystemUnderTest():
@@ -11,9 +12,10 @@ class SystemUnderTest():
         self.console: Session.Console = None
         self.x86: Session.X86Terminal = None
         self.bmc: Session.BmcTerminal = None
-        self.config = None
+        self.config: dict = None
         self.platform = None
         self.sku = None
+        self.update_config()
 
     @property
     def console_ip(self) -> Type.ConsoleIp:
@@ -85,6 +87,14 @@ class SystemUnderTest():
         self.connect_console()
         self.connect_x86()
         self.connext_bmc()
+
+    def update_config(self) -> None:
+        self.config = Base.Decoding.decode_config("autotestlib/config.json")
+        self.platform = self.config["platform"]
+        self.sku = self.config["sku"]
+        self.console_ip = Type.ConsoleIp(
+            self.config["console_ip"]["ip"],
+            self.config["console_ip"]["port"])
 
 
 if __name__ == '__main__':

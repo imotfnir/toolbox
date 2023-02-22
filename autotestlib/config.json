@@ -1,0 +1,12 @@
+{
+    "project": "emux",
+    "platform": "icelake",
+    "console_ip": {
+        "ip": "192.168.162.2",
+        "port": "5101"
+    },
+    "x86_ip": {
+        "ip": "",
+        "port": "22"
+    }
+}

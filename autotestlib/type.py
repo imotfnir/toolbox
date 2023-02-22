@@ -65,10 +65,6 @@ class Account:
         self.password = password
 
 
-class DutConfig:
-    pass
-
-
 class Semver:
     def __init__(self) -> None:
         self.major: int = None
