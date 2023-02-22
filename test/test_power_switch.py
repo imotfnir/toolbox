@@ -1,12 +1,14 @@
 import pytest
-from autotestlib.power_switch import *
+
+import autotestlib.type as Type
+import autotestlib.power_switch as Pw
 
 
-console = ConsoleIp(ip="192.168.162.2", port=5116)
-ps = PowerSwitch(console=console, port=4)
+console = Type.ConsoleIp(ip="192.168.162.2", port=5116)
+ps = Pw.PowerSwitch(console=console, port=4)
 
 
-def ps_item(obj: PowerSwitch) -> None:
+def ps_item(obj: Pw.PowerSwitch) -> None:
     obj.port = 1
     assert obj.port == 1
     obj.port = 4
@@ -14,7 +16,7 @@ def ps_item(obj: PowerSwitch) -> None:
     return
 
 
-def ps_exception_item(obj: PowerSwitch) -> None:
+def ps_exception_item(obj: Pw.PowerSwitch) -> None:
     with pytest.raises(ValueError):
         obj.port = 5
     with pytest.raises(ValueError):
