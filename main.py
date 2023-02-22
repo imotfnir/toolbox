@@ -23,3 +23,4 @@ if __name__ == "__main__":
     x86 = cc.X86Terminal(ac2)
     x86.connect()
     print(x86.lspci())
+    print(x86.get_bios_version().raw)

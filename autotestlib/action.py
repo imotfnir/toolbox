@@ -8,25 +8,25 @@ class X86Action:
     def lspci(self) -> str:
         pass
 
-    @property
     @abc.abstractmethod
-    def bios_version(self) -> str:
+    def get_bios_version(self) -> Type.BiosVersion:
         pass
 
-    @property
     @abc.abstractmethod
-    def cpu_cpld_version(self) -> str:
+    def get_cpu_cpld_version(self) -> Type.CpuCpldVersion:
         pass
 
-    @property
     @abc.abstractmethod
-    def bmc_version(self) -> str:
+    def get_bmc_version(self) -> Type.BmcVersion:
         pass
 
-    @property
     @abc.abstractmethod
-    def os_version(self) -> str:
+    def get_os_version(self) -> str:
         pass
+
+
+class IcelakeAction(X86Action):
+    pass
 
 
 class OnieAction:
@@ -34,4 +34,8 @@ class OnieAction:
 
 
 class BmcAction:
+    pass
+
+
+class Decoding:
     pass

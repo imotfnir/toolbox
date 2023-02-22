@@ -59,6 +59,7 @@ class X86Terminal(Terminal, Action.X86Action):
             print_err("X86 ssh connect fail")
             raise
 
+    # ToDo: rewrite action fucntion by DIP
     def lspci(self) -> str:
         try:
             _, stdout, _ = self.process.exec_command("lspci")
@@ -66,6 +67,16 @@ class X86Terminal(Terminal, Action.X86Action):
         except Exception:
             print_err("lspci fail")
             raise
+
+    def get_bios_version(self) -> Type.BiosVersion:
+        try:
+            _, stdout, _ = self.process.exec_command(
+                "dmidecode -s bios-version")
+            ver = Type.BiosVersion(str(stdout.read(), encoding='UTF-8'))
+
+        except Exception:
+            print_err("get BIOS version fail")
+        return ver
 
 
 class BmcTerminal(Terminal, Action.BmcAction):

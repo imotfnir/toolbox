@@ -113,5 +113,22 @@ class BiosVersion:
         self._semver = semver
 
 
+class BmcVersion:
+    def __init__(self, raw: str) -> None:
+        self.raw = raw
+
+
+class CpldVersion(Semver):
+    pass
+
+
+class CpuCpldVersion(CpldVersion):
+    pass
+
+
+class MbCpldVersion(CpldVersion):
+    pass
+
+
 if __name__ == "__main__":
     pass
