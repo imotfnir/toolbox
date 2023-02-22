@@ -1,6 +1,6 @@
-"""System module."""
 import logging
 import ipaddress
+from enum import Enum
 
 
 class Ipv4:
@@ -131,6 +131,67 @@ class CpuCpldVersion(CpldVersion):
 
 class MbCpldVersion(CpldVersion):
     pass
+
+
+class SystemInfo():
+    def __init__(self) -> None:
+        self.sys_sku: Sku = None
+        self.platform: Platform = None
+        self.cpu_code_name: str = None
+        self.bios_toolbox: str = None
+        self.bios_fw_upgrade_tools: str = None
+
+
+class Platform(Enum):
+    ICELAKE = 0
+    SKYLAKE = 1
+    DENVERTON = 2
+    BROADWELL = 3
+
+
+class Sku:
+    sku_list = [
+        "S9710-76D (NCP3-1)",
+        "S9310-32D (TD4)",
+        "S9701-78DC (NCP-Lite)",
+        "S9600-72XC (w/o OP2)",
+        "S9600-48X (NCP1-2 for SKLD)",
+        "S9600-48X (NCP1-2 for SKLD)",
+        "S9600-72XC (w/ OP2)",
+        "S9300-32D (TD4 1RU X11)",
+        "S9701-78DC (w/o OP2)",
+        "S9701-82DC (NCP-Lite)",
+        "S9701-82DC (w/o OP2)",
+        "S9610-36D (NCP3-SA)",
+        "S9600-64X (Nighthawk)",
+        "S9600-32X (Nighthawk)",
+        "S9600-30DX (NCP1-3 for SKLD)",
+        "S9600-30DX (NCP1-3 for SKLD)",
+        "S9710-76D (w/o OP2)",
+        "S9301-32DB(TD4 1RU X9)",
+        "S9301-32D (TH3)",
+        "S9300-32DB(TD4 1RU X9)",
+        "S9600-56DX (Large EMUX)",
+        "S9600-28DX (w/ ICLD CPU, half L-EMUX)",
+        "S9601-56DX (w/ SKLD CPU)",
+        "S9601-28DX (w/ SKLD CPU)",
+        "S9321-64E(TH5)",
+        "S9725-64E(R3)",
+        "S9720-44ED(J3)",
+        "S9711-76D(NCP3-AI)",
+        "S9600-102XC (Access BNG)",
+        "S9711-76D(NCP3-AI W/ NTM)",
+        "RESERVED",
+        "RESERVED",
+        "RESERVED",
+    ]
+
+
+class HwRev(Enum):
+    PROTO = 0
+    ALPHA = 1
+    BETA = 2
+    PVT = 3
 
 
 if __name__ == "__main__":

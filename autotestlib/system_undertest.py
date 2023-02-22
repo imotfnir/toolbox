@@ -8,13 +8,11 @@ class SystemUnderTest():
         self.console_ip: Type.ConsoleIp = console_ip
         self.x86_ip: Type.SshIp = None
         self.bmc_ip: Type.SshIp = None
-        self._onie_ip: Type.SshIp = None
         self.console: Session.Console = None
         self.x86: Session.X86Terminal = None
         self.bmc: Session.BmcTerminal = None
         self.config: dict = None
-        self.platform = None
-        self.sku = None
+        self.system_info: Type.SystemInfo = None
         self.update_config()
 
     @property

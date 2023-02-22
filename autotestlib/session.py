@@ -1,11 +1,12 @@
-import autotestlib.type as Type
-import autotestlib.action as Action
-from autotestlib.base import print_err
+import re
+import abc
 
 import paramiko
 import pexpect
-import re
-import abc
+
+import autotestlib.type as Type
+import autotestlib.action as Action
+from autotestlib.base import print_err
 
 
 class Session():
@@ -67,7 +68,7 @@ class X86Terminal(Terminal, Action.X86Action):
     # ToDo: rewrite action fucntion by DIP
     def lspci(self) -> str:
         try:
-            _, stdout, _ = self.process.exec_command("lspci")
+            stdin, stdout, stderr = self.process.exec_command("lspci")
             return str(stdout.read(), encoding='UTF-8')
         except Exception:
             print_err("lspci fail")
@@ -78,7 +79,6 @@ class X86Terminal(Terminal, Action.X86Action):
             _, stdout, _ = self.process.exec_command(
                 "dmidecode -s bios-version")
             ver = Type.BiosVersion(str(stdout.read(), encoding='UTF-8'))
-
         except Exception:
             print_err("get BIOS version fail")
         return ver

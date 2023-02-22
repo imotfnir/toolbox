@@ -1,6 +1,6 @@
-import autotestlib.type as Type
-
 import abc
+
+import autotestlib.type as Type
 
 
 class X86Action:
@@ -25,7 +25,15 @@ class X86Action:
         pass
 
     @abc.abstractmethod
-    def get_sku(self) -> str:
+    def get_sys_sku(self) -> Type.Sku:
+        pass
+
+    @abc.abstractmethod
+    def get_platform(self) -> Type.Platform:
+        pass
+
+    @abc.abstractmethod
+    def get_cpu_code_name(self) -> str:
         pass
 
 

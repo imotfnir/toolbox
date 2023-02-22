@@ -1,13 +1,13 @@
 import pytest
-from autotestlib.type import *
+import autotestlib.type as Type
 
 
-ipv4_obj = Ipv4(ip='192.168.162.2', port=5102)
-console_obj = ConsoleIp(ip="192.168.0.1", port=5101)
-ssh_obj = SshIp(ip="192.168.0.1")
+ipv4_obj = Type.Ipv4(ip='192.168.162.2', port=5102)
+console_obj = Type.ConsoleIp(ip="192.168.0.1", port=5101)
+ssh_obj = Type.SshIp(ip="192.168.0.1")
 
 
-def ipv4_item(obj: Ipv4) -> None:
+def ipv4_item(obj: Type.Ipv4) -> None:
     obj.port = 5102
     assert obj.port == 5102
     obj.port = 2000
@@ -25,7 +25,7 @@ def ipv4_item(obj: Ipv4) -> None:
     return
 
 
-def ipv4_exception_item(obj: Ipv4) -> None:
+def ipv4_exception_item(obj: Type.Ipv4) -> None:
     with pytest.raises(ValueError):
         obj.port = 65536
     with pytest.raises(ValueError):
@@ -39,7 +39,7 @@ def ipv4_exception_item(obj: Ipv4) -> None:
     return
 
 
-def console_item(obj: Ipv4) -> None:
+def console_item(obj: Type.Ipv4) -> None:
     obj.ip = "10.10.10.10"
     assert obj.ip == "10.10.10.10"
     obj.port = 5101
@@ -49,7 +49,7 @@ def console_item(obj: Ipv4) -> None:
     return
 
 
-def console_exception_item(obj: Ipv4) -> None:
+def console_exception_item(obj: Type.Ipv4) -> None:
     ipv4_exception_item(obj)
     with pytest.raises(ValueError):
         obj.port = 5117
@@ -60,7 +60,7 @@ def console_exception_item(obj: Ipv4) -> None:
     return
 
 
-def ssh_item(obj: Ipv4) -> None:
+def ssh_item(obj: Type.Ipv4) -> None:
     obj.ip = "10.58.151.139"
     assert obj.ip == "10.58.151.139"
     obj.port = 22

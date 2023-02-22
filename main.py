@@ -9,12 +9,10 @@ import paramiko
 
 
 if __name__ == "__main__":
-    # cip: Type.ConsoleIp = Type.ConsoleIp(ip="192.168.162.2", port=5101)
-    # dut = Sut.SystemUnderTest(cip)
-    # dut.connect_console()
-    # dut.update()
-    # dut.connect_x86()
-    # print(dut.x86.lspci())
-    # print(dut)
-    d = Base.Decoding.decode_config("autotestlib/config.json")
-    print(d["console_ip"]["ip"])
+    cip: Type.ConsoleIp = Type.ConsoleIp(ip="192.168.162.2", port=5101)
+    dut = Sut.SystemUnderTest(cip)
+    dut.connect_console()
+    dut.update()
+    dut.connect_x86()
+    print(dut.x86.lspci())
+    print(dir(dut))

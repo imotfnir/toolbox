@@ -1,20 +1,20 @@
-from autotestlib.type import *
+import autotestlib.type as Type
 
 
 class PowerSwitch():
     __poweroff = [":040102f8", ":040202f7", ":040302f6", ":040402f5"]
     __poweron = [":040101f9", ":040201f8", ":040301f7", ":040401f6"]
 
-    def __init__(self, console: ConsoleIp, port: int) -> None:
+    def __init__(self, console: Type.ConsoleIp, port: int) -> None:
         self.console = console
         self.port = port
 
     @property
-    def console(self) -> ConsoleIp:
+    def console(self) -> Type.ConsoleIp:
         return self._console
 
     @console.setter
-    def console(self, console: ConsoleIp) -> None:
+    def console(self, console: Type.ConsoleIp) -> None:
         self._console = console
 
     @property
