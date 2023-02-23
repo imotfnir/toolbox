@@ -1,0 +1,3 @@
+[submodule "autotest"]
+	path = autotest
+	url = http://git162.ufispace.com/software-engineering-department/autotest.git
