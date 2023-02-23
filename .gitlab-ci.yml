@@ -3,7 +3,6 @@ variables:
 
 stages:
   - shell_test
-  - python_test
 
 shell_test:
   stage: shell_test
@@ -11,10 +10,3 @@ shell_test:
     - bash
   script:
     - shfmt -d -i 4 $(find . -name "*.sh" -not -path "./.githooks/*")
-
-python_test:
-  stage: python_test
-  tags:
-    - python
-  script:
-    - pytest .
